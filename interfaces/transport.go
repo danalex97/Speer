@@ -24,14 +24,18 @@ type Link interface {
 	To() Node
 }
 
-type Transport interface {
-	Node
-
-	// Create a connection used for data transfer.
-	Connect(string) Link
-
-	// Control message interfaces.
+type ControlTransport interface {
 	ControlPing(string) bool
 	ControlSend(string, interface{})
 	ControlRecv() <-chan interface{}
+}
+
+type DataTransport interface {
+	Node
+	Connect(string) Link
+}
+
+type Transport interface {
+	ControlTransport
+	DataTransport
 }

@@ -8,7 +8,6 @@ import (
 	"sync"
 )
 
-
 // A bootstraping mechanism which provides a contact node for a newly arrived
 // node.
 type Bootstrap interface {

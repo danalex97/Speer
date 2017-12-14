@@ -6,6 +6,8 @@ import (
 	"github.com/danalex97/Speer/underlay"
 )
 
+var activeSet = make(map[*underlay.NetworkSimulation]LatencyMap)
+
 type UnreliableNode interface {
 	events.Decorable
 
@@ -23,7 +25,6 @@ type UnreliableSimulatedNode struct {
 	id         string
 }
 
-var activeSet = make(map[*underlay.NetworkSimulation]LatencyMap)
 
 // The Bootstrap is associated directly with the simulation. All the nodes
 // need to refer to the same bootstrap, so we use a global map to associate
