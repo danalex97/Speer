@@ -15,7 +15,7 @@ type CapacityMap interface {
 // A capacity map that uses a capacity scheduler for
 // allowing data transfer between nodes. Note the capacity
 // scheduler is already thread-safe.
-type scheduledCapacityMap struct {
+type ScheduledCapacityMap struct {
 	*sync.RWMutex
 
 	capacityMap       map[string]CapacityConnector
@@ -23,7 +23,7 @@ type scheduledCapacityMap struct {
 }
 
 func NewScheduledCapacityMap(scheduleInterval int) CapacityMap {
-	return &scheduledCapacityMap{
+	return &ScheduledCapacityMap{
 		// the rwmutex is used to synchronize the access to the
 		// capacity connector map
 		RWMutex: new(sync.RWMutex),
@@ -34,7 +34,7 @@ func NewScheduledCapacityMap(scheduleInterval int) CapacityMap {
 	}
 }
 
-func (c *scheduledCapacityMap) AddConnector(
+func (c *ScheduledCapacityMap) AddConnector(
 	id string,
 	capacityConnector CapacityConnector,
 ) {
@@ -44,7 +44,7 @@ func (c *scheduledCapacityMap) AddConnector(
 	c.capacityMap[id] = capacityConnector
 }
 
-func (c *scheduledCapacityMap) Connector(id string) CapacityConnector {
+func (c *ScheduledCapacityMap) Connector(id string) CapacityConnector {
 	c.RLock()
 	defer c.RUnlock()
 

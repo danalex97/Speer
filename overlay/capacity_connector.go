@@ -12,7 +12,7 @@ type CapacityConnector interface {
 	Connect(id string) interfaces.Link
 }
 
-type capacityConnector struct {
+type PerfectCapacityConnector struct {
 	capacityMap CapacityMap
 
 	down int
@@ -23,7 +23,7 @@ func NewCapacityConnector(
 	up, down int,
 	capacityMap CapacityMap,
 ) CapacityConnector {
-	return &capacityConnector{
+	return &PerfectCapacityConnector{
 		capacityMap: capacityMap,
 
 		down: down,
@@ -31,14 +31,14 @@ func NewCapacityConnector(
 	}
 }
 
-func (c *capacityConnector) Up() int {
+func (c *PerfectCapacityConnector) Up() int {
 	return c.up
 }
 
-func (c *capacityConnector) Down() int {
+func (c *PerfectCapacityConnector) Down() int {
 	return c.down
 }
 
-func (c *capacityConnector) Connect(id string) interfaces.Link {
+func (c *PerfectCapacityConnector) Connect(id string) interfaces.Link {
 	return NewPerfectLink(c, c.capacityMap.Connector(id))
 }

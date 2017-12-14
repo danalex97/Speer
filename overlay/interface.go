@@ -23,7 +23,7 @@ type UnreliableSimulatedNode struct {
 	id         string
 }
 
-var activeSet = make(map[*underlay.NetworkSimulation]OverlayMap)
+var activeSet = make(map[*underlay.NetworkSimulation]LatencyMap)
 
 // The Bootstrap is associated directly with the simulation. All the nodes
 // need to refer to the same bootstrap, so we use a global map to associate
@@ -42,7 +42,7 @@ func GetBootstrap(simulation *underlay.NetworkSimulation) Bootstrap {
 func NewUnreliableSimulatedNode(simulation *underlay.NetworkSimulation) UnreliableNode {
 	node := new(UnreliableSimulatedNode)
 
-	var netMap OverlayMap
+	var netMap LatencyMap
 	if mp, ok := activeSet[simulation]; ok {
 		netMap = mp
 	} else {

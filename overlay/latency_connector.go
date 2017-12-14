@@ -5,7 +5,8 @@ import (
 	"github.com/danalex97/Speer/underlay"
 )
 
-// A LatencyConnector is a decorable interface which allows sending and receiving packets.
+// A LatencyConnector is a decorable interface which allows sending and
+// receiving packets.
 type LatencyConnector interface {
 	Decorable
 
@@ -13,10 +14,10 @@ type LatencyConnector interface {
 	Recv() <-chan interface{}
 }
 
-// The UnderlayChan implements a LatencyConnector by using a proxy to strip the payload
-// of the underlay packets at receiving a packet and sending a packet is done
-// by using the network map to decorate the overlay packet inside an
-// underlay packet.
+// The UnderlayChan implements a LatencyConnector by using a proxy to strip
+// the payload of the underlay packets at receiving a packet and sending a
+// packet is done by using the network map to decorate the overlay packet
+// inside an underlay packet.
 //
 // The mechanism used for delivering packets is an observer attached to the
 // router corresponing to the overlay id.
@@ -26,8 +27,7 @@ type UnderlayChan struct {
 	id string
 
 	simulation *underlay.NetworkSimulation
-
-	netMap OverlayMap
+	networkMap LatencyMap
 
 	observer DecorableObserver
 }
@@ -35,20 +35,19 @@ type UnderlayChan struct {
 func NewUnderlayChan(
 	id string,
 	simulation *underlay.NetworkSimulation,
-	netMap OverlayMap,
+	networkMap LatencyMap,
 ) LatencyConnector {
-
 	u := new(UnderlayChan)
 
 	u.id = id
 	u.simulation = simulation
-	u.netMap = netMap
+	u.networkMap = networkMap
 
 	// Allow decoration at bigger levels.
 	u.Decorator = NewDecorator()
 
 	// Establish listener
-	u.observer = NewEventObserver(u.netMap.Router(u.id))
+	u.observer = NewEventObserver(u.networkMap.Router(u.id))
 	u.observer.SetProxy(u.ReceiveEvent)
 	u.simulation.RegisterObserver(u.observer)
 
@@ -104,16 +103,16 @@ func (u *UnderlayChan) Recv() <-chan interface{} {
 
 func (u *UnderlayChan) UnderlayPacket(p Packet) underlay.Packet {
 	return underlay.NewPacket(
-		u.netMap.Router(p.Src()),
-		u.netMap.Router(p.Dest()),
+		u.networkMap.Router(p.Src()),
+		u.networkMap.Router(p.Dest()),
 		p.Payload(),
 	)
 }
 
 func (u *UnderlayChan) OverlayPacket(p underlay.Packet) Packet {
 	return NewPacket(
-		u.netMap.Id(p.Src()),
-		u.netMap.Id(p.Dest()),
+		u.networkMap.Id(p.Src()),
+		u.networkMap.Id(p.Dest()),
 		p.Payload(),
 	)
 }

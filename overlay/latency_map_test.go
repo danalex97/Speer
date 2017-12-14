@@ -20,21 +20,21 @@ func assertNotEqual(t *testing.T, a, b interface{}) {
 	}
 }
 
-func testNetworkMap(nodes int) OverlayMap {
+func testNetworkMap(nodes int) LatencyMap {
 	rand.Seed(time.Now().UTC().UnixNano())
 	edges := int(math.Log2(float64(nodes))*float64(nodes)/2 + 1)
 	network := underlay.NewRandomUniformNetwork(nodes, edges, 2, 10)
 	return NewNetworkMap(network)
 }
 
-func testNetworkMap2(domains, nodes int) OverlayMap {
+func testNetworkMap2(domains, nodes int) LatencyMap {
 	rand.Seed(time.Now().UTC().UnixNano())
 	network := underlay.NewInternetwork(1, 1, domains, nodes)
 	return NewNetworkMap(network)
 }
 
 func TestNetworkMapNewIdReturnsDifferentRouter(t *testing.T) {
-	netmaps := []OverlayMap{testNetworkMap(10), testNetworkMap2(2, 5)}
+	netmaps := []LatencyMap{testNetworkMap(10), testNetworkMap2(2, 5)}
 	for _, netmap := range netmaps {
 		ids := []string{}
 		for i := 0; i < 10; i++ {
@@ -49,7 +49,7 @@ func TestNetworkMapNewIdReturnsDifferentRouter(t *testing.T) {
 }
 
 func TestNetworkMapJoinReturnsDifferentRouter(t *testing.T) {
-	netmaps := []OverlayMap{testNetworkMap(10), testNetworkMap2(2, 5)}
+	netmaps := []LatencyMap{testNetworkMap(10), testNetworkMap2(2, 5)}
 	for _, netmap := range netmaps {
 		for i := 0; i < 10; i++ {
 			netmap.NewId()
@@ -62,7 +62,7 @@ func TestNetworkMapJoinReturnsDifferentRouter(t *testing.T) {
 }
 
 func TestNetworkMapCanAccessRouter(t *testing.T) {
-	netmaps := []OverlayMap{testNetworkMap(10), testNetworkMap2(2, 5)}
+	netmaps := []LatencyMap{testNetworkMap(10), testNetworkMap2(2, 5)}
 	for _, netmap := range netmaps {
 		ids := []string{}
 		for i := 0; i < 10; i++ {
@@ -78,7 +78,7 @@ func TestNetworkMapCanAccessRouter(t *testing.T) {
 }
 
 func TestNetworkMapCanAccessId(t *testing.T) {
-	netmaps := []OverlayMap{testNetworkMap(10), testNetworkMap2(2, 5)}
+	netmaps := []LatencyMap{testNetworkMap(10), testNetworkMap2(2, 5)}
 	for _, netmap := range netmaps {
 		ids := []string{}
 		for i := 0; i < 10; i++ {

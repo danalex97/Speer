@@ -8,15 +8,16 @@ import (
 	"sync"
 )
 
+
 // A bootstraping mechanism which provides a contact node for a newly arrived
 // node.
 type Bootstrap interface {
 	Join(id string) string
 }
 
-// The OverlayMap provides a bootstraping mechanism along with an ID allocation
+// The LatencyMap provides a bootstraping mechanism along with an ID allocation
 // mechanism and ID - router translation functions.
-type OverlayMap interface {
+type LatencyMap interface {
 	Bootstrap
 
 	NewId() string // returns node ID
@@ -25,7 +26,7 @@ type OverlayMap interface {
 	Id(router underlay.Router) string // underlay.Router -> ID
 }
 
-// The NetworkMap is the implementation of the OverlayMap. It uses two maps for
+// The NetworkMap is the implementation of the LatencyMap. It uses two maps for
 // translating between ids and rounters(and viceversa). Since it can be
 // accessed by multiple threads at the same time, the access is protected via a
 // read-write mutex.
@@ -40,7 +41,7 @@ type NetworkMap struct {
 	idCtr map[string]int
 }
 
-func NewNetworkMap(network *underlay.Network) OverlayMap {
+func NewNetworkMap(network *underlay.Network) LatencyMap {
 	return &NetworkMap{
 		RWMutex: new(sync.RWMutex),
 
