@@ -7,9 +7,7 @@ import (
 
 // Allow connecting between two nodes via scheduler
 type CapacityConnector interface {
-	interfaces.Node
-
-	Connect(id string) interfaces.Link
+	interfaces.DataTransport
 }
 
 type PerfectCapacityConnector struct {

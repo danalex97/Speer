@@ -3,6 +3,7 @@ package overlay
 import (
 	. "github.com/danalex97/Speer/events"
 	"github.com/danalex97/Speer/underlay"
+	"github.com/danalex97/Speer/interfaces"
 )
 
 // A LatencyConnector is a decorable interface which allows sending and
@@ -12,6 +13,8 @@ type LatencyConnector interface {
 
 	Send(interface{})
 	Recv() <-chan interface{}
+
+	interfaces.ControlTransport
 }
 
 // The UnderlayChan implements a LatencyConnector by using a proxy to strip
@@ -50,6 +53,8 @@ func NewUnderlayChan(
 	u.observer = NewEventObserver(u.networkMap.Router(u.id))
 	u.observer.SetProxy(u.ReceiveEvent)
 	u.simulation.RegisterObserver(u.observer)
+
+	u.SetProxy(stripPayload)
 
 	return u
 }
@@ -115,4 +120,32 @@ func (u *UnderlayChan) OverlayPacket(p underlay.Packet) Packet {
 		u.networkMap.Id(p.Dest()),
 		p.Payload(),
 	)
+}
+
+func (u *UnderlayChan) ControlSend(dst string, msg interface{}) {
+	packet := underlay.NewPacket(
+		u.networkMap.Router(u.id),
+		u.networkMap.Router(dst),
+		msg,
+	)
+
+	if u.id == dst {
+		// Packet sent to self.
+		u.notifyPacket(packet)
+		return
+	}
+
+	u.simulation.SendPacket(packet)
+}
+
+func stripPayload(m interface {}) interface {} {
+  return m.(Packet).Payload()
+}
+
+func (u *UnderlayChan) ControlRecv() <-chan interface{} {
+	return u.observer.Recv()
+}
+
+func (u *UnderlayChan) ControlPing(id string) bool {
+	return true
 }
