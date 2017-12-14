@@ -68,11 +68,12 @@ func (n *UnreliableSimulatedNode) Id() string {
 }
 
 func (n *UnreliableSimulatedNode) Send(msg interface{}) {
-	n.bridge.Send(msg)
+	// n.bridge.Send(msg)
 }
 
 func (n *UnreliableSimulatedNode) Recv() <-chan interface{} {
-	return n.bridge.Recv()
+	// return n.bridge.Recv()
+	return nil
 }
 
 func (n *UnreliableSimulatedNode) Join() string {

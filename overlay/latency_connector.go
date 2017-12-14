@@ -11,9 +11,6 @@ import (
 type LatencyConnector interface {
 	Decorable
 
-	Send(interface{})
-	Recv() <-chan interface{}
-
 	interfaces.ControlTransport
 }
 
@@ -86,32 +83,6 @@ func (u *UnderlayChan) ReceiveEvent(m interface{}) interface{} {
 	// fmt.Printf("Packet delivered: {%s, %s}\n", overPacket.Src(), overPacket.Dest())
 
 	return u.Proxy(overPacket)
-}
-
-// Send an overlay packet by attaching it as a payload to an underlay packet.
-func (u *UnderlayChan) Send(msg interface{}) {
-	overPacket := msg.(Packet)
-	packet := u.UnderlayPacket(overPacket)
-
-	if u.id == overPacket.Dest() {
-		// Packet sent to self.
-		u.notifyPacket(packet)
-		return
-	}
-
-	u.simulation.SendPacket(packet)
-}
-
-func (u *UnderlayChan) Recv() <-chan interface{} {
-	return u.observer.Recv()
-}
-
-func (u *UnderlayChan) UnderlayPacket(p Packet) underlay.Packet {
-	return underlay.NewPacket(
-		u.networkMap.Router(p.Src()),
-		u.networkMap.Router(p.Dest()),
-		p.Payload(),
-	)
 }
 
 func (u *UnderlayChan) OverlayPacket(p underlay.Packet) Packet {
