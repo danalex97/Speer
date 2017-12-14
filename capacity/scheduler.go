@@ -108,11 +108,11 @@ func (s *scheduler) updCapacity() {
 	pq := NewPriorityQueue()
 	seq := make(map[Link]int)
 
-	in := make(map[Node]map[Link]bool)
-	out := make(map[Node]map[Link]bool)
+	in := make(map[NodeCapacity]map[Link]bool)
+	out := make(map[NodeCapacity]map[Link]bool)
 
-	up := make(map[Node]float64)
-	down := make(map[Node]float64)
+	up := make(map[NodeCapacity]float64)
+	down := make(map[NodeCapacity]float64)
 
 	// build in, out map
 	for link, status := range s.linkStatus {

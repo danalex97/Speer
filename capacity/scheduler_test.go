@@ -2,6 +2,7 @@ package capacity
 
 import (
 	. "github.com/danalex97/Speer/interfaces"
+
 	"sync"
 	"testing"
 )
@@ -19,10 +20,10 @@ type link struct {
 	to   int
 }
 
-func simpleScenario() (s *scheduler, nodes []Node, links []Link) {
+func simpleScenario() (s *scheduler, nodes []NodeCapacity, links []Link) {
 	s = NewScheduler(10).(*scheduler)
 
-	nodes = []Node{
+	nodes = []NodeCapacity{
 		&node{10, 0},
 		&node{0, 30},
 		&node{0, 20},

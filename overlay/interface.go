@@ -2,17 +2,17 @@ package overlay
 
 import (
 	"github.com/danalex97/Speer/events"
-	"github.com/danalex97/Speer/interfaces"
+	// "github.com/danalex97/Speer/interfaces"
 	"github.com/danalex97/Speer/underlay"
 )
 
 var activeSet = make(map[*underlay.NetworkSimulation]LatencyMap)
 
-type UnreliableNode interface {
-	events.Decorable
-
-	interfaces.UnreliableNode
-}
+// type UnreliableNode interface {
+// 	events.Decorable
+//
+// 	interfaces.UnreliableNode
+// }
 
 // An UnreliableSimulatedNode uses a LatencyConnector along with a Bootstrap to allow
 // interaction with the simulator by providing an utility to the user.
@@ -40,7 +40,7 @@ func GetBootstrap(simulation *underlay.NetworkSimulation) Bootstrap {
 	return netMap
 }
 
-func NewUnreliableSimulatedNode(simulation *underlay.NetworkSimulation) UnreliableNode {
+func NewUnreliableSimulatedNode(simulation *underlay.NetworkSimulation) *UnreliableSimulatedNode {
 	node := new(UnreliableSimulatedNode)
 
 	var netMap LatencyMap

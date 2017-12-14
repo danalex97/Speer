@@ -5,7 +5,7 @@ type Data struct {
 	Size int
 }
 
-type Node interface {
+type NodeCapacity interface {
 	Up() int
 	Down() int
 }
@@ -20,8 +20,8 @@ type Link interface {
 
 	// Upload and download capacities(together with an identifier) for each
 	// end of the connection.
-	From() Node
-	To() Node
+	From() NodeCapacity
+	To() NodeCapacity
 }
 
 type ControlTransport interface {
@@ -31,7 +31,7 @@ type ControlTransport interface {
 }
 
 type DataTransport interface {
-	Node
+	NodeCapacity
 	Connect(string) Link
 }
 

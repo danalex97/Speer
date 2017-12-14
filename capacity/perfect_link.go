@@ -15,13 +15,13 @@ const MaxConnections int = 100
 type PerfectLink struct {
 	*sync.Mutex
 
-	from     Node
-	to       Node
+	from     NodeCapacity
+	to       NodeCapacity
 	queue    *list.List
 	download chan Data
 }
 
-func NewPerfectLink(from, to Node) Link {
+func NewPerfectLink(from, to NodeCapacity) Link {
 	return &PerfectLink{
 		new(sync.Mutex),
 		from,
@@ -42,11 +42,11 @@ func (p *PerfectLink) Download() <-chan Data {
 	return p.download
 }
 
-func (p *PerfectLink) From() Node {
+func (p *PerfectLink) From() NodeCapacity {
 	return p.from
 }
 
-func (p *PerfectLink) To() Node {
+func (p *PerfectLink) To() NodeCapacity {
 	return p.to
 }
 

@@ -36,17 +36,12 @@ func clearUnderChan(b LatencyConnector) {
 }
 
 func TestLatencyConnectorPacketDelivery(t *testing.T) {
-	id1, id2, bridge1, bridge2 := testUnderlayChan(10)
+	_, id2, bridge1, bridge2 := testUnderlayChan(10)
 
 	for i := 0; i < 10; i++ {
 		t.Logf("LatencyConnector packet delivery test -- packet %d\n", i)
-		packet := NewPacket(id1, id2, nil)
-		bridge1.Send(packet)
-
-		recvPacket := (<-bridge2.Recv()).(Packet)
-		assertEqual(t, packet.Src(), recvPacket.Src())
-		assertEqual(t, packet.Dest(), recvPacket.Dest())
-		assertEqual(t, packet.Payload(), recvPacket.Payload())
+		bridge1.ControlSend(id2, "message")
+		assertEqual(t, "message", <-bridge2.ControlRecv())
 	}
 
 	clearUnderChan(bridge1)
@@ -58,13 +53,8 @@ func TestSendPacketToSelf(t *testing.T) {
 	go func() {
 		id1, _, bridge1, _ := testUnderlayChan(10)
 
-		packet := NewPacket(id1, id1, "message")
-		bridge1.Send(packet)
-
-		recvPacket := (<-bridge1.Recv()).(Packet)
-		assertEqual(t, packet.Src(), recvPacket.Src())
-		assertEqual(t, packet.Dest(), recvPacket.Dest())
-		assertEqual(t, packet.Payload(), recvPacket.Payload())
+		bridge1.ControlSend(id1, "message")
+		assertEqual(t, "message", <-bridge1.ControlRecv())
 
 		done <- true
 	}()

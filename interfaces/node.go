@@ -1,7 +1,7 @@
 package interfaces
 
 // The Util interface is provided to a node.
-type TorrentNodeUtil interface {
+type NodeUtil interface {
 	Transport() Transport
 
 	Id() string
@@ -11,7 +11,7 @@ type TorrentNodeUtil interface {
 }
 
 // This interface needs to be implemented by a node.
-type TorrentNode interface {
+type Node interface {
 	// The general method that is just a runner.
 	OnJoin()
 
@@ -20,6 +20,6 @@ type TorrentNode interface {
 }
 
 // This interface needs to be implemented by a node.
-type TorrentNodeConstructor interface {
-	New(util TorrentNodeUtil) TorrentNode
+type NodeConstructor interface {
+	New(util NodeUtil) Node
 }
