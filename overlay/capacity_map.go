@@ -2,6 +2,7 @@ package overlay
 
 import (
 	. "github.com/danalex97/Speer/capacity"
+	"github.com/danalex97/Speer/interfaces"
 
 	"sync"
 )
@@ -10,6 +11,8 @@ import (
 type CapacityMap interface {
 	AddConnector(id string, connector CapacityConnector)
 	Connector(id string) CapacityConnector
+
+	RegisterLink(link interfaces.Link)
 }
 
 // A capacity map that uses a capacity scheduler for
@@ -49,4 +52,8 @@ func (c *ScheduledCapacityMap) Connector(id string) CapacityConnector {
 	defer c.RUnlock()
 
 	return c.capacityMap[id]
+}
+
+func (c *ScheduledCapacityMap)RegisterLink(link interfaces.Link) {
+	c.capacityScheduler.RegisterLink(link)
 }

@@ -38,5 +38,7 @@ func (c *PerfectCapacityConnector) Down() int {
 }
 
 func (c *PerfectCapacityConnector) Connect(id string) interfaces.Link {
-	return NewPerfectLink(c, c.capacityMap.Connector(id))
+	link := NewPerfectLink(c, c.capacityMap.Connector(id))
+	c.capacityMap.RegisterLink(link)
+	return link
 }

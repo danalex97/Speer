@@ -3,7 +3,7 @@ package logs
 import (
 	. "github.com/danalex97/Speer/events"
 
-	"github.com/danalex97/Speer/model"
+	// "github.com/danalex97/Speer/model"
 	"github.com/danalex97/Speer/overlay"
 	"github.com/danalex97/Speer/underlay"
 
@@ -20,13 +20,13 @@ type EventMonitor struct {
 	newEvents chan interface{}
 
 	incomingEvents <-chan interface{}
-	netmap         *overlay.NetworkMap
+	netmap         overlay.LatencyMap
 	outFile        string
 }
 
 func NewEventMonitor(
 	o Observer,
-	netmap *overlay.NetworkMap,
+	netmap overlay.LatencyMap,
 	outFile string,
 ) *EventMonitor {
 	return &EventMonitor{
@@ -77,13 +77,13 @@ func (em *EventMonitor) GatherEvents() {
 					DstUid: fmt.Sprintf("%p", (&underDst)),
 					RtrUid: fmt.Sprintf("%p", (&router)),
 				}
-			case model.Join:
-				nodeId := payload.NodeId()
-
-				newEvent = JoinEntry{
-					Time: timestamp,
-					Node: nodeId,
-				}
+			// case model.Join:
+			// 	nodeId := payload.NodeId()
+			//
+			// 	newEvent = JoinEntry{
+			// 		Time: timestamp,
+			// 		Node: nodeId,
+			// 	}
 			}
 
 			if newEvent != nil {
