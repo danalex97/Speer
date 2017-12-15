@@ -1,3 +1,4 @@
+// TODO: for debugging
 var ctr = 5;
 
 class LogEntry {
@@ -63,6 +64,7 @@ class LogTracker {
 	}
 
 	fetchNewEvents() {
+		// TODO: for debugging
 		if (ctr == 0) {
 			return;
 		}
@@ -78,9 +80,15 @@ class LogTracker {
 			});
 	}
 
-	// Return log at a point in time
-	getLogForTime() {
-		// TODO
+	// Return log at a point in time; this allows vizualization
+	getLogForTime(time) {
+		let events = new Array();
+		for (let event of this.log) {
+			if (event.time <= time) {
+				events.push(event);
+			}
+		}
+		return events;
 	}
 
 	events() {
@@ -89,41 +97,9 @@ class LogTracker {
 }
 
 class LogDisplay extends React.Component {
-	constructor(props) {
-		super(props);
-
-		this.state = {
-			logTracker : new LogTracker(),
-			log : [],
-		};
-	}
-
-	updateLog() {
-		if (ctr == 0) {
-			return;
-		}
-		this.setState({
-			logTracker: this.state.logTracker,
-			log: this.state.logTracker.events(),
-		});
-		console.log(this.state);
-	}
-
-	componentDidMount() {
-		// Update the UI at the same interval of requesting data
-		this.interval = setInterval(
-			() => this.updateLog(),
-			this.state.logTracker.updateInterval,
-		);
-	}
-
-	componentWillUnmount() {
-	  clearInterval(this.interval);
-	}
-
 	render() {
-		const log = this.state.log;
-		const entries = log.map((entry, step) => {
+		const events = this.props.events;
+		const entries = events.map((entry, step) => {
 			return (
 				<li key={step}>
 					{entry.render()}
