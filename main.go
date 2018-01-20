@@ -19,6 +19,8 @@ func main() {
   s.SendPacket(packet1)
   s.SendPacket(packet2)
 
-  s.Run()
+  go s.Run()
+
+  time.Sleep(time.Duration(1) * time.Second)
   s.Stop()
 }
