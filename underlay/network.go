@@ -27,6 +27,11 @@ func NewRandomUniformNetwork(nodes, edges, minLatency, maxLatency int) *Network 
     i1 := rand.Intn(nodes)
     i2 := rand.Intn(nodes)
 
+    if i1 == i2 {
+      i--
+      continue
+    }
+    
     if present[struct {x, y int}{i1, i2}] || present[struct {x, y int}{i2, i1}] {
       i--
       continue
