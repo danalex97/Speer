@@ -13,7 +13,7 @@ func NewRandomUniformNetwork(nodes, edges, minLatency, maxLatency int) *Network 
   // reference: http://economics.mit.edu/files/4622
   network := new(Network)
 
-  if math.Log2(float64(nodes)) * float64(nodes) > float64(edges) {
+  if math.Log2(float64(nodes)) * float64(nodes) / 2 > float64(edges) {
     panic("Too few number of edges to keep the graph connex.")
   }
 
