@@ -9,6 +9,7 @@ import (
 type Router interface {
   Receiver
   Connect(Connection) error
+  Connections() []Connection
 }
 
 type shortestPathRouter struct {
@@ -35,6 +36,10 @@ func (r *shortestPathRouter) Connect(conn Connection) error {
   r.table = append(r.table, conn)
 
   return nil
+}
+
+func (r *shortestPathRouter) Connections() []Connection {
+  return r.table;
 }
 
 func (r *shortestPathRouter) Receive(event *Event) *Event {
