@@ -1,13 +1,5 @@
 package events
 
-type Receiver interface {
-  Receive(payload interface {})
-}
-
-type Producer interface {
-  Produce() *Event
-}
-
 type Event struct {
   timestamp int
   payload   interface {}

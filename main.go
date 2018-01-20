@@ -1,7 +1,7 @@
 package main
 
 import (
-  . "./events"
+  . "github.com/danalex97/Speer/events"
 )
 
 func main() {
