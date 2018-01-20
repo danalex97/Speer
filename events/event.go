@@ -19,3 +19,7 @@ func NewEvent(timestamp int, payload interface {}, receiver Receiver) *Event {
 func (e *Event) Timestamp() int {
   return e.timestamp
 }
+
+func (e *Event) Payload() interface {} {
+  return e.payload
+}

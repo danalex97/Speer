@@ -1,7 +1,7 @@
 package events
 
 type Receiver interface {
-  Receive(*Event)
+  Receive(*Event) *Event
 }
 
 type Producer interface {
