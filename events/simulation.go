@@ -19,6 +19,10 @@ func NewLazySimulation() (s Simulation) {
   return
 }
 
+func (s *Simulation) Time() int {
+  return s.time
+}
+
 func (s *Simulation) Stop() {
   s.stopped <- nil
 }
@@ -33,7 +37,16 @@ func (s *Simulation) Run() {
       if event:= s.Pop(); event != nil {
         fmt.Println("Event received at time:", event.timestamp)
         s.time = event.timestamp
-        // event.receiver.Receive(event.payload)
+        receiver := event.receiver
+
+        if receiver == nil {
+          continue
+        }
+
+        newEvent := receiver.Receive(event)
+        if newEvent != nil {
+          s.Push(newEvent)
+        }
       }
     }
   }

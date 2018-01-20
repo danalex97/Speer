@@ -6,16 +6,15 @@ import (
 )
 
 func main() {
-  s := NewLazySimulation()
-  go s.Run()
+  network := NewRandomUniformNetwork(10, 40, 1, 10)
+  packet1 := NewPacket(network.Routers[0], network.Routers[5])
+  packet2 := NewPacket(network.Routers[1], network.Routers[2])
 
-  s.Push(NewEvent(3, 10, nil))
-  s.Push(NewEvent(5, 10, nil))
-  s.Push(NewEvent(2, 10, nil))
+  s := NewNetworkSimulation(NewLazySimulation(), network)
 
-  network := NewRandomUniformNetwork(10, 40, 1, 5)
-  s.Push(NewEvent(1, NewPacket(network.Routers[0], network.Routers[5]), network.Routers[0]))
-  s.Push(NewEvent(5, NewPacket(network.Routers[3], network.Routers[2]), network.Routers[3]))
+  s.SendPacket(packet1)
+  s.SendPacket(packet2)
 
+  s.Run()
   s.Stop()
 }

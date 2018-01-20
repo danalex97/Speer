@@ -11,3 +11,11 @@ func NewPacket(src, dest Router) *Packet {
   pkt.dest = dest
   return pkt
 }
+
+func (p *Packet) Src() Router {
+  return p.src
+}
+
+func (p *Packet) Dest() Router {
+  return p.dest
+}
