@@ -3,10 +3,14 @@ package main
 import (
   . "github.com/danalex97/Speer/events"
   . "github.com/danalex97/Speer/underlay"
+  "math/rand"
+  "time"
 )
 
 func main() {
-  network := NewRandomUniformNetwork(10, 40, 1, 10)
+  rand.Seed(time.Now().UTC().UnixNano())
+
+  network := NewRandomUniformNetwork(20, 100, 2, 10)
   packet1 := NewPacket(network.Routers[0], network.Routers[5])
   packet2 := NewPacket(network.Routers[1], network.Routers[2])
 

@@ -3,7 +3,6 @@ package underlay
 import (
   "math"
   "math/rand"
-  "time"
 )
 
 type Network struct {
@@ -13,9 +12,6 @@ type Network struct {
 func NewRandomUniformNetwork(nodes, edges, minLatency, maxLatency int) *Network {
   // reference: http://economics.mit.edu/files/4622
   network := new(Network)
-
-  source := rand.NewSource(time.Now().Unix())
-  generator := rand.New(source)
 
   if math.Log2(float64(nodes)) * float64(nodes) > float64(edges) {
     panic("Too few number of edges to keep the graph connex.")
@@ -28,8 +24,8 @@ func NewRandomUniformNetwork(nodes, edges, minLatency, maxLatency int) *Network 
 
   present := make(map[struct {x, y int}]bool)
   for i := 0; i < edges; i++ {
-    i1 := generator.Intn(nodes)
-    i2 := generator.Intn(nodes)
+    i1 := rand.Intn(nodes)
+    i2 := rand.Intn(nodes)
 
     if present[struct {x, y int}{i1, i2}] || present[struct {x, y int}{i2, i1}] {
       i--
@@ -39,7 +35,7 @@ func NewRandomUniformNetwork(nodes, edges, minLatency, maxLatency int) *Network 
       present[struct {x, y int}{i2, i1}] = true
     }
 
-    latency := generator.Intn(maxLatency - minLatency) + minLatency
+    latency := rand.Intn(maxLatency - minLatency) + minLatency
     network.Routers[i1].Connect(NewStaticConnection(latency, network.Routers[i2]))
     network.Routers[i2].Connect(NewStaticConnection(latency, network.Routers[i1]))
   }

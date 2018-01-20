@@ -2,7 +2,6 @@ package underlay
 
 import (
   // "errors"
-  // "fmt"
   . "github.com/danalex97/Speer/events"
 )
 

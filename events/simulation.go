@@ -36,6 +36,9 @@ func (s *Simulation) Run() {
     default:
       if event:= s.Pop(); event != nil {
         fmt.Println("Event received at time:", event.timestamp)
+
+        // The event should be dispached here for processing
+
         s.time = event.timestamp
         receiver := event.receiver
 
