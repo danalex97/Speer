@@ -27,23 +27,39 @@ func (h *eventHeap) Pop() interface{} {
 	return x
 }
 
-type heapEventQueue struct {
+type lazyEventQueue struct {
   h heap.Interface
+  stream chan *Event
 }
 
-func NewHeapEventQueue() EventQueue {
+func NewLazyEventQueue() EventQueue {
   h := &eventHeap{}
   heap.Init(h)
 
-  eq  := new(heapEventQueue)
-  eq.h = h
+  eq := new(lazyEventQueue)
+
+  eq.h      = h
+  eq.stream = make(chan *Event, 50)
   return eq
 }
 
-func (eq *heapEventQueue) Push(e *Event) {
-  heap.Push(eq.h, e)
+func (eq *lazyEventQueue) Push(event *Event) {
+  eq.stream <- event
 }
 
-func (eq *heapEventQueue) Pop() *Event {
-  return heap.Pop(eq.h).(*Event)
+func (eq *lazyEventQueue) Pop() (event *Event) {
+  eq.stream <- nil
+  for {
+    event = <- eq.stream
+    if event == nil {
+      break
+    }
+
+    heap.Push(eq.h, event)
+  }
+
+  if eq.h.Len() > 0 {
+    event = heap.Pop(eq.h).(*Event)
+  }
+  return
 }
