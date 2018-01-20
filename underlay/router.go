@@ -42,7 +42,7 @@ func (r *shortestPathRouter) Receive(event *Event) {
   switch payload := event.Payload().(type) {
   case packet:
     // first hop
-    nextPayload, ok := dijkstra(r, payload.dest)
+    nextPayload, ok := bellman(r, payload.dest)
     if !ok {
       return nil
     }
@@ -69,5 +69,47 @@ func buildNextEvent(nextPayload sprPacket) *Event {
   )
 }
 
-func dijkstra(r *shortestPathRouter) sprPacket, bool {
+// not very good, it does not clear doubled values as well
+// used only as a policy for small tests
+func bellman(src *shortestPathRouter, dest Router) sprPacket, bool {
+  eq = NewLazyEventQueue()
+  eq.Push(NewEvent(0, 0, nil))
+
+  conns := []Connection{NewStaticConnection(0, src)}
+  last  := []int[-1]
+  ctr   := 0
+
+  for {
+    curr = eq.Pop()
+    if curr == nil {
+      return new(sprPacket), false
+    }
+
+    cost := curr.Timestamp()
+    idx  := curr.Payload().(int)
+    router := conns[idx].Router().(*shortestPathRouter)
+
+    for conn := range(router.table) {
+      ctr += 1
+      *conns = append(*conns, conn)
+      *last  = append(*last, idx)
+
+      eq.Push(NewEvent(cost + conn.Latency(), ctr, nil))
+      if conn.Router() == dest {
+        // build the packet
+        idxs := []int{}
+        for i := ctr; i > 0; i = last[i] {
+          *idxs = append(*idxs, ctr)
+        }
+        *idxs = append(*idxs, 0)
+
+        pkt = new(pkt)
+        pkt.path = []Connection{}
+        for i := len(idxs) - 1; i >= 0; i -= 1 {
+          *pkt.path = append(*pkt.path, conns[i])
+        }
+        return pkt, true
+      }
+    }
+  }
 }
