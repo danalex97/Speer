@@ -17,10 +17,10 @@ func NewStaticConnection(latency int, router Router) Connection {
   return conn
 }
 
-func (conn staticConnection) Latency() {
+func (conn staticConnection) Latency() int {
   return conn.latency
 }
 
-func (conn staticConnection) Router() {
+func (conn staticConnection) Router() Router {
   return conn.router
 }
