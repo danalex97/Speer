@@ -7,7 +7,7 @@ import (
 )
 
 type Network struct {
-  routers []Router
+  Routers []Router
 }
 
 func NewRandomUniformNetwork(nodes, edges, minLatency, maxLatency int) *Network {
@@ -17,13 +17,13 @@ func NewRandomUniformNetwork(nodes, edges, minLatency, maxLatency int) *Network 
   source := rand.NewSource(time.Now().Unix())
   generator := rand.New(source)
 
-  if math.Log(float64(nodes)) * float64(nodes) < float64(edges) {
+  if math.Log2(float64(nodes)) * float64(nodes) > float64(edges) {
     panic("Too few number of edges to keep the graph connex.")
   }
 
-  network.routers = []Router{}
+  network.Routers = []Router{}
   for i := 0; i < nodes; i++ {
-    network.routers = append(network.routers, NewShortestPathRouter())
+    network.Routers = append(network.Routers, NewShortestPathRouter())
   }
 
   present := make(map[struct {x, y int}]bool)
@@ -40,8 +40,8 @@ func NewRandomUniformNetwork(nodes, edges, minLatency, maxLatency int) *Network 
     }
 
     latency := generator.Intn(maxLatency - minLatency) + minLatency
-    network.routers[i1].Connect(NewStaticConnection(latency, network.routers[i2]))
-    network.routers[i2].Connect(NewStaticConnection(latency, network.routers[i1]))
+    network.Routers[i1].Connect(NewStaticConnection(latency, network.Routers[i2]))
+    network.Routers[i2].Connect(NewStaticConnection(latency, network.Routers[i1]))
   }
 
   if connected(network) {
@@ -63,12 +63,12 @@ func dfs(visited map[Router]bool, router Router) {
 
 func connected(net *Network) bool {
   visited := make(map[Router]bool)
-  dfs(visited, net.routers[0])
+  dfs(visited, net.Routers[0])
   ctr := 0
   for _, v := range(visited) {
     if v {
       ctr++
     }
   }
-  return ctr == len(net.routers)
+  return ctr == len(net.Routers)
 }
