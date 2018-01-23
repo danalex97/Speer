@@ -44,6 +44,8 @@ func (r *shortestPathRouter) Connections() []Connection {
 func (r *shortestPathRouter) Receive(event *Event) *Event {
   switch payload := event.Payload().(type) {
   case Packet:
+    // TODO: Check last hop!!!
+
     // first hop
     nextPayload, ok := bellman(r, payload.dest)
     if !ok {
@@ -65,6 +67,18 @@ func (r *shortestPathRouter) Receive(event *Event) *Event {
 func buildNextEvent(event *Event, nextPayload sprPacket) *Event {
   conn := nextPayload.path[0]
   nextPayload.path = nextPayload.path[1:]
+  if len(nextPayload.path) == 0 {
+    // Fix Last Hop
+    return NewEvent(
+      event.Timestamp() + conn.Latency(),
+      *NewPacket(
+        nextPayload.src,
+        nextPayload.dest,
+        nextPayload.payload,
+      ),
+      conn.Router(),
+    )
+  }
   return NewEvent(
     event.Timestamp() + conn.Latency(),
     nextPayload,

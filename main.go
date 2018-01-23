@@ -6,7 +6,7 @@ import (
   "github.com/danalex97/Speer/overlay"
   "math/rand"
   "time"
-  // "fmt"
+  "fmt"
 )
 
 func main() {
@@ -36,4 +36,6 @@ func main() {
   go s.Run()
   time.Sleep(time.Duration(1) * time.Second)
   s.Stop()
+
+  fmt.Println("Stopped simulation")
 }

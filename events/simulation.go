@@ -56,6 +56,8 @@ func (s *Simulation) Run() {
         }
 
         newEvent := receiver.Receive(event)
+
+        fmt.Println("here")
         if newEvent != nil {
           s.Push(newEvent)
         }
