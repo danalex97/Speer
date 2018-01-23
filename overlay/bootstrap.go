@@ -18,7 +18,7 @@ type NetworkMap struct {
   idCtr int
 }
 
-func NewNetworkMap(network *Network) *NetworkMap {
+func NewNetworkMap(network *Network) Bootstrap {
   mp := new(NetworkMap)
 
   mp.network = network
