@@ -2,6 +2,7 @@ package overlay
 
 import (
   "strconv"
+  "math/rand"
   . "github.com/danalex97/Speer/underlay"
 )
 
@@ -15,6 +16,17 @@ type NetworkMap struct {
   id map[string]Router
   inv map[Router]string
   idCtr int
+}
+
+func NewNetworkMap(network *Network) *NetworkMap {
+  mp := new(NetworkMap)
+
+  mp.network = network
+  mp.id      = make(map[string]Router)
+  mp.inv     = make(map[Router]string)
+  mp.idCtr   = 0
+
+  return mp
 }
 
 func newId(mp *NetworkMap) (id string) {
@@ -33,5 +45,15 @@ func (mp *NetworkMap) Id() string {
 
       return routerId
     }
+  }
+}
+
+func (mp *NetworkMap) Join() string {
+  i := rand.Intn(len(mp.id))
+  for k := range(mp.id) {
+    if i == 0 {
+      return k
+    }
+    i--
   }
 }
