@@ -2,6 +2,7 @@ package overlay
 
 import (
   . "github.com/danalex97/Speer/underlay"
+  . "github.com/danalex97/Speer/events"
 )
 
 type Chan interface {
@@ -11,8 +12,8 @@ type Chan interface {
 
 type UnderlayChan struct {
   id string
-  send chan<- interface{}
-  recv <-chan interface{}
+  send chan interface{}
+  recv chan interface{}
   simulation *NetworkSimulation
   bootstrap   Bootstrap
 }
@@ -20,12 +21,12 @@ type UnderlayChan struct {
 func NewUnderlayChan(id string, simulation *NetworkSimulation, bootstrap Bootstrap) Chan {
   chn := new(UnderlayChan)
 
-  chn.send = make(chan<- interface{})
-  chn.recv = make(<-chan interface{})
-
   chn.id = id
   chn.simulation = simulation
   chn.bootstrap  = bootstrap
+
+  chn.send = make(chan interface{})
+  chn.recv = make(chan interface{})
 
   go chn.establishListeners()
 
@@ -33,7 +34,11 @@ func NewUnderlayChan(id string, simulation *NetworkSimulation, bootstrap Bootstr
 }
 
 func (u *UnderlayChan) establishListeners() {
-  // need to use observer pattern over the simulation
+  obs := NewEventObserver(u.bootstrap.Router(u.id))
+  for {
+    event := <- obs.EventChan()
+    u.recv <- event.Payload()
+  }
 }
 
 func (u *UnderlayChan) Send() chan<- interface{} {
