@@ -5,7 +5,7 @@ import (
   . "github.com/danalex97/Speer/events"
 )
 
-type Chan interface {
+type Bridge interface {
   Send() chan<- interface{}
   Recv() <-chan interface{}
 }
@@ -15,15 +15,15 @@ type UnderlayChan struct {
   send chan interface{}
   recv chan interface{}
   simulation *underlay.NetworkSimulation
-  bootstrap   Bootstrap
+  netMap     OverlayMap
 }
 
-func NewUnderlayChan(id string, simulation *underlay.NetworkSimulation, bootstrap Bootstrap) Chan {
+func NewUnderlayChan(id string, simulation *underlay.NetworkSimulation, netMap OverlayMap) Bridge {
   chn := new(UnderlayChan)
 
   chn.id = id
   chn.simulation = simulation
-  chn.bootstrap  = bootstrap
+  chn.netMap  = netMap
 
   chn.send = make(chan interface{})
   chn.recv = make(chan interface{})
@@ -35,19 +35,20 @@ func NewUnderlayChan(id string, simulation *underlay.NetworkSimulation, bootstra
 }
 
 func (u *UnderlayChan) establishListeners() {
-  obs := NewEventObserver(u.bootstrap.Router(u.id))
+  obs := NewEventObserver(u.netMap.Router(u.id))
   u.simulation.RegisterObserver(obs)
 
   for {
     event  := <- obs.EventChan()
-    packet := event.Payload().(underlay.Packet)
-    u.recv <- packet
+    packet := event.Payload().(*underlay.Packet)
+    u.recv <- u.OverlayPacket(packet)
   }
 }
 
 func (u *UnderlayChan) establishPushers() {
   for {
-    // event := <- u.send
+    packet := u.UnderlayPacket((<- u.send).(*Packet))
+    u.simulation.SendPacket(packet)
   }
 }
 
@@ -61,16 +62,16 @@ func (u *UnderlayChan) Recv() <-chan interface{} {
 
 func (u *UnderlayChan) UnderlayPacket(p *Packet) *underlay.Packet {
   return underlay.NewPacket(
-    u.bootstrap.Router(p.Src()),
-    u.bootstrap.Router(p.Dest()),
+    u.netMap.Router(p.Src()),
+    u.netMap.Router(p.Dest()),
     p.Payload(),
   )
 }
 
 func (u *UnderlayChan) OverlayPacket(p *underlay.Packet) *Packet {
   return NewPacket(
-    u.bootstrap.Id(p.Src()),
-    u.bootstrap.Id(p.Dest()),
+    u.netMap.Id(p.Src()),
+    u.netMap.Id(p.Dest()),
     p.Payload(),
   )
 }

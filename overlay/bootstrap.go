@@ -8,6 +8,10 @@ import (
 
 type Bootstrap interface {
   Join(id string) string // returns bootstrap node
+}
+
+type OverlayMap interface {
+  Bootstrap
   NewId() string // returns node ID
   Router(id string) underlay.Router // ID -> underlay.Router
   Id(router underlay.Router) string // underlay.Router -> ID
@@ -20,7 +24,7 @@ type NetworkMap struct {
   idCtr int
 }
 
-func NewNetworkMap(network *underlay.Network) Bootstrap {
+func NewNetworkMap(network *underlay.Network) OverlayMap {
   mp := new(NetworkMap)
 
   mp.network = network
