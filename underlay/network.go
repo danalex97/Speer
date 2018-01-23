@@ -9,6 +9,10 @@ type Network struct {
   Routers []Router
 }
 
+func (n *Network) RandomRouter() {
+  return n.Routers[rand.Intn(len(n.Routers))]
+}
+
 func NewRandomUniformNetwork(nodes, edges, minLatency, maxLatency int) *Network {
   // reference: http://economics.mit.edu/files/4622
   network := new(Network)
@@ -31,7 +35,7 @@ func NewRandomUniformNetwork(nodes, edges, minLatency, maxLatency int) *Network 
       i--
       continue
     }
-    
+
     if present[struct {x, y int}{i1, i2}] || present[struct {x, y int}{i2, i1}] {
       i--
       continue
