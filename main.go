@@ -13,8 +13,8 @@ func main() {
   rand.Seed(time.Now().UTC().UnixNano())
 
   network := NewRandomUniformNetwork(10000, 70000, 2, 10)
-  packet1 := NewPacket(network.Routers[0], network.Routers[5])
-  packet2 := NewPacket(network.Routers[1], network.Routers[2])
+  packet1 := NewPacket(network.Routers[0], network.Routers[5], nil)
+  packet2 := NewPacket(network.Routers[1], network.Routers[2], nil)
 
   s := NewNetworkSimulation(NewLazySimulation(), network)
 
