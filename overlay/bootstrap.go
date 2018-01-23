@@ -37,7 +37,8 @@ func newId(mp *NetworkMap) (id string) {
 
 func (mp *NetworkMap) Id() string {
   for {
-    if router, ok := inv[mp.network.RandomRouter()] ; ok {
+    router := mp.network.RandomRouter()
+    if _, ok := mp.inv[router]; !ok {
       routerId := newId(mp)
 
       mp.id[routerId] = router
@@ -48,12 +49,18 @@ func (mp *NetworkMap) Id() string {
   }
 }
 
-func (mp *NetworkMap) Join() string {
+func (mp *NetworkMap) Join(id string) string {
   i := rand.Intn(len(mp.id))
   for k := range(mp.id) {
     if i == 0 {
-      return k
+      if k == id && len(mp.id) > 1 {
+        return mp.Join(id)
+      }
+      if k != id {
+        return k
+      }
     }
     i--
   }
+  panic("Join method called on invalid mp.")
 }

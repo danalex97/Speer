@@ -9,7 +9,7 @@ type Network struct {
   Routers []Router
 }
 
-func (n *Network) RandomRouter() {
+func (n *Network) RandomRouter() Router {
   return n.Routers[rand.Intn(len(n.Routers))]
 }
 

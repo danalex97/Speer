@@ -3,8 +3,10 @@ package main
 import (
   . "github.com/danalex97/Speer/events"
   . "github.com/danalex97/Speer/underlay"
+  . "github.com/danalex97/Speer/overlay"
   "math/rand"
   "time"
+  "fmt"
 )
 
 func main() {
@@ -23,4 +25,9 @@ func main() {
 
   time.Sleep(time.Duration(1) * time.Second)
   s.Stop()
+
+  b := NewNetworkMap(network)
+  id := b.Id()
+  fmt.Println(id)
+  fmt.Println(b.Join(id))
 }
