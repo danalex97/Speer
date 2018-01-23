@@ -3,6 +3,7 @@ package overlay
 import (
   "github.com/danalex97/Speer/underlay"
   . "github.com/danalex97/Speer/events"
+  "fmt"
 )
 
 type Bridge interface {
@@ -39,9 +40,18 @@ func (u *UnderlayChan) establishListeners() {
   u.simulation.RegisterObserver(obs)
 
   for {
+    fmt.Println("Waiting for observer.")
     event  := <- obs.EventChan()
-    packet := event.Payload().(*underlay.Packet)
-    u.recv <- u.OverlayPacket(packet)
+    fmt.Println("Event arrived from observer.")
+
+    packet := event.Payload().(underlay.Packet)
+    overPacket := u.OverlayPacket(&packet)
+
+    if overPacket.Src() == u.id {
+      continue
+    }
+
+    u.recv <- overPacket
   }
 }
 

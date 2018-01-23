@@ -6,28 +6,34 @@ import (
   "github.com/danalex97/Speer/overlay"
   "math/rand"
   "time"
-  "fmt"
+  // "fmt"
 )
 
 func main() {
   rand.Seed(time.Now().UTC().UnixNano())
 
-  network := underlay.NewRandomUniformNetwork(10000, 70000, 2, 10)
-  packet1 := underlay.NewPacket(network.Routers[0], network.Routers[5], nil)
-  packet2 := underlay.NewPacket(network.Routers[1], network.Routers[2], nil)
+  // network := underlay.NewRandomUniformNetwork(10000, 70000, 2, 10)
+  // packet1 := underlay.NewPacket(network.Routers[0], network.Routers[5], nil)
+  // packet2 := underlay.NewPacket(network.Routers[1], network.Routers[2], nil)
+  //
+  // s := underlay.NewNetworkSimulation(events.NewLazySimulation(), network)
+  //
+  // s.SendPacket(packet1)
+  // s.SendPacket(packet2)
+  //
+  // go s.Run()
+  //
+  // time.Sleep(time.Duration(1) * time.Second)
+  // s.Stop()
 
+  network := underlay.NewRandomUniformNetwork(10000, 70000, 2, 10)
   s := underlay.NewNetworkSimulation(events.NewLazySimulation(), network)
 
-  s.SendPacket(packet1)
-  s.SendPacket(packet2)
+  node1 := overlay.NewUnreliableSimulatedNode(s)
+  node2 := overlay.NewUnreliableSimulatedNode(s)
+  node1.Send() <- overlay.NewPacket(node1.Id(), node2.Id(), nil)
 
   go s.Run()
-
   time.Sleep(time.Duration(1) * time.Second)
   s.Stop()
-
-  b := overlay.NewNetworkMap(network)
-  id := b.NewId()
-  fmt.Println(id)
-  fmt.Println(b.Join(id))
 }
