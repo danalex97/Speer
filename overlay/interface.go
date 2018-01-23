@@ -36,7 +36,7 @@ func NewUnderlayChan(id string, simulation *NetworkSimulation, bootstrap Bootstr
 func (u *UnderlayChan) establishListeners() {
   obs := NewEventObserver(u.bootstrap.Router(u.id))
   u.simulation.RegisterObserver(obs)
-  
+
   for {
     event := <- obs.EventChan()
     u.recv <- event.Payload()

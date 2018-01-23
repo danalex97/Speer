@@ -8,8 +8,9 @@ import (
 
 type Bootstrap interface {
   Join(id string) string // returns bootstrap node
-  Id() string // returns node ID
-  Router(id string) Router // returns router
+  NewId() string // returns node ID
+  Router(id string) Router // ID -> Router
+  Id(router Router) string // Router -> ID
 }
 
 type NetworkMap struct {
@@ -36,7 +37,7 @@ func newId(mp *NetworkMap) (id string) {
   return
 }
 
-func (mp *NetworkMap) Id() string {
+func (mp *NetworkMap) NewId() string {
   for {
     router := mp.network.RandomRouter()
     if _, ok := mp.inv[router]; !ok {
@@ -71,5 +72,13 @@ func (mp *NetworkMap) Router(id string) Router {
     return router
   } else {
     return nil
+  }
+}
+
+func (mp *NetworkMap) Id(router Router) string {
+  if id, ok := mp.inv[router]; ok{
+    return id
+  } else {
+    return ""
   }
 }

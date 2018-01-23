@@ -27,7 +27,7 @@ func main() {
   s.Stop()
 
   b := NewNetworkMap(network)
-  id := b.Id()
+  id := b.NewId()
   fmt.Println(id)
   fmt.Println(b.Join(id))
 }
