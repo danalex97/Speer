@@ -5,6 +5,7 @@ import (
 )
 
 type Simulation struct {
+  observers []EventObserver
   stopped chan interface {}
   time    int
   EventQueue
@@ -12,11 +13,16 @@ type Simulation struct {
 
 func NewLazySimulation() (s Simulation) {
   s = Simulation{
+    make([]EventObserver, 0),
     make(chan interface {}),
     0,
     NewLazyEventQueue(),
   }
   return
+}
+
+func (s *Simulation) RegisterObserver(eventObserver EventObserver) {
+  s.observers = append(s.observers, eventObserver)
 }
 
 func (s *Simulation) Time() int {
@@ -37,7 +43,10 @@ func (s *Simulation) Run() {
       if event:= s.Pop(); event != nil {
         fmt.Println("Event received at time:", event.timestamp)
 
-        // The event should be dispached here for processing
+        // The event gets dispached to observers
+        for _, observer := range(s.observers) {
+          observer.EnqueEvent(event)
+        }
 
         s.time = event.timestamp
         receiver := event.receiver

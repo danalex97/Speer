@@ -7,7 +7,7 @@ import (
 )
 
 type Bootstrap interface {
-  Join() string // returns bootstrap node
+  Join(id string) string // returns bootstrap node
   Id() string // returns node ID
   Router(id string) Router // returns router
 }

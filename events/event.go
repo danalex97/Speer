@@ -23,3 +23,7 @@ func (e *Event) Timestamp() int {
 func (e *Event) Payload() interface {} {
   return e.payload
 }
+
+func (e *Event) Receiver() Receiver {
+  return e.receiver
+}

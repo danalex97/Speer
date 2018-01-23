@@ -1,6 +1,8 @@
 package overlay
 
-// should work with channs (?)
+import (
+  . "github.com/danalex97/Speer/underlay"
+)
 
 type Chan interface {
   Send() chan<- interface{}
@@ -30,14 +32,14 @@ func NewUnderlayChan(id string, simulation *NetworkSimulation, bootstrap Bootstr
   return chn
 }
 
-func (u *Underlay) establishListeners() {
-  // need to use observer pattern over the simulation 
+func (u *UnderlayChan) establishListeners() {
+  // need to use observer pattern over the simulation
 }
 
-func (u *Underlay) Send() chan<- interface{} {
+func (u *UnderlayChan) Send() chan<- interface{} {
   return u.send
 }
 
-func (u *Underlay) Recv() <-chan interface{} {
+func (u *UnderlayChan) Recv() <-chan interface{} {
   return u.recv
 }
