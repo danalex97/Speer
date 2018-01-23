@@ -3,29 +3,29 @@ package overlay
 import (
   "strconv"
   "math/rand"
-  . "github.com/danalex97/Speer/underlay"
+  "github.com/danalex97/Speer/underlay"
 )
 
 type Bootstrap interface {
   Join(id string) string // returns bootstrap node
   NewId() string // returns node ID
-  Router(id string) Router // ID -> Router
-  Id(router Router) string // Router -> ID
+  Router(id string) underlay.Router // ID -> underlay.Router
+  Id(router underlay.Router) string // underlay.Router -> ID
 }
 
 type NetworkMap struct {
-  network *Network
-  id map[string]Router
-  inv map[Router]string
+  network *underlay.Network
+  id map[string]underlay.Router
+  inv map[underlay.Router]string
   idCtr int
 }
 
-func NewNetworkMap(network *Network) Bootstrap {
+func NewNetworkMap(network *underlay.Network) Bootstrap {
   mp := new(NetworkMap)
 
   mp.network = network
-  mp.id      = make(map[string]Router)
-  mp.inv     = make(map[Router]string)
+  mp.id      = make(map[string]underlay.Router)
+  mp.inv     = make(map[underlay.Router]string)
   mp.idCtr   = 0
 
   return mp
@@ -67,7 +67,7 @@ func (mp *NetworkMap) Join(id string) string {
   panic("Join method called on invalid mp.")
 }
 
-func (mp *NetworkMap) Router(id string) Router {
+func (mp *NetworkMap) Router(id string) underlay.Router {
   if router, ok := mp.id[id]; ok{
     return router
   } else {
@@ -75,7 +75,7 @@ func (mp *NetworkMap) Router(id string) Router {
   }
 }
 
-func (mp *NetworkMap) Id(router Router) string {
+func (mp *NetworkMap) Id(router underlay.Router) string {
   if id, ok := mp.inv[router]; ok{
     return id
   } else {
