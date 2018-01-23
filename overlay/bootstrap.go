@@ -9,6 +9,7 @@ import (
 type Bootstrap interface {
   Join() string // returns bootstrap node
   Id() string // returns node ID
+  Router(id string) Router // returns router
 }
 
 type NetworkMap struct {
@@ -63,4 +64,12 @@ func (mp *NetworkMap) Join(id string) string {
     i--
   }
   panic("Join method called on invalid mp.")
+}
+
+func (mp *NetworkMap) Router(id string) Router {
+  if router, ok := mp.id[id]; ok{
+    return router
+  } else {
+    return nil
+  }
 }
