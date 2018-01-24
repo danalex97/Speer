@@ -1,6 +1,7 @@
 package overlay
 
 import (
+  "sync"
   "strconv"
   "math/rand"
   "github.com/danalex97/Speer/underlay"
@@ -18,6 +19,7 @@ type OverlayMap interface {
 }
 
 type NetworkMap struct {
+  sync.Mutex
   network *underlay.Network
   id map[string]underlay.Router
   inv map[underlay.Router]string
@@ -42,6 +44,9 @@ func newId(mp *NetworkMap) (id string) {
 }
 
 func (mp *NetworkMap) NewId() string {
+  mp.Lock()
+  defer mp.Unlock()
+
   for {
     router := mp.network.RandomRouter()
     if _, ok := mp.inv[router]; !ok {
@@ -56,6 +61,9 @@ func (mp *NetworkMap) NewId() string {
 }
 
 func (mp *NetworkMap) Join(id string) string {
+  mp.Lock()
+  defer mp.Unlock()
+
   i := rand.Intn(len(mp.id))
   for k := range(mp.id) {
     if i == 0 {
@@ -72,6 +80,9 @@ func (mp *NetworkMap) Join(id string) string {
 }
 
 func (mp *NetworkMap) Router(id string) underlay.Router {
+  mp.Lock()
+  defer mp.Unlock()
+
   if router, ok := mp.id[id]; ok{
     return router
   } else {
@@ -80,6 +91,9 @@ func (mp *NetworkMap) Router(id string) underlay.Router {
 }
 
 func (mp *NetworkMap) Id(router underlay.Router) string {
+  mp.Lock()
+  defer mp.Unlock()
+
   if id, ok := mp.inv[router]; ok{
     return id
   } else {
