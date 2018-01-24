@@ -17,9 +17,17 @@ type UnreliableSimulatedNode struct {
   id         string
 }
 
+var activeSet = make(map[*underlay.NetworkSimulation]OverlayMap)
+
 func NewUnreliableSimulatedNode(simulation *underlay.NetworkSimulation) UnreliableNode {
   node := new(UnreliableSimulatedNode)
+
   netMap := NewNetworkMap(simulation.Network())
+  if mp, ok := activeSet[simulation]; ok {
+    netMap = mp
+  } else {
+    activeSet[simulation] = netMap
+  }
 
   node.id         = netMap.NewId()
   node.bridge     = NewUnderlayChan(node.id, simulation, netMap)
