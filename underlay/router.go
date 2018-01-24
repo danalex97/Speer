@@ -2,6 +2,7 @@ package underlay
 
 import (
   // "errors"
+  // "fmt"
   . "github.com/danalex97/Speer/events"
 )
 
@@ -11,13 +12,13 @@ type Router interface {
   Connections() []Connection
 }
 
-type shortestPathRouter struct {
-  table []Connection
+type sprPacket struct {
+  packet
+  path []Connection
 }
 
-type sprPacket struct {
-  Packet
-  path []Connection
+type shortestPathRouter struct {
+  table []Connection
 }
 
 func NewShortestPathRouter() Router {
@@ -43,17 +44,15 @@ func (r *shortestPathRouter) Connections() []Connection {
 
 func (r *shortestPathRouter) Receive(event *Event) *Event {
   switch payload := event.Payload().(type) {
-  case Packet:
-    // TODO: Check last hop!!!
-
+  case *packet:
     // first hop
-    nextPayload, ok := bellman(r, payload.dest)
+    nextPayload, ok := bellman(r, payload.Dest())
     if !ok {
       return nil
     }
     return buildNextEvent(event, nextPayload)
 
-  case sprPacket:
+  case *sprPacket:
     // next hops
     nextPayload := payload
     if len(nextPayload.path) == 0 {
@@ -64,21 +63,10 @@ func (r *shortestPathRouter) Receive(event *Event) *Event {
   return nil
 }
 
-func buildNextEvent(event *Event, nextPayload sprPacket) *Event {
+func buildNextEvent(event *Event, nextPayload *sprPacket) *Event {
   conn := nextPayload.path[0]
   nextPayload.path = nextPayload.path[1:]
-  if len(nextPayload.path) == 0 {
-    // Fix Last Hop
-    return NewEvent(
-      event.Timestamp() + conn.Latency(),
-      *NewPacket(
-        nextPayload.src,
-        nextPayload.dest,
-        nextPayload.payload,
-      ),
-      conn.Router(),
-    )
-  }
+
   return NewEvent(
     event.Timestamp() + conn.Latency(),
     nextPayload,
@@ -88,7 +76,7 @@ func buildNextEvent(event *Event, nextPayload sprPacket) *Event {
 
 // not very good, it does not clear doubled values as well
 // used only as a policy for small tests
-func bellman(src *shortestPathRouter, dest Router) (sprPacket, bool) {
+func bellman(src *shortestPathRouter, dest Router) (*sprPacket, bool) {
   eq := NewLazyEventQueue()
   eq.Push(NewEvent(0, 0, nil))
 
@@ -99,7 +87,7 @@ func bellman(src *shortestPathRouter, dest Router) (sprPacket, bool) {
   for {
     curr := eq.Pop()
     if curr == nil {
-      return *new(sprPacket), false
+      return new(sprPacket), false
     }
 
     cost := curr.Timestamp()
@@ -127,7 +115,7 @@ func bellman(src *shortestPathRouter, dest Router) (sprPacket, bool) {
         for i := len(idxs) - 1; i >= 0; i -= 1 {
           pkt.path = append(pkt.path, conns[i])
         }
-        return *pkt, true
+        return pkt, true
       }
     }
   }

@@ -16,8 +16,8 @@ func NewNetworkSimulation(s Simulation, n *Network) *NetworkSimulation {
   return ns
 }
 
-func (s *NetworkSimulation) SendPacket(p *Packet) {
-  s.Push(NewEvent(s.Time(), *p, p.Src()))
+func (s *NetworkSimulation) SendPacket(p Packet) {
+  s.Push(NewEvent(s.Time(), p, p.Src()))
 }
 
 func (s *NetworkSimulation) Network() *Network {

@@ -45,7 +45,7 @@ func (u *UnderlayChan) establishListeners() {
     fmt.Println("Event arrived from observer.")
 
     packet := event.Payload().(underlay.Packet)
-    overPacket := u.OverlayPacket(&packet)
+    overPacket := u.OverlayPacket(packet)
 
     if overPacket.Src() == u.id {
       continue
@@ -57,7 +57,7 @@ func (u *UnderlayChan) establishListeners() {
 
 func (u *UnderlayChan) establishPushers() {
   for {
-    packet := u.UnderlayPacket((<- u.send).(*Packet))
+    packet := u.UnderlayPacket((<- u.send).(Packet))
     u.simulation.SendPacket(packet)
   }
 }
@@ -70,7 +70,7 @@ func (u *UnderlayChan) Recv() <-chan interface{} {
   return u.recv
 }
 
-func (u *UnderlayChan) UnderlayPacket(p *Packet) *underlay.Packet {
+func (u *UnderlayChan) UnderlayPacket(p Packet) underlay.Packet {
   return underlay.NewPacket(
     u.netMap.Router(p.Src()),
     u.netMap.Router(p.Dest()),
@@ -78,7 +78,7 @@ func (u *UnderlayChan) UnderlayPacket(p *Packet) *underlay.Packet {
   )
 }
 
-func (u *UnderlayChan) OverlayPacket(p *underlay.Packet) *Packet {
+func (u *UnderlayChan) OverlayPacket(p underlay.Packet) Packet {
   return NewPacket(
     u.netMap.Id(p.Src()),
     u.netMap.Id(p.Dest()),
