@@ -47,12 +47,13 @@ func (u *UnderlayChan) establishListeners() {
     packet := event.Payload().(underlay.Packet)
     overPacket := u.OverlayPacket(packet)
 
+    if packet.Src() == nil {
+      continue
+    }
     if overPacket.Src() == u.id {
       continue
     }
-    fmt.Println(u.id)
-    fmt.Println(overPacket.Src())
-    fmt.Println(overPacket.Dest())
+    fmt.Printf("Packet delivered: {%s, %s}\n", overPacket.Src(), overPacket.Dest())
 
     u.recv <- overPacket
   }

@@ -18,8 +18,6 @@ func main() {
   node1 := overlay.NewUnreliableSimulatedNode(s)
   node2 := overlay.NewUnreliableSimulatedNode(s)
   node1.Send() <- overlay.NewPacket(node1.Id(), node2.Id(), nil)
-  fmt.Println(node1.Id())
-  fmt.Println(node2.Id())
 
   go s.Run()
   time.Sleep(time.Duration(1) * time.Second)

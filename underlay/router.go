@@ -1,7 +1,6 @@
 package underlay
 
 import (
-  // "errors"
   // "fmt"
   . "github.com/danalex97/Speer/events"
 )
@@ -28,11 +27,6 @@ func NewShortestPathRouter() Router {
 }
 
 func (r *shortestPathRouter) Connect(conn Connection) error {
-  // spr, ok := router.(shortestPathRouter)
-  // if !ok {
-  //   return errors.New("Connection type not supported.")
-  // }
-
   r.table = append(r.table, conn)
 
   return nil
@@ -46,7 +40,7 @@ func (r *shortestPathRouter) Receive(event *Event) *Event {
   switch payload := event.Payload().(type) {
   case *packet:
     // first hop
-    nextPayload, ok := bellman(r, payload.Dest())
+    nextPayload, ok := bellman(payload, r, payload.Dest())
     if !ok {
       return nil
     }
@@ -76,7 +70,7 @@ func buildNextEvent(event *Event, nextPayload *sprPacket) *Event {
 
 // not very good, it does not clear doubled values as well
 // used only as a policy for small tests
-func bellman(src *shortestPathRouter, dest Router) (*sprPacket, bool) {
+func bellman(packet Packet, src *shortestPathRouter, dest Router) (*sprPacket, bool) {
   eq := NewLazyEventQueue()
   eq.Push(NewEvent(0, 0, nil))
 
@@ -84,10 +78,15 @@ func bellman(src *shortestPathRouter, dest Router) (*sprPacket, bool) {
   last  := []int{-1}
   ctr   := 0
 
+  pkt := new(sprPacket)
+  pkt.src  = packet.Src()
+  pkt.dest = packet.Dest()
+  pkt.payload  = packet.Payload()
+
   for {
     curr := eq.Pop()
     if curr == nil {
-      return new(sprPacket), false
+      return pkt, false
     }
 
     cost := curr.Timestamp()
@@ -106,14 +105,13 @@ func bellman(src *shortestPathRouter, dest Router) (*sprPacket, bool) {
         // build the packet
         idxs := []int{}
         for i := ctr; i > 0; i = last[i] {
-          idxs = append(idxs, ctr)
+          idxs = append(idxs, i)
         }
         idxs = append(idxs, 0)
 
-        pkt := new(sprPacket)
         pkt.path = []Connection{}
-        for i := len(idxs) - 1; i >= 0; i -= 1 {
-          pkt.path = append(pkt.path, conns[i])
+        for i := len(idxs) - 2; i >= 0; i -= 1 {
+          pkt.path = append(pkt.path, conns[idxs[i]])
         }
         return pkt, true
       }

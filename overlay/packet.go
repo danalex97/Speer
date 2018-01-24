@@ -12,7 +12,7 @@ type packet struct {
   payload interface{}
 }
 
-func NewPacket(src, dest string, payload interface{}) Packet {
+func NewPacket(src string, dest string, payload interface{}) Packet {
   pkt := new(packet)
   pkt.src = src
   pkt.dest = dest

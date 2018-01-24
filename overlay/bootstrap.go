@@ -94,7 +94,7 @@ func (mp *NetworkMap) Id(router underlay.Router) string {
   mp.Lock()
   defer mp.Unlock()
 
-  if id, ok := mp.inv[router]; ok{
+  if id, ok := mp.inv[router]; ok {
     return id
   } else {
     return ""
