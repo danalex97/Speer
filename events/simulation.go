@@ -41,7 +41,7 @@ func (s *Simulation) Run() {
       break
     default:
       if event:= s.Pop(); event != nil {
-        fmt.Println("Event received at time:", event.timestamp)
+        fmt.Println("Event received >", event.timestamp)
 
         // The event gets dispached to observers
         for _, observer := range(s.observers) {

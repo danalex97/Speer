@@ -1,7 +1,5 @@
 package events
 
-import "fmt"
-
 type EventObserver interface {
   EventChan() <-chan *Event
   EnqueEvent(*Event)
@@ -25,7 +23,6 @@ func (o *eventObserver) EventChan() <-chan *Event {
 
 func (o *eventObserver) EnqueEvent(e *Event) {
   if e.Receiver() == o.receiver {
-    fmt.Println("Event sent to observer.")
     o.observer <- e
   }
 }
