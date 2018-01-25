@@ -12,7 +12,8 @@ notifications:
 before_install:
   - go get github.com/axw/gocov/gocov
   - go get github.com/mattn/goveralls
-
+  - go get golang.org/x/tools/cmd/cover
+  - chmod +x ./coverage.sh
 script:
-  - go test -v -covermode=count -coverprofile=coverage.out ./...
-  - goveralls -coverprofile=coverage.out -service=travis-ci
+  - ./coverage.sh
+  - goveralls -coverprofile=profile.cov -service=travis-ci
