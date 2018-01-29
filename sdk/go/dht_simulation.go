@@ -11,15 +11,24 @@ type DHTSimulation struct {
   underlaySimulation *underlay.NetworkSimulation
   timeModel          model.TimeModel
   queryGenerator     model.DHTQueryGenerator
+  node               DHTNode
+
+  el                 eventLooper
+  ql                 queryLooper
 }
 
 type DHTSimulationBuilder struct {
   sim *DHTSimulation
 }
 
-func NewDHTSimulationBuilder() *DHTSimulationBuilder {
+func NewDHTSimulationBuilder(node DHTNode) *DHTSimulationBuilder {
   builder := new(DHTSimulationBuilder)
   builder.sim = new(DHTSimulation)
+
+  builder.sim.node = node
+  builder.sim.el   = new(eventLooper)
+  builder.sim.ql   = new(queryLooper)
+
   return builder
 }
 
@@ -71,6 +80,44 @@ func (b *DHTSimulationBuilder) Build() DHTSimulation {
   return sim;
 }
 
-func (s *Simulation) Run() {
+struct eventLooper {}
+func (gen *eventLooper) Receive(e *Event) {
+  e.payload.(Simulation).generateEvents()
+}
 
+struct queryLooper {}
+func (gen *queryLooper) Receive(e *Event) {
+  e.payload.(Simulation).generateQueries()
+}
+
+func (s *Simulation) generateEvents() {
+  // for the moment we will only model joins
+  newNode := s.node.NewDHTNode()
+  newNode.OnJoin()
+
+  // generate the next event to be handled
+  event := NewEvent(
+    s.underlaySimulation.Time() + int(e.timeModel.NextArrival()),
+    s,
+    s.eventLooper
+  )
+  s.Push(event)
+}
+
+func (s *Simulation) generateQueries() {
+  // generate queries
+
+  // generate the next event to be handled
+  event := NewEvent(
+    s.underlaySimulation.Time() + int(e.timeModel.NextQuery()),
+    s,
+    s.queryLooper
+  )
+  s.Push(event)
+}
+
+func (s *Simulation) Run() {
+  s.generateEvents()
+  s.generateQueries()
+  go s.underlaySimulation.Run()
 }

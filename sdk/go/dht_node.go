@@ -22,4 +22,7 @@ type DHTNode interface {
 
   OnLeave()
   // a meothd that should be called when a node leaves the network
+
+  NewDHTNode() DHTNode
+  // used to generate a DHTNode
 }
