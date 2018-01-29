@@ -1,27 +1,46 @@
 package main
 
 import (
-  "github.com/danalex97/Speer/events"
-  "github.com/danalex97/Speer/underlay"
-  "github.com/danalex97/Speer/overlay"
+  . "github.com/danalex97/Speer/sdk/go"
+  . "github.com/danalex97/Speer/model"
   "math/rand"
   "time"
-  "fmt"
 )
+
+type SimpleTree struct {
+  AutowiredDHTNode
+  id             string
+  neigh_id       string
+}
+
+func (s *SimpleTree) OnJoin() {
+}
+
+func (s *SimpleTree) OnQuery(query DHTQuery) error {
+  return nil;
+}
+
+func (s *SimpleTree) OnLeave() {
+}
+
+func (s *SimpleTree) NewDHTNode() DHTNode {
+  // Constructor that assumes the UnreliableNode component is filled in
+  return nil
+}
+
+func (s *SimpleTree) Key() string {
+  return "key"
+}
 
 func main() {
   rand.Seed(time.Now().UTC().UnixNano())
 
-  network := underlay.NewRandomUniformNetwork(10000, 70000, 2, 10)
-  s := underlay.NewNetworkSimulation(events.NewLazySimulation(), network)
-
-  node1 := overlay.NewUnreliableSimulatedNode(s)
-  node2 := overlay.NewUnreliableSimulatedNode(s)
-  node1.Send() <- overlay.NewPacket(node1.Id(), node2.Id(), nil)
-
-  go s.Run()
-  time.Sleep(time.Duration(1) * time.Second)
-  s.Stop()
-
-  fmt.Println("Stopped simulation")
+  nodeTemplate := new(SimpleTree)
+  s := NewDHTSimulationBuilder(nodeTemplate)
+    .WithPoissonProcessModel(60, 4)
+    .WithRandomUniformUnderlay(10000, 70000, 2, 10)
+    .WithDefaultQueryGenerator()
+    .Autowire()
+    .Build()
+  s.Run()
 }

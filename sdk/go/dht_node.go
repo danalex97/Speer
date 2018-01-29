@@ -3,6 +3,7 @@ package sdk
 import (
   . "github.com/danalex97/Speer/overlay"
   . "github.com/danalex97/Speer/model"
+  "github.com/danalex97/Speer/underlay"
 )
 
 type DHTNode interface {
@@ -28,4 +29,22 @@ type DHTNode interface {
 
   Key() string
   // generate a new key for the key space
+}
+
+// autowiring mechanism to hide simulation injection at construction
+type Autowire interface {
+  DHTNode
+  autowire() Autowire
+}
+
+type AutowiredDHTNode struct {
+  node UnreliableNode
+}
+
+func (a *AutowiredDHTNode) autowire() Autowire {
+  return a
+}
+
+func (a *AutowiredDHTNode) UnreliableNode() UnreliableNode {
+  return s.node;
 }

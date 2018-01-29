@@ -1,7 +1,7 @@
 package model
 
 import (
-  "math"
+  . "github.com/danalex97/Speer/overlay"
   "math/rand"
 )
 
@@ -57,21 +57,21 @@ func NewDHTLedger(bootstrap Bootstrap) *DHTLedger {
 }
 
 func (l *DHTLedger) Next() *DHTQuery {
-  node := bootstrap.Join()
-  size := rand.Int31n(100)
-  store := length(queries) == 0 || rand.Float32() > 0.5
+  node := l.bootstrap.Join("")
+  size := rand.Intn(100)
+  store := len(l.queries) == 0 || rand.Float32() > 0.5
   key   := ""
 
   if !store {
     // this is generated uniformly as there are no leaves yet
     // and the history has only 'store' queries
-    idx := rand.Int31n(length(l.queries))
-    key = queries[idx].Key()
+    idx := rand.Intn(len(l.queries))
+    key = l.queries[idx].Key()
   }
 
   query := NewDHTQuery(key, size, node, store)
   if store {
-    l.queries = append(queries, query)
+    l.queries = append(l.queries, query)
   }
 
   return query
