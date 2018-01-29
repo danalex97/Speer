@@ -47,6 +47,13 @@ type DHTLedger struct {
   bootstrap Bootstrap
 }
 
+func NewDHTLedger(bootstrap Bootstrap) *DHTLedger {
+  ledger := new(DHTLedger)
+  ledger.queries = []*DHTQuery{}
+  ledger.bootstrap = bootstrap
+  return ledger
+}
+
 func (l *DHTLedger) Next(key string) *DHTQuery {
   node := bootstrap.Join()
   size := rand.Int31n(100)

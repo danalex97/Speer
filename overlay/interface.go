@@ -19,6 +19,17 @@ type UnreliableSimulatedNode struct {
 
 var activeSet = make(map[*underlay.NetworkSimulation]OverlayMap)
 
+func GetBootstrap(simulation *underlay.NetworkSimulation) Bootstrap {
+  netMap := NewNetworkMap(simulation.Network())
+  if mp, ok := activeSet[simulation]; ok {
+    netMap = mp
+  } else {
+    activeSet[simulation] = netMap
+  }
+
+  return netMap
+}
+
 func NewUnreliableSimulatedNode(simulation *underlay.NetworkSimulation) UnreliableNode {
   node := new(UnreliableSimulatedNode)
 
