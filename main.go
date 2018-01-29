@@ -9,6 +9,7 @@ import (
 
 type SimpleTree struct {
   AutowiredDHTNode
+
   id             string
   neigh_id       string
 }
@@ -36,11 +37,11 @@ func main() {
   rand.Seed(time.Now().UTC().UnixNano())
 
   nodeTemplate := new(SimpleTree)
-  s := NewDHTSimulationBuilder(nodeTemplate)
-    .WithPoissonProcessModel(60, 4)
-    .WithRandomUniformUnderlay(10000, 70000, 2, 10)
-    .WithDefaultQueryGenerator()
-    .Autowire()
-    .Build()
+  s := NewDHTSimulationBuilder(nodeTemplate).
+    WithPoissonProcessModel(60, 4).
+    WithRandomUniformUnderlay(10000, 70000, 2, 10).
+    WithDefaultQueryGenerator().
+    Autowire().
+    Build()
   s.Run()
 }

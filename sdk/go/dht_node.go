@@ -1,20 +1,19 @@
 package sdk
 
 import (
-  . "github.com/danalex97/Speer/overlay"
-  . "github.com/danalex97/Speer/model"
-  "github.com/danalex97/Speer/underlay"
+  "github.com/danalex97/Speer/overlay"
+  "github.com/danalex97/Speer/model"
 )
 
 type DHTNode interface {
-  UnreliableNode() UnreliableNode
+  UnreliableNode() overlay.UnreliableNode
   // an unreliable node interface is a mean of interaction with an
   // underlay simulation through the overlay
 
   OnJoin()
   // a method that should be called when a node joins the network
 
-  OnQuery(query DHTQuery) error
+  OnQuery(query model.DHTQuery) error
   // a method that should be called with a node receives a query
   // - the query can be either:
   //   - store -- the current node *wants* to store something in the network
@@ -29,22 +28,25 @@ type DHTNode interface {
 
   Key() string
   // generate a new key for the key space
+
+  autowire() Autowire
+  // used to autowire the node to the simulation
 }
 
 // autowiring mechanism to hide simulation injection at construction
 type Autowire interface {
-  DHTNode
+  UnreliableNode() overlay.UnreliableNode
   autowire() Autowire
 }
 
 type AutowiredDHTNode struct {
-  node UnreliableNode
+  node overlay.UnreliableNode
 }
 
 func (a *AutowiredDHTNode) autowire() Autowire {
   return a
 }
 
-func (a *AutowiredDHTNode) UnreliableNode() UnreliableNode {
-  return s.node;
+func (a *AutowiredDHTNode) UnreliableNode() overlay.UnreliableNode {
+  return a.node
 }

@@ -23,18 +23,18 @@ func NewPoissonProcessModel(arrivalRate float64, queryRate float64) *PoissonProc
   return p
 }
 
-func poissonNext(rate float64) {
-  return -math.Log(1.0 - rand.Float64()) / rate;
+func poissonNext(rate float64) int {
+  return int(-math.Log(1.0 - rand.Float64()) / rate);
 }
 
-func (p *PoissonProcessModel) NextArrival() {
+func (p *PoissonProcessModel) NextArrival() int {
   return poissonNext(p.arrivalRate)
 }
 
-func (p *PoissonProcessModel) NextDeparture() {
+func (p *PoissonProcessModel) NextDeparture() int {
   return poissonNext(p.arrivalRate)
 }
 
-func (p *PoissonProcessModel) NextQuery() {
+func (p *PoissonProcessModel) NextQuery() int {
   return poissonNext(p.queryRate)
 }

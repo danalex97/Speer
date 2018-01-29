@@ -1,8 +1,8 @@
 package sdk
 
 import (
-  "github.com/danalex97/Speer/underlay"
   "github.com/danalex97/Speer/events"
+  "github.com/danalex97/Speer/underlay"
   "github.com/danalex97/Speer/overlay"
   "github.com/danalex97/Speer/model"
 )
@@ -11,9 +11,10 @@ type DHTSimulation struct {
   underlaySimulation *underlay.NetworkSimulation
   timeModel          model.TimeModel
   queryGenerator     model.DHTQueryGenerator
+  node               DHTNode
 
-  el                 eventLooper
-  ql                 queryLooper
+  el                 *eventLooper
+  ql                 *queryLooper
   nodeMap            map[string]DHTNode
 }
 
@@ -36,7 +37,7 @@ func NewDHTSimulationBuilder(node DHTNode) *DHTSimulationBuilder {
 func (b *DHTSimulationBuilder) WithPoissonProcessModel(
     arrivalRate float64,
     queryRate float64) *DHTSimulationBuilder {
-  b.sim.timeModel = NewPoissonProcessModel(arrivalRate, queryRate)
+  b.sim.timeModel = model.NewPoissonProcessModel(arrivalRate, queryRate)
   return b
 }
 
@@ -47,15 +48,16 @@ func (b *DHTSimulationBuilder) WithDefaultQueryGenerator(
   }
 
   bootstrap := overlay.GetBootstrap(b.sim.underlaySimulation)
-  b.sim.queryGenerator = NewDHTLedger(bootstrap)
+  b.sim.queryGenerator = model.NewDHTLedger(bootstrap)
 
   return b
 }
 
 func (b *DHTSimulationBuilder) WithRandomUniformUnderlay(
-    nodes, edges, minLatency, maxLatency int
-  ) *DHTSimulationBuilder {
-
+    nodes int,
+    edges int,
+    minLatency int,
+    maxLatency int) *DHTSimulationBuilder {
   network := underlay.NewRandomUniformNetwork(nodes, edges, minLatency, maxLatency)
   s := underlay.NewNetworkSimulation(events.NewLazySimulation(), network)
 
@@ -64,14 +66,13 @@ func (b *DHTSimulationBuilder) WithRandomUniformUnderlay(
   return b;
 }
 
-func (b *DHTSimulationBuilder) Autowire(a Autowire) *DHTSimulationBuilder{
-  b.sim.node = a
-  b.sim.node.autowire().(AutowiredDHTNode).node =
-    NewUnreliableSimulatedNode(b.sim.underlaySimulation)
+func (b *DHTSimulationBuilder) Autowire() *DHTSimulationBuilder{
+  aw := b.sim.node.autowire().(*AutowiredDHTNode)
+  aw.node = overlay.NewUnreliableSimulatedNode(b.sim.underlaySimulation)
   return b
 }
 
-func (b *DHTSimulationBuilder) Build() DHTSimulation {
+func (b *DHTSimulationBuilder) Build() *DHTSimulation {
   if b.sim.underlaySimulation == nil {
     panic("Underlay simulation component has to be appended to build")
   }
@@ -91,17 +92,19 @@ func (b *DHTSimulationBuilder) Build() DHTSimulation {
   return sim;
 }
 
-struct eventLooper {}
-func (gen *eventLooper) Receive(e *Event) {
-  e.payload.(Simulation).generateEvents()
+type eventLooper struct {}
+func (gen *eventLooper) Receive(e *events.Event) *events.Event {
+  e.Payload().(*DHTSimulation).generateEvents()
+  return nil
 }
 
-struct queryLooper {}
-func (gen *queryLooper) Receive(e *Event) {
-  e.payload.(Simulation).generateQueries()
+type queryLooper struct {}
+func (gen *queryLooper) Receive(e *events.Event) *events.Event {
+  e.Payload().(*DHTSimulation).generateQueries()
+  return nil
 }
 
-func (s *Simulation) generateEvents() {
+func (s *DHTSimulation) generateEvents() {
   // for the moment we will only model joins
   newNode := s.node.NewDHTNode()
   // id selection should probabily be moved to SDK (?)
@@ -111,30 +114,25 @@ func (s *Simulation) generateEvents() {
   newNode.OnJoin()
 
   // generate the next event to be handled
-  event := NewEvent(
-    s.underlaySimulation.Time() + int(e.timeModel.NextArrival()),
-    s,
-    s.eventLooper
-  )
-  s.Push(event)
+  time := s.underlaySimulation.Time() + int(s.timeModel.NextArrival())
+  event := events.NewEvent(time, s, s.el)
+  s.underlaySimulation.Push(event)
 }
 
-func (s *Simulation) generateQueries() {
+func (s *DHTSimulation) generateQueries() {
   // generate queries
   query := s.queryGenerator.Next()
   // deliver queries to nodes as well
   s.nodeMap[query.Node()].UnreliableNode().Send() <- query
 
   // generate the next event to be handled
-  event := NewEvent(
-    s.underlaySimulation.Time() + int(e.timeModel.NextQuery()),
-    s,
-    s.queryLooper
-  )
-  s.Push(event)
+  time := s.underlaySimulation.Time() + int(s.timeModel.NextQuery())
+  event := events.NewEvent(time, s, s.ql)
+
+  s.underlaySimulation.Push(event)
 }
 
-func (s *Simulation) Run() {
+func (s *DHTSimulation) Run() {
   s.generateEvents()
   s.generateQueries()
   go s.underlaySimulation.Run()
