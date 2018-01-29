@@ -15,6 +15,7 @@ type DHTSimulation struct {
 
   el                 eventLooper
   ql                 queryLooper
+  nodeMap            map[string]DHTNode
 }
 
 type DHTSimulationBuilder struct {
@@ -28,6 +29,7 @@ func NewDHTSimulationBuilder(node DHTNode) *DHTSimulationBuilder {
   builder.sim.node = node
   builder.sim.el   = new(eventLooper)
   builder.sim.ql   = new(queryLooper)
+  builder.sim.nodeMap = make(map[string]DHTNode)
 
   return builder
 }
@@ -93,6 +95,10 @@ func (gen *queryLooper) Receive(e *Event) {
 func (s *Simulation) generateEvents() {
   // for the moment we will only model joins
   newNode := s.node.NewDHTNode()
+  // id selection should probabily be moved to SDK (?)
+  // now the overlay sits somewhere between the transport and netowrk layer
+  id      := newNode.UnreliableNode().Id()
+  s.nodeMap[id] = newNode
   newNode.OnJoin()
 
   // generate the next event to be handled
@@ -106,6 +112,9 @@ func (s *Simulation) generateEvents() {
 
 func (s *Simulation) generateQueries() {
   // generate queries
+  query := s.queryGenerator.Next()
+  // deliver queries to nodes as well
+  s.nodeMap[query.Node()].UnreliableNode().Send() <- query
 
   // generate the next event to be handled
   event := NewEvent(

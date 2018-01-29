@@ -25,4 +25,7 @@ type DHTNode interface {
 
   NewDHTNode() DHTNode
   // used to generate a DHTNode
+
+  Key() string
+  // generate a new key for the key space
 }

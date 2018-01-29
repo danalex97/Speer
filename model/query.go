@@ -6,7 +6,9 @@ import (
 )
 
 type DHTQueryGenerator interface {
-  Next(key string) *DHTQuery // the key is ignored when we have a store query
+  Next() *DHTQuery
+  // the key for a store query is empty, thus
+  // allowing the SDK layer to handle it
 }
 
 // each query should be immutable
@@ -54,15 +56,16 @@ func NewDHTLedger(bootstrap Bootstrap) *DHTLedger {
   return ledger
 }
 
-func (l *DHTLedger) Next(key string) *DHTQuery {
+func (l *DHTLedger) Next() *DHTQuery {
   node := bootstrap.Join()
   size := rand.Int31n(100)
   store := length(queries) == 0 || rand.Float32() > 0.5
+  key   := ""
 
   if !store {
     // this is generated uniformly as there are no leaves yet
     // and the history has only 'store' queries
-    idx := rand.Int31n(length(query))
+    idx := rand.Int31n(length(l.queries))
     key = queries[idx].Key()
   }
 
