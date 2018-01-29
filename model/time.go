@@ -24,7 +24,7 @@ func NewPoissonProcessModel(arrivalRate float64, queryRate float64) *PoissonProc
 }
 
 func poissonNext(rate float64) {
-  return -math.Log(1.0 - rand.float64()) / rate;
+  return -math.Log(1.0 - rand.Float64()) / rate;
 }
 
 func (p *PoissonProcessModel) NextArrival() {
