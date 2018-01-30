@@ -33,29 +33,19 @@ func (s *Simulation) RegisterObserver(eventObserver EventObserver) {
 }
 
 func (s *Simulation) Time() int {
-  s.Lock()
-  defer s.Unlock()
-
   return s.time
 }
 
 func (s *Simulation) Stop() {
-  s.Lock()
-  defer s.Unlock()
-
   s.stopped <- nil
 }
 
 func (s *Simulation) Run() {
-  s.time = 0
   for {
     select {
     case <-s.stopped:
       break
     default:
-      s.Lock()
-      defer s.Unlock()
-
       if event:= s.Pop(); event != nil {
         fmt.Println("Event received >", event.timestamp)
 
