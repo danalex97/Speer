@@ -4,6 +4,7 @@ import (
   . "github.com/danalex97/Speer/sdk/go"
   . "github.com/danalex97/Speer/model"
   "github.com/danalex97/Speer/overlay"
+  "runtime"
   "math/rand"
   "time"
   "fmt"
@@ -27,6 +28,7 @@ func (s *SimpleTree) OnJoin() {
           fmt.Println("Receive")
         }
       default:
+        runtime.Gosched()
       }
     }
   }()
@@ -94,7 +96,7 @@ func main() {
     Build()
   s.Run()
 
-  time.Sleep(time.Second * 3)
+  time.Sleep(time.Second * 10)
   fmt.Println("Done")
   s.Stop()
 

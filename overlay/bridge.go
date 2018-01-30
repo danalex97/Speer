@@ -27,8 +27,8 @@ func NewUnderlayChan(id string, simulation *underlay.NetworkSimulation, netMap O
   chn.simulation = simulation
   chn.netMap  = netMap
 
-  chn.send = make(chan interface{}, 0)
-  chn.recv = make(chan interface{}, 0)
+  chn.send = make(chan interface{}, 50)
+  chn.recv = make(chan interface{}, 50)
 
   go chn.establishListeners()
   go chn.establishPushers()

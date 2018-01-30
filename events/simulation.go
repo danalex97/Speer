@@ -37,19 +37,19 @@ func (s *Simulation) Stop() {
 }
 
 func (s *Simulation) Run() {
-  runtime.LockOSThread()
+  fmt.Println("Starting the simulation.")
 
   for {
     select {
     case <-s.stopped:
       break
     case observer := <-s.newObservers:
-      fmt.Println("New Observer >", observer)
+      // fmt.Println("New Observer >", observer)
 
       s.observers = append(s.observers, observer)
     default:
       if event:= s.Pop(); event != nil {
-        // fmt.Println("Event received >", event.timestamp)
+        // fmt.Println("Event received >", event)
 
         // The event gets dispached to observers
         for _, observer := range(s.observers) {
@@ -68,6 +68,8 @@ func (s *Simulation) Run() {
         if newEvent != nil {
           s.Push(newEvent)
         }
+      } else {
+        runtime.Gosched()
       }
     }
   }
