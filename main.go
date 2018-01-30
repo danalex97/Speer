@@ -7,6 +7,7 @@ import (
   "math/rand"
   "time"
   "fmt"
+  "os"
 )
 
 type SimpleTree struct {
@@ -65,7 +66,7 @@ func (s *SimpleTree) NewDHTNode() DHTNode {
   node.Autowire(s)
 
   node.id       = node.UnreliableNode().Id()
-  node.neighId  = node.UnreliableNode().Join()
+  // node.neighId  = node.UnreliableNode().Join() // Deadlock from this
   node.store    = make(map[string]bool)
 
   return node
@@ -93,6 +94,9 @@ func main() {
     Build()
   s.Run()
 
-  time.Sleep(time.Second * 10)
+  time.Sleep(time.Second * 3)
+  fmt.Println("Done")
   s.Stop()
+
+  os.Exit(0)
 }

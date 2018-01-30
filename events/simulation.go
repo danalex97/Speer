@@ -2,12 +2,10 @@ package events
 
 import (
   "fmt"
-  "sync"
 )
 
 type Simulation struct {
-  sync.Mutex
-
+  newObservers chan EventObserver
   observers []EventObserver
   stopped chan interface {}
   time    int
@@ -16,9 +14,9 @@ type Simulation struct {
 
 func NewLazySimulation() (s Simulation) {
   s = Simulation{
-    *new(sync.Mutex),
+    make(chan EventObserver, 50),
     make([]EventObserver, 0),
-    make(chan interface {}),
+    make(chan interface {}, 1),
     0,
     NewLazyEventQueue(),
   }
@@ -26,10 +24,7 @@ func NewLazySimulation() (s Simulation) {
 }
 
 func (s *Simulation) RegisterObserver(eventObserver EventObserver) {
-  s.Lock()
-  defer s.Unlock()
-
-  s.observers = append(s.observers, eventObserver)
+  s.newObservers <- eventObserver
 }
 
 func (s *Simulation) Time() int {
@@ -45,6 +40,10 @@ func (s *Simulation) Run() {
     select {
     case <-s.stopped:
       break
+    case observer := <-s.newObservers:
+      fmt.Println("New Observer >", observer)
+
+      s.observers = append(s.observers, observer)
     default:
       if event:= s.Pop(); event != nil {
         fmt.Println("Event received >", event.timestamp)
