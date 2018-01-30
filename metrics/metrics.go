@@ -1,6 +1,8 @@
 package metrics
 
 import (
+  "github.com/danalex97/Speer/underlay"
+  // "github.com/danalex97/Speer/overlay"
   . "github.com/danalex97/Speer/events"
   "runtime"
   "os"
@@ -9,6 +11,7 @@ import (
 
 type Metrics struct {
   events <-chan *Event
+  // bridge
 }
 
 func NewMetrics(o EventObserver) *Metrics {
@@ -17,8 +20,13 @@ func NewMetrics(o EventObserver) *Metrics {
   return metrics
 }
 
+var file = "metrics.txt"
+
 func (m *Metrics) Run() {
-  f, err := os.OpenFile("metrics.txt", os.O_APPEND|os.O_WRONLY, 0600)
+  os.Remove(file)
+  os.Create(file)
+
+  f, err := os.OpenFile(file, os.O_APPEND|os.O_WRONLY, 0644)
   if err != nil {
     panic(err)
   }
@@ -27,8 +35,17 @@ func (m *Metrics) Run() {
   for {
     select {
     case event := <-m.events:
-      line := fmt.Sprintf("%d\n", event.Timestamp())
-      if _, err = f.WriteString(line); err != nil {
+      entry := ""
+
+      switch payload := event.Payload().(type) {
+      case underlay.Packet:
+        underSrc := payload.Src()
+        underDst := payload.Dest()
+
+        entry = fmt.Sprintf("packet: %s %s\n", underSrc, underDst)
+      }
+
+      if _, err = f.WriteString(entry); err != nil {
           panic(err)
       }
     default:

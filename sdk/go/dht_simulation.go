@@ -36,14 +36,16 @@ func NewDHTSimulationBuilder(node DHTNode) *DHTSimulationBuilder {
   return builder
 }
 
-func StartMetrics(sim *DHTSimulation) {
+func (b *DHTSimulationBuilder) WithMetrics() *DHTSimulationBuilder {
   globalObserver := events.NewGlobalEventObserver()
-  sim.underlaySimulation.RegisterObserver(globalObserver)
+  b.sim.underlaySimulation.RegisterObserver(globalObserver)
+
+  // netMap := overlay.GetBootstrap(b.sim.underlaySimulation).(*overlay.NetworkMap)
 
   metrics := metrics.NewMetrics(globalObserver)
-  // for i := 0; i < 50; i++ {
-    go metrics.Run()
-  // }
+  go metrics.Run()
+
+  return b
 }
 
 func (b *DHTSimulationBuilder) WithPoissonProcessModel(

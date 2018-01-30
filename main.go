@@ -97,12 +97,11 @@ func main() {
     WithPoissonProcessModel(2, 2).
     WithRandomUniformUnderlay(10000, 70000, 2, 10).
     WithDefaultQueryGenerator().
+    WithMetrics().
     Autowire().
     Build()
 
   s.Run()
-  time.Sleep(time.Second * 1)
-  StartMetrics(s)
 
   time.Sleep(time.Second * 10)
   fmt.Println("Done")
