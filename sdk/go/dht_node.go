@@ -31,16 +31,32 @@ type DHTNode interface {
 
   autowire() Autowire
   // used to autowire the node to the simulation
+
+  Autowire(template DHTNode)
+  // used to autowire the node to the simulation
+}
+
+func autowiredUnreliableNode(node DHTNode) overlay.UnreliableNode {
+  simulation := node.autowire().(*AutowiredDHTNode).node.(*overlay.UnreliableSimulatedNode).Simulation()
+  newNode := overlay.NewUnreliableSimulatedNode(simulation)
+
+  return newNode
 }
 
 // autowiring mechanism to hide simulation injection at construction
 type Autowire interface {
   UnreliableNode() overlay.UnreliableNode
   autowire() Autowire
+  Autowire(template DHTNode)
 }
 
 type AutowiredDHTNode struct {
   node overlay.UnreliableNode
+}
+
+func (a *AutowiredDHTNode) Autowire(template DHTNode) {
+  unreliableNode := autowiredUnreliableNode(template)
+  a.autowire().(*AutowiredDHTNode).node = unreliableNode
 }
 
 func (a *AutowiredDHTNode) autowire() Autowire {

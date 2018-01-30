@@ -63,3 +63,7 @@ func (n *UnreliableSimulatedNode) Recv() <-chan interface{} {
 func (n *UnreliableSimulatedNode) Join() string {
   return n.bootstrap.Join(n.id)
 }
+
+func (n *UnreliableSimulatedNode) Simulation() *underlay.NetworkSimulation {
+  return n.simulation
+}
