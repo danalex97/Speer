@@ -127,7 +127,7 @@ func (s *DHTSimulation) generateQueries() {
   // the template node is not in the map, so we need to avoid it if possible
   // TODO: need to fix this bug, as the bootstrap may break!
   if node, ok := s.nodeMap[query.Node()]; ok {
-    go node.OnQuery(*query)
+    node.OnQuery(*query)
   }
 
   // generate the next event to be handled

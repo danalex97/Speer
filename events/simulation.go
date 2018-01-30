@@ -2,6 +2,7 @@ package events
 
 import (
   "fmt"
+  "runtime"
 )
 
 type Simulation struct {
@@ -36,6 +37,8 @@ func (s *Simulation) Stop() {
 }
 
 func (s *Simulation) Run() {
+  runtime.LockOSThread()
+
   for {
     select {
     case <-s.stopped:
@@ -46,7 +49,7 @@ func (s *Simulation) Run() {
       s.observers = append(s.observers, observer)
     default:
       if event:= s.Pop(); event != nil {
-        fmt.Println("Event received >", event.timestamp)
+        // fmt.Println("Event received >", event.timestamp)
 
         // The event gets dispached to observers
         for _, observer := range(s.observers) {

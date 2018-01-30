@@ -49,7 +49,7 @@ func (s *SimpleTree) OnQuery(query DHTQuery) error {
       s.neighId,
       query,
     )
-    fmt.Println(packet)
+    // fmt.Println(packet)
     s.UnreliableNode().Send() <- packet
   }
 
@@ -66,7 +66,7 @@ func (s *SimpleTree) NewDHTNode() DHTNode {
   node.Autowire(s)
 
   node.id       = node.UnreliableNode().Id()
-  // node.neighId  = node.UnreliableNode().Join() // Deadlock from this
+  node.neighId  = node.UnreliableNode().Join()
   node.store    = make(map[string]bool)
 
   return node
@@ -87,7 +87,7 @@ func main() {
 
   nodeTemplate := new(SimpleTree)
   s := NewDHTSimulationBuilder(nodeTemplate).
-    WithPoissonProcessModel(40, 40).
+    WithPoissonProcessModel(400, 400).
     WithRandomUniformUnderlay(10000, 70000, 2, 10).
     WithDefaultQueryGenerator().
     Autowire().

@@ -4,6 +4,7 @@ import (
   "fmt"
   "github.com/danalex97/Speer/underlay"
   . "github.com/danalex97/Speer/events"
+  "runtime"
 )
 
 type Bridge interface {
@@ -26,8 +27,8 @@ func NewUnderlayChan(id string, simulation *underlay.NetworkSimulation, netMap O
   chn.simulation = simulation
   chn.netMap  = netMap
 
-  chn.send = make(chan interface{})
-  chn.recv = make(chan interface{})
+  chn.send = make(chan interface{}, 0)
+  chn.recv = make(chan interface{}, 0)
 
   go chn.establishListeners()
   go chn.establishPushers()
@@ -40,19 +41,24 @@ func (u *UnderlayChan) establishListeners() {
   u.simulation.RegisterObserver(obs)
 
   for {
-    event  := <- obs.EventChan()
-    packet := event.Payload().(underlay.Packet)
-    overPacket := u.OverlayPacket(packet)
+    select {
+    case event := <- obs.EventChan():
+      packet := event.Payload().(underlay.Packet)
+      overPacket := u.OverlayPacket(packet)
 
-    if packet.Src() == nil {
-      continue
-    }
-    if overPacket.Src() == u.id {
-      continue
-    }
-    fmt.Printf("Packet delivered: {%s, %s}\n", overPacket.Src(), overPacket.Dest())
+      if packet.Src() == nil {
+        continue
+      }
+      if overPacket.Src() == u.id {
+        continue
+      }
+      fmt.Printf("Packet delivered: {%s, %s}\n", overPacket.Src(), overPacket.Dest())
 
-    u.recv <- overPacket
+      u.recv <- overPacket
+    default:
+      // If there are no new packets schedule new packets
+      runtime.Gosched()
+    }
   }
 }
 
