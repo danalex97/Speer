@@ -40,9 +40,9 @@ func (b *DHTSimulationBuilder) WithMetrics() *DHTSimulationBuilder {
   globalObserver := events.NewGlobalEventObserver()
   b.sim.underlaySimulation.RegisterObserver(globalObserver)
 
-  // netMap := overlay.GetBootstrap(b.sim.underlaySimulation).(*overlay.NetworkMap)
+  netMap := overlay.GetBootstrap(b.sim.underlaySimulation).(*overlay.NetworkMap)
+  metrics := metrics.NewMetrics(globalObserver, netMap)
 
-  metrics := metrics.NewMetrics(globalObserver)
   go metrics.Run()
 
   return b

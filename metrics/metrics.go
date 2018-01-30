@@ -2,7 +2,7 @@ package metrics
 
 import (
   "github.com/danalex97/Speer/underlay"
-  // "github.com/danalex97/Speer/overlay"
+  "github.com/danalex97/Speer/overlay"
   . "github.com/danalex97/Speer/events"
   "runtime"
   "os"
@@ -11,12 +11,13 @@ import (
 
 type Metrics struct {
   events <-chan *Event
-  // bridge
+  netmap        *overlay.NetworkMap
 }
 
-func NewMetrics(o EventObserver) *Metrics {
+func NewMetrics(o EventObserver, netmap *overlay.NetworkMap) *Metrics {
   metrics := new(Metrics)
   metrics.events = o.EventChan()
+  metrics.netmap = netmap
   return metrics
 }
 
@@ -42,8 +43,14 @@ func (m *Metrics) Run() {
         underSrc := payload.Src()
         underDst := payload.Dest()
 
-        entry = fmt.Sprintf("packet: %s %s\n", underSrc, underDst)
+        src := m.netmap.Id(underSrc)
+        dst := m.netmap.Id(underDst)
+
+        entry = fmt.Sprintf("<packet> %s %s", src, dst)
       }
+
+      // timestamping the entry
+      entry = fmt.Sprintf("%d %s\n", event.Timestamp(), entry)
 
       if _, err = f.WriteString(entry); err != nil {
           panic(err)
