@@ -5,6 +5,7 @@ import (
   . "github.com/danalex97/Speer/model"
   "github.com/danalex97/Speer/overlay"
   "runtime"
+  "sync"
   "math/rand"
   "time"
   "fmt"
@@ -13,6 +14,7 @@ import (
 
 type SimpleTree struct {
   AutowiredDHTNode
+  sync.Mutex
 
   id           string
   neighId      string
@@ -35,6 +37,9 @@ func (s *SimpleTree) OnJoin() {
 }
 
 func (s *SimpleTree) OnQuery(query DHTQuery) error {
+  s.Lock()
+  defer s.Unlock()
+
   key := query.Key()
   if query.Store() {
     key = s.Key()
@@ -89,7 +94,7 @@ func main() {
 
   nodeTemplate := new(SimpleTree)
   s := NewDHTSimulationBuilder(nodeTemplate).
-    WithPoissonProcessModel(400, 400).
+    WithPoissonProcessModel(2, 2).
     WithRandomUniformUnderlay(10000, 70000, 2, 10).
     WithDefaultQueryGenerator().
     Autowire().

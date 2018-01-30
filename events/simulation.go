@@ -3,12 +3,14 @@ package events
 import (
   "fmt"
   "runtime"
+  "sync"
 )
 
 type Simulation struct {
   newObservers chan EventObserver
   observers []EventObserver
   stopped chan interface {}
+  timeMutex *sync.RWMutex
   time    int
   EventQueue
 }
@@ -18,6 +20,7 @@ func NewLazySimulation() (s Simulation) {
     make(chan EventObserver, 50),
     make([]EventObserver, 0),
     make(chan interface {}, 1),
+    new(sync.RWMutex),
     0,
     NewLazyEventQueue(),
   }
@@ -29,6 +32,9 @@ func (s *Simulation) RegisterObserver(eventObserver EventObserver) {
 }
 
 func (s *Simulation) Time() int {
+  s.timeMutex.RLock()
+  defer s.timeMutex.RUnlock()
+
   return s.time
 }
 
@@ -56,7 +62,10 @@ func (s *Simulation) Run() {
           observer.EnqueEvent(event)
         }
 
+        s.timeMutex.Lock()
         s.time = event.timestamp
+        s.timeMutex.Unlock()
+
         receiver := event.receiver
 
         if receiver == nil {
