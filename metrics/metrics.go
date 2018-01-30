@@ -3,6 +3,7 @@ package metrics
 import (
   . "github.com/danalex97/Speer/events"
   "runtime"
+  "os"
   "fmt"
 )
 
@@ -17,10 +18,21 @@ func NewMetrics(o EventObserver) *Metrics {
 }
 
 func (m *Metrics) Run() {
-  select {
-  case  <-m.events:
-    fmt.Println("metrics")
-  default:
-    runtime.Gosched()
+  f, err := os.OpenFile("metrics.txt", os.O_APPEND|os.O_WRONLY, 0600)
+  if err != nil {
+    panic(err)
+  }
+  defer f.Close()
+
+  for {
+    select {
+    case event := <-m.events:
+      line := fmt.Sprintf("%d\n", event.Timestamp())
+      if _, err = f.WriteString(line); err != nil {
+          panic(err)
+      }
+    default:
+      runtime.Gosched()
+    }
   }
 }

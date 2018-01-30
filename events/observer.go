@@ -27,14 +27,14 @@ func (o *eventObserver) EnqueEvent(e *Event) {
   }
 }
 
-func NewGlobalEventObserver() EventObserver {
-  obs := new(eventObserver)
-  obs.observer = make(chan *Event)
-  return obs
-}
-
 type globalObserver struct {
   observer chan *Event
+}
+
+func NewGlobalEventObserver() EventObserver {
+  obs := new(globalObserver)
+  obs.observer = make(chan *Event, 1000)
+  return obs
 }
 
 func (o *globalObserver) EventChan() <-chan *Event {

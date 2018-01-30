@@ -99,7 +99,10 @@ func main() {
     WithDefaultQueryGenerator().
     Autowire().
     Build()
+
   s.Run()
+  time.Sleep(time.Second * 1)
+  StartMetrics(s)
 
   time.Sleep(time.Second * 10)
   fmt.Println("Done")

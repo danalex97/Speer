@@ -36,16 +36,14 @@ func NewDHTSimulationBuilder(node DHTNode) *DHTSimulationBuilder {
   return builder
 }
 
-func (b *DHTSimulationBuilder) WithMetrics() {
-  if b.sim.underlaySimulation == nil {
-    panic("Underlay simulation component has to be appended first")
-  }
-
+func StartMetrics(sim *DHTSimulation) {
   globalObserver := events.NewGlobalEventObserver()
-  b.sim.underlaySimulation.RegisterObserver(globalObserver)
+  sim.underlaySimulation.RegisterObserver(globalObserver)
 
   metrics := metrics.NewMetrics(globalObserver)
-  go metrics.Run()
+  // for i := 0; i < 50; i++ {
+    go metrics.Run()
+  // }
 }
 
 func (b *DHTSimulationBuilder) WithPoissonProcessModel(
