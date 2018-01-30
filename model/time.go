@@ -6,9 +6,9 @@ import (
 )
 
 type TimeModel interface {
-  NextArrival() int    // next time a node arrival happens
-  NextDeparture() int  // next time a node departure happends
-  NextQuery() int      // next time a query happens
+  NextArrival() float64    // next time a node arrival happens
+  NextDeparture() float64  // next time a node departure happends
+  NextQuery() float64      // next time a query happens
 }
 
 type PoissonProcessModel struct {
@@ -23,18 +23,18 @@ func NewPoissonProcessModel(arrivalRate float64, queryRate float64) *PoissonProc
   return p
 }
 
-func poissonNext(rate float64) int {
-  return int(-math.Log(1.0 - rand.Float64()) / rate);
+func poissonNext(rate float64) float64 {
+  return -math.Log(1.0 - rand.Float64()) * rate;
 }
 
-func (p *PoissonProcessModel) NextArrival() int {
+func (p *PoissonProcessModel) NextArrival() float64 {
   return poissonNext(p.arrivalRate)
 }
 
-func (p *PoissonProcessModel) NextDeparture() int {
+func (p *PoissonProcessModel) NextDeparture() float64 {
   return poissonNext(p.arrivalRate)
 }
 
-func (p *PoissonProcessModel) NextQuery() int {
+func (p *PoissonProcessModel) NextQuery() float64 {
   return poissonNext(p.queryRate)
 }

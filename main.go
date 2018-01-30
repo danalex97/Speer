@@ -51,10 +51,12 @@ func main() {
 
   nodeTemplate := new(SimpleChain)
   s := NewDHTSimulationBuilder(nodeTemplate).
-    WithPoissonProcessModel(60, 4).
+    WithPoissonProcessModel(40, 4).
     WithRandomUniformUnderlay(10000, 70000, 2, 10).
     WithDefaultQueryGenerator().
     Autowire().
     Build()
   s.Run()
+
+  time.Sleep(time.Second)
 }

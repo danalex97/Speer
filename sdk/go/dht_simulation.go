@@ -123,7 +123,11 @@ func (s *DHTSimulation) generateQueries() {
   // generate queries
   query := s.queryGenerator.Next()
   // deliver queries to nodes as well
-  s.nodeMap[query.Node()].UnreliableNode().Send() <- query
+
+  // the template node is not in the map, so we need to avoid it if possible
+  if node, ok := s.nodeMap[query.Node()]; ok {
+    go node.OnQuery(*query)
+  }
 
   // generate the next event to be handled
   time := s.underlaySimulation.Time() + int(s.timeModel.NextQuery())
