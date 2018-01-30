@@ -27,7 +27,7 @@ func (o *eventObserver) EnqueEvent(e *Event) {
   }
 }
 
-func NewGlobalEventObserver(receiver Receiver) EventObserver {
+func NewGlobalEventObserver() EventObserver {
   obs := new(eventObserver)
   obs.observer = make(chan *Event)
   return obs

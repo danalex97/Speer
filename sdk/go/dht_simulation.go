@@ -5,6 +5,7 @@ import (
   "github.com/danalex97/Speer/underlay"
   "github.com/danalex97/Speer/overlay"
   "github.com/danalex97/Speer/model"
+  "github.com/danalex97/Speer/metrics"
   "time"
 )
 
@@ -33,6 +34,18 @@ func NewDHTSimulationBuilder(node DHTNode) *DHTSimulationBuilder {
   builder.sim.nodeMap = make(map[string]DHTNode)
 
   return builder
+}
+
+func (b *DHTSimulationBuilder) WithMetrics() {
+  if b.sim.underlaySimulation == nil {
+    panic("Underlay simulation component has to be appended first")
+  }
+
+  globalObserver := events.NewGlobalEventObserver()
+  b.sim.underlaySimulation.RegisterObserver(globalObserver)
+
+  metrics := metrics.NewMetrics(globalObserver)
+  go metrics.Run()
 }
 
 func (b *DHTSimulationBuilder) WithPoissonProcessModel(
