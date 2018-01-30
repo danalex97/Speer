@@ -26,3 +26,21 @@ func (o *eventObserver) EnqueEvent(e *Event) {
     o.observer <- e
   }
 }
+
+func NewGlobalEventObserver(receiver Receiver) EventObserver {
+  obs := new(eventObserver)
+  obs.observer = make(chan *Event)
+  return obs
+}
+
+type globalObserver struct {
+  observer chan *Event
+}
+
+func (o *globalObserver) EventChan() <-chan *Event {
+  return o.observer
+}
+
+func (o *globalObserver) EnqueEvent(e *Event) {
+  o.observer <- e
+}
