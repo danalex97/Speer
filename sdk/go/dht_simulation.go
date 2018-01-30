@@ -125,6 +125,7 @@ func (s *DHTSimulation) generateQueries() {
   // deliver queries to nodes as well
 
   // the template node is not in the map, so we need to avoid it if possible
+  // TODO: need to fix this bug, as the bootstrap may break!
   if node, ok := s.nodeMap[query.Node()]; ok {
     go node.OnQuery(*query)
   }
@@ -140,4 +141,8 @@ func (s *DHTSimulation) Run() {
   s.generateEvents()
   s.generateQueries()
   go s.underlaySimulation.Run()
+}
+
+func (s *DHTSimulation) Stop() {
+  s.underlaySimulation.Stop()
 }
