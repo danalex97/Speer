@@ -9,6 +9,8 @@ type EventQueue interface {
   Pop() *Event
 }
 
+const LazyQueueChanSize int = 50
+
 type eventHeap []*Event
 
 func (h eventHeap) Len() int           { return len(h) }
@@ -39,7 +41,7 @@ func NewLazyEventQueue() EventQueue {
   eq := new(lazyEventQueue)
 
   eq.h      = h
-  eq.stream = make(chan *Event, 50)
+  eq.stream = make(chan *Event, LazyQueueChanSize + 5)
   return eq
 }
 
