@@ -40,7 +40,7 @@ func (r *shortestPathRouter) Receive(event *Event) *Event {
   case *packet:
     // first or last hop
     nextPayload, ok := bellman(payload, r, payload.Dest())
-    if !ok {
+    if !ok || len(nextPayload.path) == 0 {
       return nil
     }
     return buildNextEvent(event, nextPayload)
