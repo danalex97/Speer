@@ -7,14 +7,14 @@ import (
   "time"
 )
 
-func TestRadondomUniformNetworkConnected(t *testing.T) {
+func TestRandomUniformNetworkConnected(t *testing.T) {
   rand.Seed(time.Now().UTC().UnixNano())
 
   network := NewRandomUniformNetwork(10000, 70000, 2, 10)
   assertEqual(t, connected(network), true)
 }
 
-func TestRadondomUniformNetworkDegreeStdReport(t *testing.T) {
+func TestRandomUniformNetworkDegreeStdReport(t *testing.T) {
   rand.Seed(time.Now().UTC().UnixNano())
   network := NewRandomUniformNetwork(10000, 70000, 2, 10)
 
@@ -32,7 +32,7 @@ func TestRadondomUniformNetworkDegreeStdReport(t *testing.T) {
   std := math.Sqrt(variance)
   rep := std/mean
 
-  if rep > 0.3 {
+  if rep > 0.5 {
     t.Fatalf("Too big coefficient of variation.")
   }
 }
