@@ -18,7 +18,7 @@ func NewRandomUniformNetwork(nodes, edges, minLatency, maxLatency int) *Network 
   network := new(Network)
 
   if math.Log2(float64(nodes)) * float64(nodes) / 2 > float64(edges) {
-    panic("Too few number of edges to keep the graph connex.")
+    panic("Too few number of edges to keep the graph connected.")
   }
 
   network.Routers = []Router{}
