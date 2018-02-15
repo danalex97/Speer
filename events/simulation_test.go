@@ -9,26 +9,26 @@ func TestMultipleTimeReads(t *testing.T) {
    * There is no current time ordering guarantee!
    * This is just to make sure there is a locking mechanism over the timer.
    */
-  // s := NewLazySimulation()
-  // r := new(mockReceiver)
-  //
-  // go s.Run()
-  //
-  // done := make(chan bool)
-  //
-  // for i := 1; i < LazyQueueChanSize; i++ {
-  //   go func() {
-  //     s.Push(NewEvent(i, nil, r))
-  //     done <- true
-  //     s.Time()
-  //   }()
-  // }
-  //
-  // for i := 1; i < LazyQueueChanSize; i++ {
-  //   <-done
-  // }
-  //
-  // s.Stop()
+  s := NewLazySimulation()
+  r := new(mockReceiver)
+
+  go s.Run()
+
+  done := make(chan bool)
+
+  for i := 1; i < LazyQueueChanSize; i++ {
+    go func() {
+      s.Push(NewEvent(i, nil, r))
+      done <- true
+      s.Time()
+    }()
+  }
+
+  for i := 1; i < LazyQueueChanSize; i++ {
+    <-done
+  }
+
+  s.Stop()
 }
 
 func TestObserversGetNotified(t *testing.T) {
@@ -75,4 +75,48 @@ func TestObserversGetNotified(t *testing.T) {
   }
 
   s.Stop()
+}
+
+type oneTimePushReceiver struct {
+  pushed bool
+}
+
+func (m *oneTimePushReceiver) Receive(e *Event) *Event {
+  if !m.pushed {
+    m.pushed = true
+    return e
+  }
+  return nil
+}
+
+func TestReceiversPushNewEvents(t *testing.T) {
+  /*
+   * There is no current time ordering guarantee!
+   * Test receivers push new events if new events get generated.
+   */
+
+   s := NewLazySimulation()
+   r := new(oneTimePushReceiver)
+   o := NewEventObserver(r)
+
+   go s.Run()
+   s.RegisterObserver(o)
+
+   done := make(chan bool)
+
+   for i := 1; i <= LazyQueueChanSize; i++ {
+     go func() {
+       s.Push(NewEvent(i, nil, r))
+       done <- true
+     }()
+   }
+
+   for i := 1; i <= LazyQueueChanSize; i++ {
+     <-done
+   }
+   for i := 1; i <= LazyQueueChanSize + 1; i++ {
+     <-o.EventChan()
+   }
+
+   s.Stop()
 }
