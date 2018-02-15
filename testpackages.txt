@@ -3,4 +3,3 @@
 ./model
 ./overlay
 ./underlay
-./sdk

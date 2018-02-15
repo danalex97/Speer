@@ -38,7 +38,7 @@ func (r *shortestPathRouter) Connections() []Connection {
 func (r *shortestPathRouter) Receive(event *Event) *Event {
   switch payload := event.Payload().(type) {
   case *packet:
-    // first hop
+    // first or last hop
     nextPayload, ok := bellman(payload, r, payload.Dest())
     if !ok {
       return nil
@@ -49,6 +49,8 @@ func (r *shortestPathRouter) Receive(event *Event) *Event {
     // next hops
     nextPayload := payload
     if len(nextPayload.path) == 0 {
+      // the packet arrived at destination so don't to anything
+      // the packet is used by the observers
       return nil
     }
     return buildNextEvent(event, nextPayload)
@@ -92,6 +94,21 @@ func bellman(packet Packet, src *shortestPathRouter, dest Router) (*sprPacket, b
     idx  := curr.Payload().(int)
     router := conns[idx].Router().(*shortestPathRouter)
 
+    if router == dest {
+      // build the packet
+      idxs := []int{}
+      for i := idx; i > 0; i = last[i] {
+        idxs = append(idxs, i)
+      }
+      idxs = append(idxs, 0)
+
+      pkt.path = []Connection{}
+      for i := len(idxs) - 2; i >= 0; i -= 1 {
+        pkt.path = append(pkt.path, conns[idxs[i]])
+      }
+      return pkt, true
+    }
+
     for i := range(router.table) {
       conn := router.table[i]
 
@@ -100,20 +117,6 @@ func bellman(packet Packet, src *shortestPathRouter, dest Router) (*sprPacket, b
       last  = append(last, idx)
 
       eq.Push(NewEvent(cost + conn.Latency(), ctr, nil))
-      if conn.Router() == dest {
-        // build the packet
-        idxs := []int{}
-        for i := ctr; i > 0; i = last[i] {
-          idxs = append(idxs, i)
-        }
-        idxs = append(idxs, 0)
-
-        pkt.path = []Connection{}
-        for i := len(idxs) - 2; i >= 0; i -= 1 {
-          pkt.path = append(pkt.path, conns[idxs[i]])
-        }
-        return pkt, true
-      }
     }
   }
 }
