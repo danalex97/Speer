@@ -56,3 +56,26 @@ func TestEnquedEventsAreDeliveredInOrder(t *testing.T) {
     assertEqual(t, <-o.EventChan(), e3)
   }()
 }
+
+func TestAllEventsAreDeliveredToGlobalObserver(t *testing.T) {
+  r1  := new(mockReceiver)
+  r2  := new(mockReceiver)
+  r3  := new(mockReceiver)
+  o := NewGlobalEventObserver()
+
+  e1 := NewEvent(0, nil, r1)
+  e2 := NewEvent(1, nil, r2)
+  e3 := NewEvent(2, nil, r3)
+
+  go func() {
+    o.EnqueEvent(e1)
+    o.EnqueEvent(e2)
+    o.EnqueEvent(e3)
+  }()
+
+  go func() {
+    assertEqual(t, <-o.EventChan(), e1)
+    assertEqual(t, <-o.EventChan(), e2)
+    assertEqual(t, <-o.EventChan(), e3)
+  }()
+}
