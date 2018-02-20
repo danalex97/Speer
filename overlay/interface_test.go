@@ -51,3 +51,9 @@ func TestUnreliableNodesJoinReturnDifferentID(t *testing.T) {
     assertNotEqual(t, n2.Id(), n2.Join())
   }
 }
+
+func TestGetBootstrapResturnsSameBootstrap(t *testing.T) {
+  netsim := testUnderlayNetsim(10)
+
+  assertEqual(t, GetBootstrap(netsim), GetBootstrap(netsim))
+}
