@@ -10,6 +10,12 @@ func assertEqual(t *testing.T, a, b interface {}) {
   }
 }
 
+func assertNotEqual(t *testing.T, a, b interface {}) {
+  if a == b {
+    t.Fatalf("%s == %s", a, b)
+  }
+}
+
 type mockBootstrap struct {}
 func (m *mockBootstrap) Join(id string) string {
   return ""
@@ -46,7 +52,11 @@ func TestDHTLedgerDeleteQueriesFromPerviouslySeenKey(t *testing.T) {
     gen := NewDHTLedger(new(mockBootstrap))
     query  := gen.Next()
     query2 := gen.Next()
-    assertEqual(t, query.Key(), query2.Key())
+    if query2.Store() {
+      assertNotEqual(t, query.Key(), query2.Key())
+    } else {
+      assertEqual(t, query.Key(), query2.Key())
+    }
   }
 }
 
