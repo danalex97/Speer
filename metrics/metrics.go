@@ -3,6 +3,7 @@ package metrics
 import (
   "github.com/danalex97/Speer/underlay"
   "github.com/danalex97/Speer/overlay"
+  "github.com/danalex97/Speer/model"
   . "github.com/danalex97/Speer/events"
   "runtime"
   "os"
@@ -46,7 +47,32 @@ func (m *Metrics) Run() {
         src := m.netmap.Id(underSrc)
         dst := m.netmap.Id(underDst)
 
-        entry = fmt.Sprintf("<packet> %s %s", src, dst)
+        // Node ids for the packet are overlay ids.
+        entry = fmt.Sprintf("<underlay_packet> src(%s) dest(%s)", src, dst)
+
+      case model.DHTQuery:
+        key   := payload.Key()
+        size  := payload.Size()
+        node  := payload.Node()
+        store := payload.Store()
+
+        // The given key is a randomly generated key id
+        // This SHOULD be changed at the upper layers inside the protocol
+        // implmentation
+        entry = fmt.Sprintf("<query> key(%s) size(%d) node(%s) store(%t)",
+          key, size, node, store)
+
+      case model.Join:
+        nodeId     := payload.NodeId()
+
+        entry = fmt.Sprintf("<join> nodeId(%s)", nodeId)
+      default:
+        entry = "<nil>"
+      }
+
+      if entry == "<nil>" {
+        // ignore other entries
+        continue
       }
 
       // timestamping the entry
@@ -55,6 +81,7 @@ func (m *Metrics) Run() {
       if _, err = f.WriteString(entry); err != nil {
           panic(err)
       }
+
     default:
       runtime.Gosched()
     }
