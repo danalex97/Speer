@@ -47,6 +47,7 @@ func (m *Metrics) Run() {
         src := m.netmap.Id(underSrc)
         dst := m.netmap.Id(underDst)
 
+        // Node ids for the packet are overlay ids.
         entry = fmt.Sprintf("<underlay_packet> src(%s) dest(%s)", src, dst)
 
       case model.DHTQuery:
@@ -55,10 +56,14 @@ func (m *Metrics) Run() {
         node  := payload.Node()
         store := payload.Store()
 
-        entry = fmt.Sprintf("<query> key(%s) size(%d) node(%s) store(%t)", key, size, node, store)
+        // The given key is a randomly generated key id
+        // This SHOULD be changed at the upper layers inside the protocol
+        // implmentation
+        entry = fmt.Sprintf("<query> key(%s) size(%d) node(%s) store(%t)",
+          key, size, node, store)
 
       case model.Join:
-        nodeId := payload.NodeId()
+        nodeId     := payload.NodeId()
 
         entry = fmt.Sprintf("<join> nodeId(%s)", nodeId)
       default:

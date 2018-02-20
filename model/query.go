@@ -58,11 +58,22 @@ func NewDHTLedger(bootstrap Bootstrap) *DHTLedger {
   return ledger
 }
 
+func randomKey() string {
+  const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+  b := make([]byte, 30)
+  for i := range b {
+    b[i] = letterBytes[rand.Int63() % int64(len(letterBytes))]
+  }
+  return string(b)
+}
+
+
 func (l *DHTLedger) Next() *DHTQuery {
   node := l.bootstrap.Join("")
   size := rand.Intn(MaxQuerySize)
   store := len(l.queries) == 0 || rand.Float32() > 0.5
-  key   := ""
+  key   := randomKey()
 
   if !store {
     // this is generated uniformly as there are no leaves yet
