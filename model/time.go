@@ -6,9 +6,9 @@ import (
 )
 
 type TimeModel interface {
-  NextArrival() float64    // next time a node arrival happens
-  NextDeparture() float64  // next time a node departure happends
-  NextQuery() float64      // next time a query happens
+  NextArrival() float64    // next time offset for a node arrival to happen
+  NextDeparture() float64  // next time offset for a node departure to happen
+  NextQuery() float64      // next time offset for a query to happen
 }
 
 type PoissonProcessModel struct {
