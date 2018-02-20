@@ -130,7 +130,12 @@ func (s *DHTSimulation) generateEvents() {
   // generate the next event to be handled
   time := s.underlaySimulation.Time() + int(s.timeModel.NextArrival())
   event := events.NewEvent(time, s, s.el)
+
+  // the log event is used only by the metrics module
+  logEvent := events.NewEvent(time, *model.NewJoin(id), nil)
+
   s.underlaySimulation.Push(event)
+  s.underlaySimulation.Push(logEvent)
 }
 
 func (s *DHTSimulation) generateQueries() {
@@ -148,7 +153,11 @@ func (s *DHTSimulation) generateQueries() {
   time := s.underlaySimulation.Time() + int(s.timeModel.NextQuery())
   event := events.NewEvent(time, s, s.ql)
 
+  // the log event is used only by the metrics module
+  logEvent := events.NewEvent(time, *query, nil)
+
   s.underlaySimulation.Push(event)
+  s.underlaySimulation.Push(logEvent)
 }
 
 func (s *DHTSimulation) Time() int {
