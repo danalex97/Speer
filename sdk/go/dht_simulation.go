@@ -151,6 +151,10 @@ func (s *DHTSimulation) generateQueries() {
   s.underlaySimulation.Push(event)
 }
 
+func (s *DHTSimulation) Time() int {
+  return s.underlaySimulation.Time()
+}
+
 func (s *DHTSimulation) Run() {
   time.Sleep(time.Second * 1)
 
