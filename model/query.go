@@ -11,6 +11,8 @@ type DHTQueryGenerator interface {
   // allowing the SDK layer to handle it
 }
 
+const MaxQuerySize int = 100
+
 // each query should be immutable
 type DHTQuery struct {
   key   string // the key of the node
@@ -58,7 +60,7 @@ func NewDHTLedger(bootstrap Bootstrap) *DHTLedger {
 
 func (l *DHTLedger) Next() *DHTQuery {
   node := l.bootstrap.Join("")
-  size := rand.Intn(100)
+  size := rand.Intn(MaxQuerySize)
   store := len(l.queries) == 0 || rand.Float32() > 0.5
   key   := ""
 
@@ -66,7 +68,7 @@ func (l *DHTLedger) Next() *DHTQuery {
     // this is generated uniformly as there are no leaves yet
     // and the history has only 'store' queries
     idx := rand.Intn(len(l.queries))
-    key = l.queries[idx].Key()
+    key  = l.queries[idx].Key()
   }
 
   query := NewDHTQuery(key, size, node, store)
