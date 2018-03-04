@@ -95,7 +95,7 @@ func main() {
   nodeTemplate := new(SimpleTree)
   s := NewDHTSimulationBuilder(nodeTemplate).
     WithPoissonProcessModel(2, 2).
-    WithRandomUniformUnderlay(10000, 70000, 2, 10).
+    WithRandomUniformUnderlay(1000, 5000, 2, 10).
     WithDefaultQueryGenerator().
     WithMetrics().
     Autowire().

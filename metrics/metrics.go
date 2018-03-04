@@ -43,12 +43,14 @@ func (m *Metrics) Run() {
       case underlay.Packet:
         underSrc := payload.Src()
         underDst := payload.Dest()
+        recv     := m.netmap.Id(event.Receiver().(underlay.Router))
 
         src := m.netmap.Id(underSrc)
         dst := m.netmap.Id(underDst)
 
         // Node ids for the packet are overlay ids.
-        entry = fmt.Sprintf("<underlay_packet> src(%s) dest(%s)", src, dst)
+        entry = fmt.Sprintf("<underlay_packet> src(%s) dest(%s) recv(%s)",
+          src, dst, recv)
 
       case model.DHTQuery:
         key   := payload.Key()
