@@ -4,7 +4,6 @@ matplotlib.use('Qt4Agg')
 import sys
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 
 from PyQt4 import QtCore
 from PyQt4 import QtGui as qt

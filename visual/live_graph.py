@@ -1,33 +1,80 @@
-import random
+from random import randint
+
 import pylab
 from matplotlib.pyplot import pause
+
 import networkx as nx
 
 pylab.ion()
 
-graph = nx.Graph()
-node_number = 0
-graph.add_node(node_number)
+class Node():
+    canvas_size = (0, 100)
 
-def get_fig(fig):
-    global node_number
-    node_number += 1
+    def __init__(self, _id, x = None, y = None):
+        self._id = _id
+        if x is None:
+            x = randint(*Node.canvas_size)
+        if y is None:
+            y = randint(*Node.canvas_size)
 
-    graph.add_node(node_number)
-    graph.add_edge(node_number, node_number - 1)
+        self._pos = (x, y)
 
-    nx.draw(graph)
-    return fig
+    @property
+    def id(self):
+        return self._id
 
-pylab.show()
+    @property
+    def pos(self):
+        return self._pos
 
-fig = pylab.figure()
+class Graph():
+    def __init__(self):
+        self.graph = nx.Graph()
+        self.nodes = set()
+        self.edges = set()
 
-while True:
-    try:
-        fig.clf()
-        fig = get_fig(fig)
-        pause(0.1)
+        self.fig = pylab.figure()
 
-    except KeyboardInterrupt:
-        break
+    @property
+    def figure(self):
+        return self.fig
+
+    def add_node(self, node):
+        self.nodes.add(node)
+        self.graph.add_node(node.id, pos = node.pos)
+
+    def add_edge(self, node1, node2):
+        if node1 not in self.nodes:
+            self.add_node(node1)
+        if node2 not in self.nodes:
+            self.add_node(node2)
+        if (node1, node2) not in self.edges:
+            self.graph.add_edge(node1.id, node2.id)
+            self.edges.add((node1, node2))
+            self.edges.add((node2, node1))
+
+    def draw(self):
+        self.figure.clf()
+        pos = nx.get_node_attributes(self.graph, 'pos')
+        nx.draw(self.graph, pos, with_labels=True)
+
+if __name__ == "__main__":
+    graph = Graph()
+    ctr = 0
+    node = None
+
+    while True:
+        try:
+            ctr += 1
+
+            last_node = node
+            node = Node(ctr)
+
+            graph.add_node(node)
+            if ctr > 1:
+                graph.add_edge(last_node, node)
+            graph.draw()
+            pause(0.1)
+
+        except KeyboardInterrupt:
+            break
