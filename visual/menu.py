@@ -1,6 +1,11 @@
+import matplotlib
+matplotlib.use('Qt4Agg')
+
 from PyQt4 import QtCore
 from PyQt4 import QtGui as qt
+from PyQt4 import QtCore as qtcore
 
+import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
@@ -27,8 +32,17 @@ class MultiTabNavTool(qt.QWidget):
         self.toolbars[self.tabs.currentIndex()].setVisible(True)
 
 class MplMultiTab(qt.QMainWindow):
+    signal = qtcore.pyqtSignal(str)
+
     def __init__(self, parent=None, figures=None, labels=None):
         qt.QMainWindow.__init__(self, parent)
+
+        # Handle signals
+        self.timer = qtcore.QTimer(self)
+        self.timer.setInterval(100)          # Throw event timeout with an interval of 1000 milliseconds
+        self.timer.timeout.connect(self.update) # each time timer counts a second,
+        self.timer.start()
+        self.updaters = []
 
         self.main_frame = qt.QWidget()
         self.tabWidget = qt.QTabWidget( self.main_frame )
@@ -44,7 +58,15 @@ class MplMultiTab(qt.QMainWindow):
         self.main_frame.setLayout(vbox)
         self.setCentralWidget(self.main_frame)
 
-    def create_tabs(self, figures, labels ):
+    @qtcore.pyqtSlot()
+    def update(self):
+        for updater in self.updaters:
+            updater()
+
+    def add_updater(self, function):
+        self.updaters.append(function)
+
+    def create_tabs(self, figures, labels):
         if labels is None:
             labels = []
         figures = [Figure()] if figures is None else figures
