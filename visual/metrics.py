@@ -42,6 +42,7 @@ class HopPlot(PacketPlot):
         y = []
 
         for key, packets in self.packet_paths.items():
+            ctr = 0
             for p in packets:
                 if isinstance(p, UnderlaySendPacketEntry):
                     ctr = 0
@@ -55,6 +56,27 @@ class HopPlot(PacketPlot):
                             ctr += 1
                     else:
                         ctr += 1
+
+        self.plot.update_data(x, y)
+        self.figure.canvas.draw()
+
+class LatencyPlot(PacketPlot):
+    def __init__(self, log_file):
+        super(LatencyPlot, self).__init__(log_file)
+
+    def update(self):
+        self.update_log()
+
+        x = []
+        y = []
+
+        for key, packets in self.packet_paths.items():
+            send = filter_entries(packets, UnderlaySendPacketEntry)
+            recv = filter_entries(packets, UnderlayRecvPacketEntry)
+
+            for i in range(min(len(send), len(recv))):
+                x.append(recv[i].timestamp)
+                y.append(recv[i].timestamp - send[i].timestamp)
 
         self.plot.update_data(x, y)
         self.figure.canvas.draw()

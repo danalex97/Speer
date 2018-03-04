@@ -25,6 +25,17 @@ class Node():
     def pos(self):
         return self._pos
 
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.id == other.id
+        return False
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __hash__(self):
+        return self.id
+
 class Graph():
     def __init__(self):
         self.graph = nx.Graph()
@@ -38,8 +49,9 @@ class Graph():
         return self.fig
 
     def add_node(self, node):
-        self.nodes.add(node)
-        self.graph.add_node(node.id, pos = node.pos)
+        if node not in self.nodes:
+            self.nodes.add(node)
+            self.graph.add_node(node.id, pos = node.pos)
 
     def add_edge(self, node1, node2):
         if node1 not in self.nodes:

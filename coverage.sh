@@ -1,9 +1,5 @@
 #!/bin/bash
 
-# This script tests multiple packages and creates a consolidated cover profile
-# See https://gist.github.com/hailiang/0f22736320abe6be71ce for inspiration.
-# The list of packages to test is specified in testpackages.txt.
-
 function die() {
   echo $*
   exit 1
@@ -29,5 +25,3 @@ if [ ! -z "$ERROR" ]
 then
     die "Encountered error, last error was: $ERROR"
 fi
-
-#- GOPATH=`pwd`:$GOPATH $HOME/gopath/bin/goveralls -v -service travis-ci github.com/getlantern/buuid
