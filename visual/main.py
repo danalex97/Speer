@@ -15,6 +15,8 @@ from live_graph import Node
 from live_graph import Graph
 import threading
 
+from log_processing import get_log
+
 if __name__ == "__main__":
     plots = [LivePlot() for _ in range(3)]
     graph = Graph()
