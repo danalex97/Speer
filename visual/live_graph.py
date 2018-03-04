@@ -5,8 +5,6 @@ from matplotlib.pyplot import pause
 
 import networkx as nx
 
-pylab.ion()
-
 class Node():
     canvas_size = (0, 100)
 
@@ -57,24 +55,4 @@ class Graph():
         self.figure.clf()
         pos = nx.get_node_attributes(self.graph, 'pos')
         nx.draw(self.graph, pos, with_labels=True)
-
-if __name__ == "__main__":
-    graph = Graph()
-    ctr = 0
-    node = None
-
-    while True:
-        try:
-            ctr += 1
-
-            last_node = node
-            node = Node(ctr)
-
-            graph.add_node(node)
-            if ctr > 1:
-                graph.add_edge(last_node, node)
-            graph.draw()
-            pause(0.1)
-
-        except KeyboardInterrupt:
-            break
+        self.figure.canvas.draw()
