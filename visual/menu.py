@@ -80,7 +80,7 @@ class MplMultiTab(qt.QMainWindow):
 
         canvas = fig.canvas if fig.canvas else FigureCanvas(fig)
         canvas.setParent(self.tabWidget)
-        canvas.setFocusPolicy( QtCore.Qt.ClickFocus )
+        canvas.setFocusPolicy(QtCore.Qt.ClickFocus)
 
         name = name if name is None else name
         name = "Tab {}".format(self.tabWidget.count() + 1)

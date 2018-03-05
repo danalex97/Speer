@@ -18,14 +18,14 @@ import threading
 from log_processing import get_log
 from metrics import HopPlot
 from metrics import LatencyPlot
-from networks import UnderlayNetwork
+from networks import OverlayNetwork
 
 if __name__ == "__main__":
     tabs = [
         HopPlot("metrics.txt", overlay=False),
         HopPlot("metrics.txt", overlay=True),
         LatencyPlot("metrics.txt"),
-        UnderlayNetwork("metrics.txt")
+        OverlayNetwork("metrics.txt")
     ]
 
     app = qt.QApplication(sys.argv)

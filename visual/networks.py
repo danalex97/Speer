@@ -39,9 +39,9 @@ class Network():
     def update(self):
         pass
 
-class UnderlayNetwork(Network):
+class OverlayNetwork(Network):
     def __init__(self, log_file, window = 5):
-        super(UnderlayNetwork, self).__init__(log_file, window)
+        super(OverlayNetwork, self).__init__(log_file, window)
 
     def update(self):
         self.update_log()
@@ -50,6 +50,8 @@ class UnderlayNetwork(Network):
         for entry in joins:
             self.graph.add_node(Node(entry.nodeId))
 
+        # Packets go in the underlay(i.e. the Recvs are in the underlay, but
+        # the source and the destiantion represent overlay connections)
         packets = filter_entries(self.log, UnderlayPacketEntry)
         for entry in packets:
             self.graph.add_edge(Node(entry.src), Node(entry.dest))
