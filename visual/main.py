@@ -21,14 +21,13 @@ from metrics import LatencyPlot
 from networks import OverlayNetwork
 
 if __name__ == "__main__":
+    app = qt.QApplication(sys.argv)
     tabs = [
         HopPlot("metrics.txt", overlay=False),
         HopPlot("metrics.txt", overlay=True),
         LatencyPlot("metrics.txt"),
         OverlayNetwork("metrics.txt")
     ]
-
-    app = qt.QApplication(sys.argv)
 
     ui = MplMultiTab(figures = [tab.figure
         for tab in tabs])
