@@ -59,7 +59,7 @@ func (c *LRUCache) Put(key, value interface{}) {
   }
 }
 
-func (c *LRUCache) Get(key interface{}) (interface{}, bool){
+func (c *LRUCache) Get(key interface{}) (interface{}, bool) {
   if entry, ok := c.items[key]; ok {
     c.evict.MoveToFront(entry)
     return entry.Value.(*centry).value, true
