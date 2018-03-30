@@ -7,7 +7,7 @@ import (
 
 type Cache interface {
   Put(key, value interface {})
-  Get(key interface {}) interface {}
+  Get(key interface {}) (interface {}, bool)
 }
 
 type LRUCache struct {

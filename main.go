@@ -97,7 +97,7 @@ func main() {
     WithPoissonProcessModel(2, 2).
     WithRandomUniformUnderlay(1000, 5000, 2, 10).
     WithDefaultQueryGenerator().
-    WithMetrics().
+    // WithMetrics().
     Autowire().
     Build()
 

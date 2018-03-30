@@ -4,6 +4,8 @@ import (
   . "github.com/danalex97/Speer/events"
 )
 
+const RouterCacheSize int = 50
+
 type Router interface {
   Receiver
   Connect(Connection) error
@@ -17,11 +19,13 @@ type sprPacket struct {
 
 type shortestPathRouter struct {
   table []Connection
+  cache Cache
 }
 
 func NewShortestPathRouter() Router {
   router := new(shortestPathRouter)
   router.table = []Connection{}
+  router.cache, _ = NewLRUCache(RouterCacheSize)
   return router
 }
 
@@ -38,12 +42,18 @@ func (r *shortestPathRouter) Connections() []Connection {
 func (r *shortestPathRouter) Receive(event *Event) *Event {
   switch payload := event.Payload().(type) {
   case *packet:
+    // check cache
+    if el, ok := r.cache.Get(payload.dest); ok {
+      conn := el.(Connection)
+      return buildNextCachedEvent(event, conn, payload)
+    }
+
     // first or last hop
     nextPayload, ok := bellman(payload, r, payload.Dest())
     if !ok || len(nextPayload.path) == 0 {
       return nil
     }
-    return buildNextEvent(event, nextPayload)
+    return r.buildNextEvent(event, nextPayload)
 
   case *sprPacket:
     // next hops
@@ -53,15 +63,28 @@ func (r *shortestPathRouter) Receive(event *Event) *Event {
       // the packet is used by the observers
       return nil
     }
-    return buildNextEvent(event, nextPayload)
+    return r.buildNextEvent(event, nextPayload)
   }
   return nil
 }
 
-func buildNextEvent(event *Event, nextPayload *sprPacket) *Event {
+func buildNextCachedEvent(event *Event, conn Connection, payload interface{}) *Event {
+  return NewEvent(
+    event.Timestamp() + conn.Latency(),
+    payload,
+    conn.Router(),
+  )
+}
+
+func (r *shortestPathRouter) buildNextEvent(event *Event, nextPayload *sprPacket) *Event {
+  // next hop
   conn := nextPayload.path[0]
   nextPayload.path = nextPayload.path[1:]
 
+  // cache the path
+  r.cache.Put(nextPayload.dest, conn)
+
+  // return the corresponding event
   return NewEvent(
     event.Timestamp() + conn.Latency(),
     nextPayload,
@@ -82,7 +105,7 @@ func bellman(packet Packet, src *shortestPathRouter, dest Router) (*sprPacket, b
   pkt := new(sprPacket)
   pkt.src  = packet.Src()
   pkt.dest = packet.Dest()
-  pkt.payload  = packet.Payload()
+  pkt.payload = packet.Payload()
 
   for {
     curr := eq.Pop()
