@@ -96,6 +96,7 @@ func main() {
   s := NewDHTSimulationBuilder(nodeTemplate).
     WithPoissonProcessModel(2, 2).
     WithRandomUniformUnderlay(1000, 5000, 2, 10).
+    // WithInternetworkUnderlay(10, 5, 20, 5).
     WithDefaultQueryGenerator().
     // WithMetrics().
     Autowire().

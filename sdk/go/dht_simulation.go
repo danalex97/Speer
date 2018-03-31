@@ -7,6 +7,7 @@ import (
   "github.com/danalex97/Speer/model"
   "github.com/danalex97/Speer/metrics"
   "time"
+  "fmt"
 )
 
 type DHTSimulation struct {
@@ -79,6 +80,21 @@ func (b *DHTSimulationBuilder) WithRandomUniformUnderlay(
 
   return b;
 }
+
+func (b *DHTSimulationBuilder) WithInternetworkUnderlay(
+    transitDomains int,
+    transitDomainSize int,
+    stubDomains int,
+    stubDomainSize int) *DHTSimulationBuilder {
+  network := underlay.NewInternetwork(transitDomains, transitDomainSize, stubDomains, stubDomainSize)
+  s := underlay.NewNetworkSimulation(events.NewLazySimulation(), network)
+
+  fmt.Println("Internetwork built.")
+  b.sim.underlaySimulation = s
+
+  return b;
+}
+
 
 func (b *DHTSimulationBuilder) Autowire() *DHTSimulationBuilder{
   aw := b.sim.node.autowire().(*AutowiredDHTNode)
