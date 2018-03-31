@@ -7,10 +7,15 @@ import (
 
 type Network struct {
   Routers []Router
+  stubRouters []Router
 }
 
 func (n *Network) RandomRouter() Router {
-  return n.Routers[rand.Intn(len(n.Routers))]
+  if n.stubRouters == nil {
+    return n.Routers[rand.Intn(len(n.Routers))]
+  } else {
+    return n.stubRouters[rand.Intn(len(n.stubRouters))]
+  }
 }
 
 /* Constants used in the stub-generation algorithm.
@@ -74,8 +79,8 @@ const mhsp int = 50
 func NewInternetwork(T, Nt, S, Ns int) *Network {
   tdg := generateTransitDomainGraph(T, Wtt, Wttd)
   backbone := generateTransitDomains(tdg, Nt)
-  stubNodes, network := addStubs(backbone, S, Ns)
-  return addMhs(network, stubNodes, S)
+  network := addStubs(backbone, S, Ns)
+  return addMhs(network, S)
 }
 
 // 1. Generate transit domain graph
@@ -134,7 +139,7 @@ func generateTransitDomains(tdg *Network, Nt int) *Network {
 }
 
 // 3. Add stubs
-func addStubs(backbone *Network, S, Ns int) ([]Router, *Network) {
+func addStubs(backbone *Network, S, Ns int) *Network {
   // copy backbone
   network := new(Network)
   for _, node := range backbone.Routers {
@@ -161,13 +166,15 @@ func addStubs(backbone *Network, S, Ns int) ([]Router, *Network) {
   for _, router := range newRouter {
     stubRouters = append(stubRouters, router)
   }
+  network.stubRouters = stubRouters
 
-  return stubRouters, network
+  return network
 }
 
 // 4. Add multi-homed stubs
-func addMhs(network *Network, stubNodes []Router, stubs int) *Network {
+func addMhs(network *Network, stubs int) *Network {
   mhs := mhsp * stubs / 100
+  stubNodes := network.stubRouters
 
   stubSet := make(map[Router]bool)
   for _, node := range stubNodes {
