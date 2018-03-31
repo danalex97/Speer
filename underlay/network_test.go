@@ -53,8 +53,8 @@ func TestGenerateTransitDomainGraphCorrectEdgeWeights(t *testing.T) {
 }
 
 func TestNewRandomNetworkCorrectEdgeWeightsAndNodeNumber(t *testing.T) {
-  for tt := 0; tt < 5; tt++ {
-    N      := 100
+  for tt := 0; tt < 10; tt++ {
+    N      := 10
     nodesD := 5
     edgeF  := 2
     minL   := 2
@@ -62,11 +62,13 @@ func TestNewRandomNetworkCorrectEdgeWeightsAndNodeNumber(t *testing.T) {
 
     network := newRandomNetwork(N, 10, nodesD, edgeF, minL, maxL)
     checkNetworkEdges(t, network, minL, maxL)
+    assertEqual(t, connected(network), true)
 
     N = 100
     nodesD = 10
     network = newRandomNetwork(N, 10, nodesD, edgeF, minL, maxL)
     checkNetworkEdges(t, network, minL, maxL)
+    assertEqual(t, connected(network), true)
   }
 }
 

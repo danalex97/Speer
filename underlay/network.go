@@ -225,16 +225,69 @@ func addTsEdge(attachBack, attachStub Router) {
   attachBack.Connect(NewStaticConnection(latency, attachStub))
 }
 
+const smallNetNodes int = 15
+
+func insertEdge(present map[struct {x, y int}]bool, network *Network, i1, i2, minL, maxL int) bool {
+  if i1 == i2 {
+    return false
+  }
+
+  if present[struct {x, y int}{i1, i2}] || present[struct {x, y int}{i2, i1}] {
+    return false
+  } else {
+    present[struct {x, y int}{i1, i2}] = true
+    present[struct {x, y int}{i2, i1}] = true
+  }
+
+  latency := rand.Intn(maxL - minL) + minL
+  network.Routers[i1].Connect(NewStaticConnection(latency, network.Routers[i2]))
+  network.Routers[i2].Connect(NewStaticConnection(latency, network.Routers[i1]))
+
+  return true
+}
+
+func smallRandomNetwork(nodes, edges, minLatency, maxLatency int) *Network {
+  network := new(Network)
+  present := make(map[struct {x, y int}]bool)
+
+  network.Routers = []Router{}
+  for i := 0; i < nodes; i++ {
+    network.Routers = append(network.Routers, NewShortestPathRouter())
+  }
+
+  // build tree
+  for i := 1; i < nodes; i++ {
+    i1 := rand.Intn(i)
+    i2 := i
+
+    insertEdge(present, network, i1, i2, minLatency, maxLatency)
+  }
+
+  // add rest of edges
+  for i := 0; i < edges; i++ {
+    i1 := rand.Intn(nodes)
+    i2 := rand.Intn(nodes)
+
+    // since we have only a few nodes, we might not add all the edges
+    insertEdge(present, network, i1, i2, minLatency, maxLatency)
+  }
+
+  return network
+}
+
 /* Generates a connected graph.
   Reference: http://economics.mit.edu/files/4622
 */
 func NewRandomUniformNetwork(nodes, edges, minLatency, maxLatency int) *Network {
-  network := new(Network)
-
   if math.Log2(float64(nodes)) * float64(nodes) / 2 > float64(edges) {
     panic("Too few number of edges to keep the graph connected.")
   }
 
+  if (nodes < smallNetNodes) {
+    return smallRandomNetwork(nodes, edges, minLatency, maxLatency)
+  }
+
+  network := new(Network)
   network.Routers = []Router{}
   for i := 0; i < nodes; i++ {
     network.Routers = append(network.Routers, NewShortestPathRouter())
@@ -245,22 +298,9 @@ func NewRandomUniformNetwork(nodes, edges, minLatency, maxLatency int) *Network 
     i1 := rand.Intn(nodes)
     i2 := rand.Intn(nodes)
 
-    if i1 == i2 {
+    if !insertEdge(present, network, i1, i2, minLatency, maxLatency) {
       i--
-      continue
     }
-
-    if present[struct {x, y int}{i1, i2}] || present[struct {x, y int}{i2, i1}] {
-      i--
-      continue
-    } else {
-      present[struct {x, y int}{i1, i2}] = true
-      present[struct {x, y int}{i2, i1}] = true
-    }
-
-    latency := rand.Intn(maxLatency - minLatency) + minLatency
-    network.Routers[i1].Connect(NewStaticConnection(latency, network.Routers[i2]))
-    network.Routers[i2].Connect(NewStaticConnection(latency, network.Routers[i1]))
   }
 
   if connected(network) {
