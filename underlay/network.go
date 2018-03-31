@@ -13,11 +13,28 @@ func (n *Network) RandomRouter() Router {
   return n.Routers[rand.Intn(len(n.Routers))]
 }
 
-/* Constants used in the stub-generation algorithm. */
+/* Constants used in the stub-generation algorithm. #
+
+  Wtt  = avg. weight of transit-transit connections
+  Wttd = Wtt delta, that is the weight is in [Wtt - Wttd, Wtt + Wttd]
+
+  Nts     = ...
+  minNt   = ...
+  edgeNtf = ...
+
+  minLatency = ...
+  maxLatency = ...
+
+  Nsd     = ...
+  minNs   = ...
+  edgeNsf = ...
+
+  mhsp = percent of multi-home stub *connections*
+*/
 const Wtt  int = 100
 const Wttd int = 2
 
-const Ntd     int = 5
+const Ntd     int = 10
 const minNt   int = 5
 const edgeNtf int = 2
 
@@ -27,9 +44,11 @@ const maxLatency int = 10
 const Wts  int = 100
 const Wtsd int = 2
 
-const Nsd     int = 5
+const Nsd     int = 20
 const minNs   int = 10
 const edgeNsf int = 2
+
+const mhsp int = 50
 
 /* Generates a 2-level transit-stub topology following the paper:
  Zegura E., Calvert K. and Bhattacharjee S. How to model an internetwork. In INFOCOM’96 (1996)
@@ -51,7 +70,8 @@ const edgeNsf int = 2
 func NewInternetwork(T, Nt, S, Ns int) *Network {
   tdg := generateTransitDomainGraph(T, Wtt, Wttd)
   backbone := generateTransitDomains(tdg, Nt)
-  return addStubs(backbone, S, Ns)
+  stubNodes, network := addStubs(backbone, S, Ns)
+  return addMhs(network, stubNodes, S)
 }
 
 // 1. Generate transit domain graph
@@ -102,7 +122,7 @@ func generateTransitDomains(tdg *Network, Nt int) *Network {
 }
 
 // 3. Add stubs
-func addStubs(backbone *Network, S, Ns int) *Network {
+func addStubs(backbone *Network, S, Ns int) ([]Router, *Network) {
   // copy backbone
   network := new(Network)
   for _, node := range(backbone.Routers) {
@@ -121,12 +141,39 @@ func addStubs(backbone *Network, S, Ns int) *Network {
     attachBack := backbone.RandomRouter()
     attachStub := newRouter[stub.RandomRouter()]
 
-    minLatency := Wts - Wtsd
-    maxLatency := Wts + Wtsd
-    latency := rand.Intn(maxLatency - minLatency) + minLatency
+    addTsEdge(attachBack, attachStub)
+  }
 
-    attachStub.Connect(NewStaticConnection(latency, attachBack))
-    attachBack.Connect(NewStaticConnection(latency, attachStub))
+  // make list of stub nodes
+  stubRouters := []Router{}
+  for _, router := range(newRouter) {
+    stubRouters = append(stubRouters, router)
+  }
+
+  return stubRouters, network
+}
+
+// 4. Add multi-homed stubs
+func addMhs(network *Network, stubNodes []Router, stubs int) *Network {
+  mhs := mhsp * stubs / 100
+
+  stubSet := make(map[Router]bool)
+  for _, node := range(stubNodes) {
+    stubSet[node] = true
+  }
+  backNodes := []Router{}
+  for _, node := range(network.Routers) {
+    if _, ok := stubSet[node]; !ok {
+      backNodes = append(backNodes, node)
+    }
+  }
+
+  // Add mhs random edges from a stub node to a backbone node
+  for i := 0; i < mhs; i++ {
+    stubNode := stubNodes[rand.Intn(len(stubNodes))]
+    backNode := backNodes[rand.Intn(len(backNodes))]
+
+    addTsEdge(backNode, stubNode)
   }
 
   return network
@@ -163,6 +210,15 @@ func copyNetwork(newRouter map[Router]Router, network *Network, toCopy *Network)
       n1.Connect(NewStaticConnection(l, n2))
     }
   }
+}
+
+func addTsEdge(attachBack, attachStub Router) {
+  minLatency := Wts - Wtsd
+  maxLatency := Wts + Wtsd
+  latency := rand.Intn(maxLatency - minLatency) + minLatency
+
+  attachStub.Connect(NewStaticConnection(latency, attachBack))
+  attachBack.Connect(NewStaticConnection(latency, attachStub))
 }
 
 /* Generates a connected graph.
