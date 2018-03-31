@@ -13,6 +13,9 @@ func (n *Network) RandomRouter() Router {
   return n.Routers[rand.Intn(len(n.Routers))]
 }
 
+const Wtt  int = 10
+const Wttd int = 2
+
 /* Generates a 2-level transit-stub topology following the paper:
  Zegura E., Calvert K. and Bhattacharjee S. How to model an internetwork. In INFOCOM’96 (1996)
 
@@ -31,12 +34,28 @@ func (n *Network) RandomRouter() Router {
   4. Generate multi-homed stubs
 */
 func NewInternetwork(T, Nt, S, Ns int) *Network {
-  return new(Network)
+  return generateTransitDomainGraph(T, Wtt, Wttd)
 }
 
+// Generate transit domain graph
+func generateTransitDomainGraph(T, Wtt, Wttd int) *Network {
+  degree := int(math.Log2(float64(T))) + 1
+  edges  := degree * T
 
+  mn := Wtt - Wttd
+  mx := Wtt + Wttd
+
+  if mn < 0 {
+    mn = 0
+  }
+
+  return NewRandomUniformNetwork(T, edges, mn, mx)
+}
+
+/* Generates a connected graph.
+  Reference: http://economics.mit.edu/files/4622
+*/
 func NewRandomUniformNetwork(nodes, edges, minLatency, maxLatency int) *Network {
-  // reference: http://economics.mit.edu/files/4622
   network := new(Network)
 
   if math.Log2(float64(nodes)) * float64(nodes) / 2 > float64(edges) {
