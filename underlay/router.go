@@ -10,6 +10,7 @@ type Router interface {
   Receiver
   Connect(Connection) error
   Connections() []Connection
+  Domain() string
 }
 
 type sprPacket struct {
@@ -29,6 +30,10 @@ func NewShortestPathRouter(domain string) Router {
   router.cache, _ = NewLRUCache(RouterCacheSize)
   router.domain = domain
   return router
+}
+
+func (r *shortestPathRouter) Domain() string {
+  return r.domain
 }
 
 func (r *shortestPathRouter) Connect(conn Connection) error {

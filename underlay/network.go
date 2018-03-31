@@ -8,6 +8,7 @@ import (
 type Network struct {
   Routers []Router
   stubRouters []Router
+  subdomains int
 }
 
 func (n *Network) RandomRouter() Router {
@@ -112,7 +113,9 @@ func generateTransitDomains(tdg *Network, Nt int) *Network {
   network := new(Network)
   newRouter := make(map[Router]Router)
 
+  network.subdomains = 0
   for _, nodeNet := range tdMap {
+    network.subdomains++
     copyNetwork(newRouter, network, nodeNet)
   }
 
@@ -152,6 +155,7 @@ func addStubs(backbone *Network, S, Ns int) *Network {
     stub := newRandomNetwork(Ns, minNs, Nsd, edgeNsf, minLatency, maxLatency)
 
     // copy stub on network
+    network.subdomains++
     copyNetwork(newRouter, network, stub)
 
     // attach stub to network
@@ -216,7 +220,7 @@ func newRandomNetwork(nodes, minNodes, nodesDelta, edgeFactor, minLatency, maxLa
 func copyNetwork(newRouter map[Router]Router, network *Network, toCopy *Network) {
   // make map from the node networks to the new combined network
   for _, node := range toCopy.Routers {
-    newRouter[node] = NewShortestPathRouter("1")
+    newRouter[node] = NewShortestPathRouter(string(network.subdomains - 1))
     network.Routers = append(network.Routers, newRouter[node])
   }
 
@@ -268,7 +272,7 @@ func smallRandomNetwork(nodes, edges, minLatency, maxLatency int) *Network {
 
   network.Routers = []Router{}
   for i := 0; i < nodes; i++ {
-    network.Routers = append(network.Routers, NewShortestPathRouter("1"))
+    network.Routers = append(network.Routers, NewShortestPathRouter(""))
   }
 
   // build tree
@@ -306,7 +310,7 @@ func NewRandomUniformNetwork(nodes, edges, minLatency, maxLatency int) *Network 
   network := new(Network)
   network.Routers = []Router{}
   for i := 0; i < nodes; i++ {
-    network.Routers = append(network.Routers, NewShortestPathRouter("1"))
+    network.Routers = append(network.Routers, NewShortestPathRouter(""))
   }
 
   present := make(map[struct {x, y int}]bool)
