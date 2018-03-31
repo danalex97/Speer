@@ -51,8 +51,11 @@ func TestLRUCacheAccessedElementsDontGetEvicted(t *testing.T) {
   for i := 0; i < 128; i++ {
     c.Put(i, i)
   }
-  for i := 0; i < 64; i++ {
+  for i := 0; i < 32; i++ {
     c.Get(i)
+  }
+  for i := 32; i < 64; i++ {
+    c.Put(i, i)
   }
   for i := 128; i < 192; i++ {
     c.Put(i, i)
