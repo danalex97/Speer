@@ -80,7 +80,40 @@ func generateTransitDomains(tdg *Network, Nt int) *Network {
   }
 
   // Generate the new (combined) graph from the two subdomains
-  return new(Network)
+  network := new(Network)
+  newRouter := make(map[Router]Router)
+
+  for _, nodeNet := range(tdMap) {
+    // make map from the node networks to the new combined network
+    for _, node := range(nodeNet.Routers) {
+      newRouter[node] = NewShortestPathRouter()
+      network.Routers = append(network.Routers, newRouter[node])
+    }
+
+    // add the edges
+    for _, node := range(nodeNet.Routers) {
+      for _, conn := range(node.Connections()) {
+        n1 := newRouter[node]
+        n2 := newRouter[conn.Router()]
+        l  := conn.Latency()
+
+        n1.Connect(NewStaticConnection(l, n2))
+      }
+    }
+  }
+
+  // Add the inter-transit edges
+  for _, node := range(tdg.Routers) {
+    for _, conn := range(node.Connections()) {
+      n1 := tdMap[node].RandomRouter()
+      n2 := tdMap[conn.Router()].RandomRouter()
+      l  := conn.Latency()
+
+      n1.Connect(NewStaticConnection(l, n2))
+    }
+  }
+
+  return network
 }
 
 /* Generates a connected graph.
