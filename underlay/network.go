@@ -13,8 +13,15 @@ func (n *Network) RandomRouter() Router {
   return n.Routers[rand.Intn(len(n.Routers))]
 }
 
-const Wtt  int = 10
+const Wtt  int = 100
 const Wttd int = 2
+
+const Ntd     int = 5
+const minNt   int = 5
+const edgeNtf int = 2
+
+const minLatency int = 2
+const maxLatency int = 10
 
 /* Generates a 2-level transit-stub topology following the paper:
  Zegura E., Calvert K. and Bhattacharjee S. How to model an internetwork. In INFOCOM’96 (1996)
@@ -34,7 +41,8 @@ const Wttd int = 2
   4. Generate multi-homed stubs
 */
 func NewInternetwork(T, Nt, S, Ns int) *Network {
-  return generateTransitDomainGraph(T, Wtt, Wttd)
+  tdg := generateTransitDomainGraph(T, Wtt, Wttd)
+  return generateTransitDomains(tdg, Nt)
 }
 
 // Generate transit domain graph
@@ -50,6 +58,29 @@ func generateTransitDomainGraph(T, Wtt, Wttd int) *Network {
   }
 
   return NewRandomUniformNetwork(T, edges, mn, mx)
+}
+
+// Generate graph from transit domain
+func generateTransitDomains(tdg *Network, Nt int) *Network {
+  // Generate the map from node in transit domain graph to
+  // graph corresponding to each transit domain
+  tdMap := make(map[Router]*Network)
+
+  for _, r := range tdg.Routers {
+    nodes := Nt - Ntd + rand.Intn(2 * Ntd + 1)
+    if nodes < minNt {
+      nodes = minNt
+    }
+
+    degree := int(math.Log2(float64(nodes))) + 1
+    degree  = degree + rand.Intn(degree * (edgeNtf - 1))
+    edges  := degree * nodes
+
+    tdMap[r] = NewRandomUniformNetwork(nodes, edges, minLatency, maxLatency)
+  }
+
+  // Generate the new (combined) graph from the two subdomains
+  return new(Network)
 }
 
 /* Generates a connected graph.
