@@ -36,3 +36,38 @@ func TestRandomUniformNetworkDegreeStdReport(t *testing.T) {
     t.Fatalf("Too big coefficient of variation.")
   }
 }
+
+func TestGenerateTransitDomainGraphCorrectEdgeWeights(t *testing.T) {
+  network := generateTransitDomainGraph(100, Wtt, Wttd)
+  for _, node := range network.Routers {
+    for _, conn := range node.Connections() {
+      if conn.Latency() > Wtt + Wttd || conn.Latency() < Wtt - Wttd {
+        t.Fatalf("Wrong edge weights.")
+      }
+    }
+  }
+}
+
+// func TestTransitDomainsAreConnected(t *testing.T) {
+//   tdg := generateTransitDomainGraph(100, Wtt, Wttd)
+//   backbone := generateTransitDomains(tdg, 10)
+//
+//   assertEqual(t, connected(backbone), true)
+// }
+//
+// func TestTransitDomainsHaveCorrectNumberOfNodes(t *testing.T) {
+//   for tt := 0; tt < 5; tt++ {
+//     doms := 20
+//     domN := 20
+//
+//     tdg := generateTransitDomainGraph(doms, Wtt, Wttd)
+//     backbone := generateTransitDomains(tdg, domN)
+//
+//     if len(backbone.Routers) < (domN - Ntd) * doms {
+//       t.Fatalf("Backbone has too few nodes.")
+//     }
+//     if len(backbone.Routers) > (domN + Ntd) * doms {
+//       t.Fatalf("Backbone has too many nodes.")
+//     }
+//   }
+// }
