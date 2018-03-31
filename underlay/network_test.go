@@ -167,3 +167,23 @@ func TestRandomUniformNetworkEachNodeHasntDomain(t *testing.T) {
     }
   }
 }
+
+func TestInternetworkConnectedAll(t *testing.T) {
+  network := NewInternetwork(10, 20, 10, 20)
+
+  for _, node := range network.Routers {
+    assertEqual(t, connectedNode(node, network), true)
+  }
+}
+
+func connectedNode(r Router, net *Network) bool {
+  visited := make(map[Router]bool)
+  dfs(visited, r)
+  ctr := 0
+  for _, v := range visited {
+    if v {
+      ctr++
+    }
+  }
+  return ctr == len(net.Routers)
+}
