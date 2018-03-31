@@ -27,52 +27,66 @@ func testNetworkMap(nodes int) OverlayMap {
   return NewNetworkMap(network)
 }
 
+func testNetworkMap2(domains, nodes int) OverlayMap {
+  rand.Seed(time.Now().UTC().UnixNano())
+  network := underlay.NewInternetwork(1, 1, domains, nodes)
+  return NewNetworkMap(network)
+}
+
 func TestNetworkMapNewIdReturnsDifferentRouter(t *testing.T) {
-  netmap := testNetworkMap(10)
-  ids := []string{}
-  for i := 0; i < 10; i++ {
-    ids = append(ids, netmap.NewId())
-  }
-  for i := 0; i < 10; i++ {
-    for j := 0; j < i; j++ {
-      assertNotEqual(t, ids[i], ids[j])
+  netmaps := []OverlayMap{testNetworkMap(10), testNetworkMap2(2, 5)}
+  for _, netmap := range netmaps {
+    ids := []string{}
+    for i := 0; i < 10; i++ {
+      ids = append(ids, netmap.NewId())
+    }
+    for i := 0; i < 10; i++ {
+      for j := 0; j < i; j++ {
+        assertNotEqual(t, ids[i], ids[j])
+      }
     }
   }
 }
 
 func TestNetworkMapJoinReturnsDifferentRouter(t *testing.T) {
-  netmap := testNetworkMap(10)
-  for i := 0; i < 10; i++ {
-    netmap.NewId()
-  }
-  for i := 0; i < 10; i++ {
-    j := netmap.Join(string(i))
-    assertNotEqual(t, string(i), j)
+  netmaps := []OverlayMap{testNetworkMap(10), testNetworkMap2(2, 5)}
+  for _, netmap := range netmaps {
+    for i := 0; i < 10; i++ {
+      netmap.NewId()
+    }
+    for i := 0; i < 10; i++ {
+      j := netmap.Join(string(i))
+      assertNotEqual(t, string(i), j)
+    }
   }
 }
 
 func TestNetworkMapCanAccessRouter(t *testing.T) {
-  netmap := testNetworkMap(10)
-  ids := []string{}
-  for i := 0; i < 10; i++ {
-    ids = append(ids, netmap.NewId())
-  }
+  netmaps := []OverlayMap{testNetworkMap(10), testNetworkMap2(2, 5)}
+  for _, netmap := range netmaps {
+    ids := []string{}
+    for i := 0; i < 10; i++ {
+      ids = append(ids, netmap.NewId())
+    }
 
-  for i := 0; i < 10; i++ {
-    for j := 0; j < i; j++ {
-      assertNotEqual(t, netmap.Router(ids[i]), netmap.Router(ids[j]))
+    for i := 0; i < 10; i++ {
+      for j := 0; j < i; j++ {
+        assertNotEqual(t, netmap.Router(ids[i]), netmap.Router(ids[j]))
+      }
     }
   }
 }
 
 func TestNetworkMapCanAccessId(t *testing.T) {
-  netmap := testNetworkMap(10)
-  ids := []string{}
-  for i := 0; i < 10; i++ {
-    ids = append(ids, netmap.NewId())
-  }
+  netmaps := []OverlayMap{testNetworkMap(10), testNetworkMap2(2, 5)}
+  for _, netmap := range netmaps {
+    ids := []string{}
+    for i := 0; i < 10; i++ {
+      ids = append(ids, netmap.NewId())
+    }
 
-  for i := 0; i < 10; i++ {
-    assertEqual(t, netmap.Id(netmap.Router(ids[i])), ids[i])
+    for i := 0; i < 10; i++ {
+      assertEqual(t, netmap.Id(netmap.Router(ids[i])), ids[i])
+    }
   }
 }

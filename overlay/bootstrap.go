@@ -23,7 +23,7 @@ type NetworkMap struct {
   network *underlay.Network
   id map[string]underlay.Router
   inv map[underlay.Router]string
-  idCtr int
+  idCtr map[string]int
 }
 
 func NewNetworkMap(network *underlay.Network) OverlayMap {
@@ -32,14 +32,23 @@ func NewNetworkMap(network *underlay.Network) OverlayMap {
   mp.network = network
   mp.id      = make(map[string]underlay.Router)
   mp.inv     = make(map[underlay.Router]string)
-  mp.idCtr   = 0
+  mp.idCtr   = make(map[string]int)
 
   return mp
 }
 
-func newId(mp *NetworkMap) (id string) {
-  mp.idCtr++
-  id = strconv.Itoa(mp.idCtr)
+func newId(mp *NetworkMap, domain string) (id string) {
+  if _, ok := mp.idCtr[domain]; !ok {
+    mp.idCtr[domain] = 0
+  }
+
+  id = strconv.Itoa(mp.idCtr[domain])
+  if domain != "" {
+    id = domain + "." + id
+  }
+
+  mp.idCtr[domain]++
+
   return
 }
 
@@ -50,7 +59,7 @@ func (mp *NetworkMap) NewId() string {
   for {
     router := mp.network.RandomRouter()
     if _, ok := mp.inv[router]; !ok {
-      routerId := newId(mp)
+      routerId := newId(mp, router.Domain())
 
       mp.id[routerId] = router
       mp.inv[router]  = routerId
