@@ -37,14 +37,36 @@ func TestRandomUniformNetworkDegreeStdReport(t *testing.T) {
   }
 }
 
-func TestGenerateTransitDomainGraphCorrectEdgeWeights(t *testing.T) {
-  network := generateTransitDomainGraph(100, Wtt, Wttd)
+func checkNetworkEdges(t *testing.T, network *Network, minL, maxL int) {
   for _, node := range network.Routers {
     for _, conn := range node.Connections() {
-      if conn.Latency() > Wtt + Wttd || conn.Latency() < Wtt - Wttd {
+      if conn.Latency() > maxL || conn.Latency() < minL {
         t.Fatalf("Wrong edge weights.")
       }
     }
+  }
+}
+
+func TestGenerateTransitDomainGraphCorrectEdgeWeights(t *testing.T) {
+  network := generateTransitDomainGraph(100, Wtt, Wttd)
+  checkNetworkEdges(t, network, Wtt - Wttd, Wtt + Wttd)
+}
+
+func TestNewRandomNetworkCorrectEdgeWeightsAndNodeNumber(t *testing.T) {
+  for tt := 0; tt < 5; tt++ {
+    N      := 100
+    nodesD := 5
+    edgeF  := 2
+    minL   := 2
+    maxL   := 10
+
+    network := newRandomNetwork(N, 10, nodesD, edgeF, minL, maxL)
+    checkNetworkEdges(t, network, minL, maxL)
+
+    N = 100
+    nodesD = 10
+    network = newRandomNetwork(N, 10, nodesD, edgeF, minL, maxL)
+    checkNetworkEdges(t, network, minL, maxL)
   }
 }
 
