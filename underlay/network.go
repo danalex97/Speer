@@ -13,28 +13,32 @@ func (n *Network) RandomRouter() Router {
   return n.Routers[rand.Intn(len(n.Routers))]
 }
 
-/* Constants used in the stub-generation algorithm. #
+/* Constants used in the stub-generation algorithm.
 
   Wtt  = avg. weight of transit-transit connections
   Wttd = Wtt delta, that is the weight is in [Wtt - Wttd, Wtt + Wttd]
 
-  Nts     = ...
-  minNt   = ...
-  edgeNtf = ...
+  Ntd     = nodes transit domain delta (see Wttd)
+  minNt   = minimum number of nodes in transit domain
+  edgeNtf = edge factor for a transit domain, that is the number of edges
+    is f * N log N
 
-  minLatency = ...
-  maxLatency = ...
+  minLatency = minimum latency for intra-domain connections
+  maxLatency = maximum latency for intra-domain connections
 
   Nsd     = ...
   minNs   = ...
   edgeNsf = ...
 
   mhsp = percent of multi-home stub *connections*
+
+  The constant values are currently arbirary, but they can be chosen to respect
+  the invariants in the paper.
 */
 const Wtt  int = 100
 const Wttd int = 2
 
-const Ntd     int = 10
+const Ntd     int = 5
 const minNt   int = 5
 const edgeNtf int = 2
 
@@ -44,8 +48,8 @@ const maxLatency int = 10
 const Wts  int = 100
 const Wtsd int = 2
 
-const Nsd     int = 20
-const minNs   int = 10
+const Nsd     int = 5
+const minNs   int = 5
 const edgeNsf int = 2
 
 const mhsp int = 50
