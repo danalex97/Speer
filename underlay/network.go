@@ -13,6 +13,7 @@ func (n *Network) RandomRouter() Router {
   return n.Routers[rand.Intn(len(n.Routers))]
 }
 
+/* Constants used in the stub-generation algorithm. */
 const Wtt  int = 100
 const Wttd int = 2
 
@@ -22,6 +23,13 @@ const edgeNtf int = 2
 
 const minLatency int = 2
 const maxLatency int = 10
+
+const Wts  int = 100
+const Wtsd int = 2
+
+const Nsd     int = 5
+const minNs   int = 10
+const edgeNsf int = 2
 
 /* Generates a 2-level transit-stub topology following the paper:
  Zegura E., Calvert K. and Bhattacharjee S. How to model an internetwork. In INFOCOM’96 (1996)
@@ -42,10 +50,11 @@ const maxLatency int = 10
 */
 func NewInternetwork(T, Nt, S, Ns int) *Network {
   tdg := generateTransitDomainGraph(T, Wtt, Wttd)
-  return generateTransitDomains(tdg, Nt)
+  backbone := generateTransitDomains(tdg, Nt)
+  return addStubs(backbone, S, Ns)
 }
 
-// Generate transit domain graph
+// 1. Generate transit domain graph
 func generateTransitDomainGraph(T, Wtt, Wttd int) *Network {
   degree := int(math.Log2(float64(T))) + 1
   edges  := degree * T
@@ -60,23 +69,14 @@ func generateTransitDomainGraph(T, Wtt, Wttd int) *Network {
   return NewRandomUniformNetwork(T, edges, mn, mx)
 }
 
-// Generate graph from transit domain
+// 2. Generate graph from transit domain
 func generateTransitDomains(tdg *Network, Nt int) *Network {
   // Generate the map from node in transit domain graph to
   // graph corresponding to each transit domain
   tdMap := make(map[Router]*Network)
 
   for _, r := range tdg.Routers {
-    nodes := Nt - Ntd + rand.Intn(2 * Ntd + 1)
-    if nodes < minNt {
-      nodes = minNt
-    }
-
-    degree := int(math.Log2(float64(nodes))) + 1
-    degree  = degree + rand.Intn(degree * (edgeNtf - 1))
-    edges  := degree * nodes
-
-    tdMap[r] = NewRandomUniformNetwork(nodes, edges, minLatency, maxLatency)
+    tdMap[r] = newRandomNetwork(Nt, minNt, Ntd, edgeNtf, minLatency, maxLatency)
   }
 
   // Generate the new (combined) graph from the two subdomains
@@ -84,22 +84,7 @@ func generateTransitDomains(tdg *Network, Nt int) *Network {
   newRouter := make(map[Router]Router)
 
   for _, nodeNet := range(tdMap) {
-    // make map from the node networks to the new combined network
-    for _, node := range(nodeNet.Routers) {
-      newRouter[node] = NewShortestPathRouter()
-      network.Routers = append(network.Routers, newRouter[node])
-    }
-
-    // add the edges
-    for _, node := range(nodeNet.Routers) {
-      for _, conn := range(node.Connections()) {
-        n1 := newRouter[node]
-        n2 := newRouter[conn.Router()]
-        l  := conn.Latency()
-
-        n1.Connect(NewStaticConnection(l, n2))
-      }
-    }
+    copyNetwork(newRouter, network, nodeNet)
   }
 
   // Add the inter-transit edges
@@ -114,6 +99,70 @@ func generateTransitDomains(tdg *Network, Nt int) *Network {
   }
 
   return network
+}
+
+// 3. Add stubs
+func addStubs(backbone *Network, S, Ns int) *Network {
+  // copy backbone
+  network := new(Network)
+  for _, node := range(backbone.Routers) {
+    network.Routers = append(network.Routers, node)
+  }
+
+  newRouter := make(map[Router]Router)
+  for i := 0; i < S; i++ {
+    // generate stub
+    stub := newRandomNetwork(Ns, minNs, Nsd, edgeNsf, minLatency, maxLatency)
+
+    // copy stub on network
+    copyNetwork(newRouter, network, stub)
+
+    // attach stub to network
+    attachBack := backbone.RandomRouter()
+    attachStub := newRouter[stub.RandomRouter()]
+
+    minLatency := Wts - Wtsd
+    maxLatency := Wts + Wtsd
+    latency := rand.Intn(maxLatency - minLatency) + minLatency
+
+    attachStub.Connect(NewStaticConnection(latency, attachBack))
+    attachBack.Connect(NewStaticConnection(latency, attachStub))
+  }
+
+  return network
+}
+
+/* Helper functions */
+func newRandomNetwork(nodes, minNodes, nodesDelta, edgeFactor, minLatency, maxLatency int) *Network {
+  nodes = nodes - nodesDelta + rand.Intn(2 * nodesDelta + 1)
+  if nodes < minNodes {
+    nodes = minNodes
+  }
+
+  degree := int(math.Log2(float64(nodes))) + 1
+  degree  = degree + rand.Intn(degree * (edgeFactor - 1))
+  edges  := degree * nodes
+
+  return NewRandomUniformNetwork(nodes, edges, minLatency, maxLatency)
+}
+
+func copyNetwork(newRouter map[Router]Router, network *Network, toCopy *Network) {
+  // make map from the node networks to the new combined network
+  for _, node := range(toCopy.Routers) {
+    newRouter[node] = NewShortestPathRouter()
+    network.Routers = append(network.Routers, newRouter[node])
+  }
+
+  // add the edges
+  for _, node := range(toCopy.Routers) {
+    for _, conn := range(node.Connections()) {
+      n1 := newRouter[node]
+      n2 := newRouter[conn.Router()]
+      l  := conn.Latency()
+
+      n1.Connect(NewStaticConnection(l, n2))
+    }
+  }
 }
 
 /* Generates a connected graph.
