@@ -108,12 +108,14 @@ func bellman(packet Packet, src *shortestPathRouter, dest Router) (*sprPacket, b
   conns := []Connection{NewStaticConnection(0, src)}
   last  := []int{-1}
   ctr   := 0
+  best  := make(map[Router]int)
 
   pkt := new(sprPacket)
   pkt.src  = packet.Src()
   pkt.dest = packet.Dest()
   pkt.payload = packet.Payload()
 
+  best[pkt.src] = 0
   for {
     curr := eq.Pop()
     if curr == nil {
@@ -141,6 +143,15 @@ func bellman(packet Packet, src *shortestPathRouter, dest Router) (*sprPacket, b
 
     for i := range(router.table) {
       conn := router.table[i]
+      r    := conn.Router()
+
+      if cst, ok := best[r]; !ok || cst > cost + conn.Latency() {
+        best[r] = cost + conn.Latency()
+      }
+
+      if cost + conn.Latency() > best[r] {
+        continue
+      }
 
       ctr += 1
       conns = append(conns, conn)

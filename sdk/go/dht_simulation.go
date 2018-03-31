@@ -89,7 +89,7 @@ func (b *DHTSimulationBuilder) WithInternetworkUnderlay(
   network := underlay.NewInternetwork(transitDomains, transitDomainSize, stubDomains, stubDomainSize)
   s := underlay.NewNetworkSimulation(events.NewLazySimulation(), network)
 
-  fmt.Println("Internetwork built.")
+  fmt.Printf("Internetwork built with %d nodes.\n", len(network.Routers))
   b.sim.underlaySimulation = s
 
   return b;

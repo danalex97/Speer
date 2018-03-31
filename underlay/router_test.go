@@ -56,3 +56,20 @@ func TestShortestPathRouterRingTopology(t *testing.T) {
     assertEqual(t, routers[i].Receive(e2).Receiver(), routers[(i - 1 + n) % n])
   }
 }
+
+func TestShortestPathRouterInternetwork(t *testing.T) {
+  network := NewInternetwork(5, 10, 0, 0)
+  routers := network.Routers
+  n := len(routers)
+
+  for i := 0; i < n; i++ {
+    for j := 0; j < n; j++ {
+      if i != j {
+        pkt := NewPacket(routers[i], routers[j], nil)
+        e := NewEvent(0, pkt, routers[j])
+
+        routers[i].Receive(e)
+      }
+    }
+  }
+}
