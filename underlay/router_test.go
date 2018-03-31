@@ -12,9 +12,9 @@ func assertEqual(t *testing.T, a interface{}, b interface{}) {
 }
 
 func TestSimpleTopology(t *testing.T) {
-  r1 := NewShortestPathRouter()
-  r2 := NewShortestPathRouter()
-  r3 := NewShortestPathRouter()
+  r1 := NewShortestPathRouter("1")
+  r2 := NewShortestPathRouter("1")
+  r3 := NewShortestPathRouter("1")
 
   r1.Connect(NewStaticConnection(1, r2))
   r2.Connect(NewStaticConnection(2, r3))
@@ -38,7 +38,7 @@ func TestShortestPathRouterRingTopology(t *testing.T) {
   routers := make([]Router, 0)
   n := 50
   for i := 0; i < n; i++ {
-    routers = append(routers, NewShortestPathRouter())
+    routers = append(routers, NewShortestPathRouter("1"))
   }
   for i := 0; i < n; i++ {
     routers[i].Connect(NewStaticConnection(1, routers[(i + 1) % n]))

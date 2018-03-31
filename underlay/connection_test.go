@@ -5,7 +5,7 @@ import (
 )
 
 func TestStaticConnectionLatencyRemainsConstant(t *testing.T) {
-  r := NewShortestPathRouter()
+  r := NewShortestPathRouter("1")
   l := 10
   c := NewStaticConnection(l, r)
 

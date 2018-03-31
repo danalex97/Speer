@@ -20,12 +20,14 @@ type sprPacket struct {
 type shortestPathRouter struct {
   table []Connection
   cache Cache
+  domain string
 }
 
-func NewShortestPathRouter() Router {
+func NewShortestPathRouter(domain string) Router {
   router := new(shortestPathRouter)
   router.table = []Connection{}
   router.cache, _ = NewLRUCache(RouterCacheSize)
+  router.domain = domain
   return router
 }
 

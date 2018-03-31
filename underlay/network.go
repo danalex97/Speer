@@ -216,7 +216,7 @@ func newRandomNetwork(nodes, minNodes, nodesDelta, edgeFactor, minLatency, maxLa
 func copyNetwork(newRouter map[Router]Router, network *Network, toCopy *Network) {
   // make map from the node networks to the new combined network
   for _, node := range toCopy.Routers {
-    newRouter[node] = NewShortestPathRouter()
+    newRouter[node] = NewShortestPathRouter("1")
     network.Routers = append(network.Routers, newRouter[node])
   }
 
@@ -268,7 +268,7 @@ func smallRandomNetwork(nodes, edges, minLatency, maxLatency int) *Network {
 
   network.Routers = []Router{}
   for i := 0; i < nodes; i++ {
-    network.Routers = append(network.Routers, NewShortestPathRouter())
+    network.Routers = append(network.Routers, NewShortestPathRouter("1"))
   }
 
   // build tree
@@ -306,7 +306,7 @@ func NewRandomUniformNetwork(nodes, edges, minLatency, maxLatency int) *Network 
   network := new(Network)
   network.Routers = []Router{}
   for i := 0; i < nodes; i++ {
-    network.Routers = append(network.Routers, NewShortestPathRouter())
+    network.Routers = append(network.Routers, NewShortestPathRouter("1"))
   }
 
   present := make(map[struct {x, y int}]bool)

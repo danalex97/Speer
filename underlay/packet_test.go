@@ -5,7 +5,7 @@ import (
 )
 
 func TestNewPacket(t *testing.T) {
-  r := NewShortestPathRouter()
+  r := NewShortestPathRouter("1")
   p := NewPacket(r, r, nil)
 
   assertEqual(t, p.Src(), r)
