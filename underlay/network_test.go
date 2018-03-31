@@ -102,3 +102,36 @@ func TestTransitDomainsHaveCorrectNumberOfNodes(t *testing.T) {
     }
   }
 }
+
+func TestAddedStubsAreConnected(t *testing.T) {
+  doms  := 15
+  stubs := 20
+  stubN := 10
+
+  backbone := generateTransitDomainGraph(doms, Wtt, Wttd)
+  _, stubed := addStubs(backbone, stubs, stubN)
+  assertEqual(t, connected(stubed), true)
+
+  stubs = 1000
+  backbone = generateTransitDomainGraph(doms, Wtt, Wttd)
+  _, stubed = addStubs(backbone, stubs, stubN)
+  assertEqual(t, connected(stubed), true)
+}
+
+func TestAddedStubsHaveCorrentNumberOfNodes(t *testing.T) {
+  for tt := 0; tt < 5; tt++ {
+    doms  := 15
+    stubs := 20
+    stubN := 10
+
+    backbone := generateTransitDomainGraph(doms, Wtt, Wttd)
+    _, stubed := addStubs(backbone, stubs, stubN)
+
+    if len(stubed.Routers) < (stubN - Nsd) * stubs + doms {
+      t.Fatalf("Stubed network has too few nodes.")
+    }
+    if len(stubed.Routers) > (stubN + Nsd) * stubs + doms {
+      t.Fatalf("Stubed network too many nodes.")
+    }
+  }
+}
