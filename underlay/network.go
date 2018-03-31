@@ -3,6 +3,7 @@ package underlay
 import (
   "math"
   "math/rand"
+  "strconv"
 )
 
 type Network struct {
@@ -144,10 +145,7 @@ func generateTransitDomains(tdg *Network, Nt int) *Network {
 // 3. Add stubs
 func addStubs(backbone *Network, S, Ns int) *Network {
   // copy backbone
-  network := new(Network)
-  for _, node := range backbone.Routers {
-    network.Routers = append(network.Routers, node)
-  }
+  network := cloneNetwork(backbone)
 
   newRouter := make(map[Router]Router)
   for i := 0; i < S; i++ {
@@ -220,7 +218,7 @@ func newRandomNetwork(nodes, minNodes, nodesDelta, edgeFactor, minLatency, maxLa
 func copyNetwork(newRouter map[Router]Router, network *Network, toCopy *Network) {
   // make map from the node networks to the new combined network
   for _, node := range toCopy.Routers {
-    newRouter[node] = NewShortestPathRouter(string(network.subdomains - 1))
+    newRouter[node] = NewShortestPathRouter(strconv.Itoa(network.subdomains - 1))
     network.Routers = append(network.Routers, newRouter[node])
   }
 
@@ -243,6 +241,19 @@ func addTsEdge(attachBack, attachStub Router) {
 
   attachStub.Connect(NewStaticConnection(latency, attachBack))
   attachBack.Connect(NewStaticConnection(latency, attachStub))
+}
+
+func cloneNetwork(toCopy *Network) *Network {
+  network := new(Network)
+  for _, node := range toCopy.Routers {
+    network.Routers = append(network.Routers, node)
+  }
+  for _, node := range toCopy.stubRouters {
+    network.stubRouters = append(network.stubRouters, node)
+  }
+  network.subdomains = toCopy.subdomains
+
+  return network
 }
 
 const smallNetNodes int = 20

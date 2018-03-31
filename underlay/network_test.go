@@ -143,3 +143,27 @@ func TestInternetworkConnected(t *testing.T) {
   network = NewInternetwork(2, 15, 100, 100)
   assertEqual(t, connected(network), true)
 }
+
+func TestInternetworkEachNodeHasDomain(t *testing.T) {
+  network := NewInternetwork(15, 30, 200, 50)
+
+  domains := make(map[string]bool)
+  for _, node := range network.Routers {
+    if node.Domain() == "" {
+      t.Fatalf("Found node without no domain.")
+    }
+    domains[node.Domain()] = true
+  }
+
+  assertEqual(t, len(domains), 215)
+}
+
+func TestRandomUniformNetworkEachNodeHasntDomain(t *testing.T) {
+  network := NewRandomUniformNetwork(10000, 70000, 2, 10)
+
+  for _, node := range network.Routers {
+    if node.Domain() != "" {
+      t.Fatalf("Found node with domain.")
+    }
+  }
+}
