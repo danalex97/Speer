@@ -135,3 +135,11 @@ func TestAddedStubsHaveCorrentNumberOfNodes(t *testing.T) {
     }
   }
 }
+
+func TestInternetworkConnected(t *testing.T) {
+  network := NewInternetwork(15, 30, 200, 50)
+  assertEqual(t, connected(network), true)
+
+  network = NewInternetwork(2, 15, 100, 100)
+  assertEqual(t, connected(network), true)
+}

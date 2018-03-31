@@ -137,7 +137,7 @@ func generateTransitDomains(tdg *Network, Nt int) *Network {
 func addStubs(backbone *Network, S, Ns int) ([]Router, *Network) {
   // copy backbone
   network := new(Network)
-  for _, node := range(backbone.Routers) {
+  for _, node := range backbone.Routers {
     network.Routers = append(network.Routers, node)
   }
 
@@ -158,7 +158,7 @@ func addStubs(backbone *Network, S, Ns int) ([]Router, *Network) {
 
   // make list of stub nodes
   stubRouters := []Router{}
-  for _, router := range(newRouter) {
+  for _, router := range newRouter {
     stubRouters = append(stubRouters, router)
   }
 
@@ -170,11 +170,11 @@ func addMhs(network *Network, stubNodes []Router, stubs int) *Network {
   mhs := mhsp * stubs / 100
 
   stubSet := make(map[Router]bool)
-  for _, node := range(stubNodes) {
+  for _, node := range stubNodes {
     stubSet[node] = true
   }
   backNodes := []Router{}
-  for _, node := range(network.Routers) {
+  for _, node := range network.Routers {
     if _, ok := stubSet[node]; !ok {
       backNodes = append(backNodes, node)
     }
@@ -208,14 +208,14 @@ func newRandomNetwork(nodes, minNodes, nodesDelta, edgeFactor, minLatency, maxLa
 // Adds toCopy connex component to network and updates the mapping newRouter
 func copyNetwork(newRouter map[Router]Router, network *Network, toCopy *Network) {
   // make map from the node networks to the new combined network
-  for _, node := range(toCopy.Routers) {
+  for _, node := range toCopy.Routers {
     newRouter[node] = NewShortestPathRouter()
     network.Routers = append(network.Routers, newRouter[node])
   }
 
   // add the edges
-  for _, node := range(toCopy.Routers) {
-    for _, conn := range(node.Connections()) {
+  for _, node := range toCopy.Routers {
+    for _, conn := range node.Connections() {
       n1 := newRouter[node]
       n2 := newRouter[conn.Router()]
       l  := conn.Latency()
@@ -324,7 +324,7 @@ func dfs(visited map[Router]bool, router Router) {
     return
   }
   visited[router] = true
-  for _, conn := range(router.Connections()) {
+  for _, conn := range router.Connections() {
     dfs(visited, conn.Router())
   }
 }
@@ -333,7 +333,7 @@ func connected(net *Network) bool {
   visited := make(map[Router]bool)
   dfs(visited, net.Routers[0])
   ctr := 0
-  for _, v := range(visited) {
+  for _, v := range visited {
     if v {
       ctr++
     }
