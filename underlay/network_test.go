@@ -72,26 +72,33 @@ func TestNewRandomNetworkCorrectEdgeWeightsAndNodeNumber(t *testing.T) {
   }
 }
 
-// func TestTransitDomainsAreConnected(t *testing.T) {
-//   tdg := generateTransitDomainGraph(100, Wtt, Wttd)
-//   backbone := generateTransitDomains(tdg, 10)
-//
-//   assertEqual(t, connected(backbone), true)
-// }
-//
-// func TestTransitDomainsHaveCorrectNumberOfNodes(t *testing.T) {
-//   for tt := 0; tt < 5; tt++ {
-//     doms := 20
-//     domN := 20
-//
-//     tdg := generateTransitDomainGraph(doms, Wtt, Wttd)
-//     backbone := generateTransitDomains(tdg, domN)
-//
-//     if len(backbone.Routers) < (domN - Ntd) * doms {
-//       t.Fatalf("Backbone has too few nodes.")
-//     }
-//     if len(backbone.Routers) > (domN + Ntd) * doms {
-//       t.Fatalf("Backbone has too many nodes.")
-//     }
-//   }
-// }
+func TestTransitDomainsAreConnected(t *testing.T) {
+  tdg := generateTransitDomainGraph(2, Wtt, Wttd)
+  backbone := generateTransitDomains(tdg, 5)
+  assertEqual(t, connected(backbone), true)
+
+  tdg = generateTransitDomainGraph(10, Wtt, Wttd)
+  backbone = generateTransitDomains(tdg, 100)
+  assertEqual(t, connected(backbone), true)
+
+  tdg = generateTransitDomainGraph(100, Wtt, Wttd)
+  backbone = generateTransitDomains(tdg, 10)
+  assertEqual(t, connected(backbone), true)
+}
+
+func TestTransitDomainsHaveCorrectNumberOfNodes(t *testing.T) {
+  for tt := 0; tt < 5; tt++ {
+    doms := 15
+    domN := 25
+
+    tdg := generateTransitDomainGraph(doms, Wtt, Wttd)
+    backbone := generateTransitDomains(tdg, domN)
+
+    if len(backbone.Routers) < (domN - Ntd) * doms {
+      t.Fatalf("Backbone has too few nodes.")
+    }
+    if len(backbone.Routers) > (domN + Ntd) * doms {
+      t.Fatalf("Backbone has too many nodes.")
+    }
+  }
+}
