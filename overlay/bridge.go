@@ -20,6 +20,9 @@ type UnderlayChan struct {
   netMap     OverlayMap
 }
 
+const sendSize int = 50
+const recvSize int = 10000
+
 func NewUnderlayChan(id string, simulation *underlay.NetworkSimulation, netMap OverlayMap) Bridge {
   chn := new(UnderlayChan)
 
@@ -27,13 +30,22 @@ func NewUnderlayChan(id string, simulation *underlay.NetworkSimulation, netMap O
   chn.simulation = simulation
   chn.netMap  = netMap
 
-  chn.send = make(chan interface{}, 50)
-  chn.recv = make(chan interface{}, 50)
+  chn.send = make(chan interface{}, sendSize)
+  chn.recv = make(chan interface{}, recvSize)
 
   go chn.establishListeners()
   go chn.establishPushers()
 
   return chn
+}
+
+func (u *UnderlayChan) notifyRecvPkt(overPacket Packet) {
+  select {
+  case u.recv <- overPacket:
+  default:
+    // Packet dropped when receiver queue is full
+    fmt.Println("Receiver queue full, packet dropped!")
+  }
 }
 
 func (u *UnderlayChan) establishListeners() {
@@ -54,7 +66,7 @@ func (u *UnderlayChan) establishListeners() {
       }
       fmt.Printf("Packet delivered: {%s, %s}\n", overPacket.Src(), overPacket.Dest())
 
-      u.recv <- overPacket
+      u.notifyRecvPkt(overPacket)
     default:
       // If there are no new packets schedule new packets
       runtime.Gosched()
