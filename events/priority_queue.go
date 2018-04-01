@@ -2,6 +2,7 @@ package events
 
 import (
   "container/heap"
+  "fmt"
 )
 
 type EventQueue interface {
@@ -45,12 +46,26 @@ func NewLazyEventQueue() EventQueue {
   return eq
 }
 
+func (eq *lazyEventQueue) depressure() {
+  fmt.Println("Priority queue push channel full. Clearing it.")
+  for len(eq.stream) > LazyQueueChanSize / 3 {
+    heap.Push(eq.h, <- eq.stream)
+  }
+}
+
 func (eq *lazyEventQueue) Push(event *Event) {
-  eq.stream <- event
+  select {
+  case eq.stream <- event:
+  default:
+    // it must be that the channel is full, so we need to
+    // relase some pressure
+    eq.depressure()
+    eq.Push(event)
+  }
 }
 
 func (eq *lazyEventQueue) Pop() (event *Event) {
-  eq.stream <- nil
+  eq.Push(nil)
   for {
     event = <- eq.stream
     if event == nil {

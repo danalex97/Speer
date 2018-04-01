@@ -19,11 +19,15 @@ type DHTSimulation struct {
   el                 *eventLooper
   ql                 *queryLooper
   nodeMap            map[string]DHTNode
+  nodeLimit          int
+  nodes              int
 }
 
 type DHTSimulationBuilder struct {
   sim *DHTSimulation
 }
+
+const maxNodeLimit int = 10000000
 
 func NewDHTSimulationBuilder(node DHTNode) *DHTSimulationBuilder {
   builder := new(DHTSimulationBuilder)
@@ -65,6 +69,20 @@ func (b *DHTSimulationBuilder) WithDefaultQueryGenerator(
   bootstrap := overlay.GetBootstrap(b.sim.underlaySimulation)
   b.sim.queryGenerator = model.NewDHTLedger(bootstrap)
 
+  b.sim.nodeLimit = maxNodeLimit
+  b.sim.nodes = 0
+
+  return b
+}
+
+func (b *DHTSimulationBuilder) WithLimitedNodes(
+  nodeLimit int) *DHTSimulationBuilder {
+  if b.sim.queryGenerator == nil {
+    panic("Query generator component has to be appended first.")
+  }
+
+  b.sim.nodeLimit = nodeLimit
+
   return b
 }
 
@@ -94,7 +112,6 @@ func (b *DHTSimulationBuilder) WithInternetworkUnderlay(
 
   return b;
 }
-
 
 func (b *DHTSimulationBuilder) Autowire() *DHTSimulationBuilder{
   aw := b.sim.node.autowire().(*AutowiredDHTNode)
@@ -135,6 +152,13 @@ func (gen *queryLooper) Receive(e *events.Event) *events.Event {
 }
 
 func (s *DHTSimulation) generateEvents() {
+  // this should be modified when we model leaves
+  if s.nodes > s.nodeLimit {
+    // this stops the event generation loop
+    fmt.Println("Node generation was stopped.")
+    return
+  }
+
   // for the moment we will only model joins
   newNode := s.node.NewDHTNode()
   // id selection should probabily be moved to SDK (?)
@@ -142,6 +166,9 @@ func (s *DHTSimulation) generateEvents() {
   id      := newNode.UnreliableNode().Id()
   s.nodeMap[id] = newNode
   newNode.OnJoin()
+
+  // update node count
+  s.nodes += 1
 
   // generate the next event to be handled
   time := s.underlaySimulation.Time() + int(s.timeModel.NextArrival())

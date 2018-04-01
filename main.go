@@ -56,8 +56,9 @@ func (s *SimpleTree) OnQuery(query DHTQuery) error {
       s.neighId,
       query,
     )
-    // fmt.Println(packet)
+    fmt.Println("Try to send.")
     s.UnreliableNode().Send() <- packet
+    fmt.Println("Sent Done.")
   }
 
   return nil
@@ -94,11 +95,12 @@ func main() {
 
   nodeTemplate := new(SimpleTree)
   s := NewDHTSimulationBuilder(nodeTemplate).
-    WithPoissonProcessModel(20, 10).
+    WithPoissonProcessModel(2, 2).
     // WithRandomUniformUnderlay(1000, 5000, 2, 10).
-    // WithInternetworkUnderlay(10, 50, 20, 50).
-    WithInternetworkUnderlay(10, 50, 100, 100).
+    WithInternetworkUnderlay(10, 50, 20, 50).
+    // WithInternetworkUnderlay(10, 50, 100, 100).
     WithDefaultQueryGenerator().
+    WithLimitedNodes(20).
     WithMetrics().
     Autowire().
     Build()
