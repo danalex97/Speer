@@ -1,9 +1,15 @@
 package events
 
+import (
+  "runtime"
+)
+
 type EventObserver interface {
   EventChan() <-chan *Event
   EnqueEvent(*Event)
 }
+
+const maxObserverQueue int = 1000
 
 type eventObserver struct {
   receiver Receiver
@@ -33,7 +39,7 @@ type globalObserver struct {
 
 func NewGlobalEventObserver() EventObserver {
   obs := new(globalObserver)
-  obs.observer = make(chan *Event, 1000)
+  obs.observer = make(chan *Event, maxObserverQueue)
   return obs
 }
 
@@ -42,5 +48,12 @@ func (o *globalObserver) EventChan() <-chan *Event {
 }
 
 func (o *globalObserver) EnqueEvent(e *Event) {
-  o.observer <- e
+  select {
+  case o.observer <- e:
+  default:
+    // If we can't register the observer, let someone else to run
+    // to break the livelock.
+    runtime.Gosched()
+    o.EnqueEvent(e)
+  }
 }

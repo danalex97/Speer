@@ -15,9 +15,12 @@ type Simulation struct {
   EventQueue
 }
 
+const maxRegisterQueue int = 50
+const minRegisterQueue int = 10
+
 func NewLazySimulation() (s Simulation) {
   s = Simulation{
-    make(chan EventObserver, 50),
+    make(chan EventObserver, maxRegisterQueue),
     make([]EventObserver, 0),
     make(chan interface {}, 1),
     new(sync.RWMutex),
@@ -28,7 +31,17 @@ func NewLazySimulation() (s Simulation) {
 }
 
 func (s *Simulation) RegisterObserver(eventObserver EventObserver) {
-  s.newObservers <- eventObserver
+  select {
+  case s.newObservers <- eventObserver:
+  default:
+    // The observer queue is full, so we need to register the new observers
+    // to clean in.
+    for len(s.newObservers) > minRegisterQueue {
+      observer := <-s.newObservers
+      s.observers = append(s.observers, observer)
+    }
+    s.RegisterObserver(eventObserver)
+  }
 }
 
 func (s *Simulation) Time() int {
