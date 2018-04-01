@@ -23,7 +23,7 @@ class JoinEntry(LogEntry):
         super(JoinEntry, self).__init__(raw_entry)
         assert(self.type == "<join>")
 
-        self.nodeId = int(self.mp["nodeId"])
+        self.nodeId = self.mp["nodeId"]
 
     def __repr__(self):
         return "<{} JOIN nodeId({})>".format(self.timestamp, self.nodeId)
@@ -35,7 +35,7 @@ class QueryEntry(LogEntry):
 
         self.key = str(self.mp["key"])
         self.size = int(self.mp["size"])
-        self.node = int(self.mp["node"])
+        self.node = self.mp["node"]
         self.store = self.mp["store"] == "true"
 
     def __repr__(self):
@@ -47,12 +47,12 @@ class UnderlayPacketEntry(LogEntry):
         super(UnderlayPacketEntry, self).__init__(raw_entry)
         assert(self.type == "<underlay_packet>")
 
-        self.src =  int(self.mp["src"])
-        self.dest = int(self.mp["dest"])
+        self.src =  self.mp["src"]
+        self.dest = self.mp["dest"]
         if len(self.mp["recv"]) == 0:
             self.recv = None
         else:
-            self.recv = int(self.mp["recv"])
+            self.recv = self.mp["recv"]
 
 class UnderlaySendPacketEntry(UnderlayPacketEntry):
     def __init__(self, raw_entry):

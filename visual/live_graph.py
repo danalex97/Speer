@@ -4,6 +4,7 @@ import pylab
 from matplotlib.pyplot import pause
 
 import networkx as nx
+import hashlib
 
 class Node():
     canvas_size = (0, 100)
@@ -34,7 +35,7 @@ class Node():
         return not self.__eq__(other)
 
     def __hash__(self):
-        return self.id
+        return int(hashlib.md5(self.id.encode('utf')).hexdigest(), 16)
 
 class Graph():
     def __init__(self):
