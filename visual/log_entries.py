@@ -53,6 +53,11 @@ class UnderlayPacketEntry(LogEntry):
             self.recv = None
         else:
             self.recv = self.mp["recv"]
+        self.domain = self.mp["domain"]
+
+    def __repr__(self):
+        return "<{} UNDERLAY PKT src({}) dest({}) domain({})>".format(
+            self.timestamp, self.src, self.dest, self.domain)
 
 class UnderlaySendPacketEntry(UnderlayPacketEntry):
     def __init__(self, raw_entry):

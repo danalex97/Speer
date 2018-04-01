@@ -80,3 +80,36 @@ class LatencyPlot(PacketPlot):
 
         self.plot.update_data(x, y)
         self.figure.canvas.draw()
+
+class InterASHopsPlot(PacketPlot):
+    def __init__(self, log_file):
+        super(InterASHopsPlot, self).__init__(log_file)
+
+    def update(self):
+        self.update_log()
+
+        x = []
+        y = []
+
+        def upd_hop(p, last, ctr):
+            curr = p.domain
+            if last != curr:
+                ctr += 1
+            return curr, ctr
+
+        for key, packets in self.packet_paths.items():
+            ctr  = 0
+            last = -1
+            for p in packets:
+                if isinstance(p, UnderlaySendPacketEntry):
+                    ctr = 0
+                    last = p.domain
+                elif isinstance(p, UnderlayRecvPacketEntry):
+                    last, ctr = upd_hop(p, last, ctr)
+                    x.append(p.timestamp)
+                    y.append(ctr)
+                else:
+                    last, ctr = upd_hop(p, last, ctr)
+
+        self.plot.update_data(x, y)
+        self.figure.canvas.draw()

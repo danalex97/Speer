@@ -99,7 +99,7 @@ func main() {
     // WithInternetworkUnderlay(10, 50, 20, 50).
     WithInternetworkUnderlay(10, 50, 100, 100).
     WithDefaultQueryGenerator().
-    // WithMetrics().
+    WithMetrics().
     Autowire().
     Build()
 

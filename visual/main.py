@@ -17,6 +17,7 @@ import threading
 
 from log_processing import get_log
 from metrics import HopPlot
+from metrics import InterASHopsPlot
 from metrics import LatencyPlot
 from networks import OverlayNetwork
 
@@ -26,7 +27,8 @@ if __name__ == "__main__":
         HopPlot("metrics.txt", overlay=False),
         HopPlot("metrics.txt", overlay=True),
         LatencyPlot("metrics.txt"),
-        OverlayNetwork("metrics.txt")
+        InterASHopsPlot("metrics.txt"),
+        OverlayNetwork("metrics.txt"),
     ]
 
     ui = MplMultiTab(figures = [tab.figure
