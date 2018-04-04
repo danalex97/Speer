@@ -28,8 +28,8 @@ type Node interface {
 const MaxConnections int = 100
 
 type Data struct {
-  id   string
-  size int
+  Id   string
+  Size int
 }
 
 type PerfectLink struct {
