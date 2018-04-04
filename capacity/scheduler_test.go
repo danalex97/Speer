@@ -28,7 +28,7 @@ func (n *node) Down() int {
   return n.down
 }
 
-func buildGraph(nodes []node, idxs []link) (*scheduler, []node, []Link) {
+func buildTest(t *testing.T, nodes []node, idxs []link, callback func(*scheduler, []node, []Link)) {
   s := NewScheduler(0).(*scheduler)
 
   links := []Link{}
@@ -41,7 +41,7 @@ func buildGraph(nodes []node, idxs []link) (*scheduler, []node, []Link) {
     status.active = true
   }
 
-  return s, nodes, links
+  callback(s, nodes, links)
 }
 
 func checkCapacity(t *testing.T, s *scheduler, link Link, cap float64) {
@@ -52,14 +52,33 @@ func checkCapacity(t *testing.T, s *scheduler, link Link, cap float64) {
 }
 
 func TestUpdCapacityTwoNodes(t *testing.T) {
-  s, _, links := buildGraph([]node{
+  buildTest(t, []node{
     node{10, 10},
     node{10, 10},
   }, []link{
     link{0, 1},
+  }, func(s *scheduler, nodes []node, links []Link) {
+    s.updCapacity()
+    checkCapacity(t, s, links[0], 10)
   })
 
-  s.updCapacity()
+  buildTest(t, []node{
+    node{2, 10},
+    node{10, 10},
+  }, []link{
+    link{0, 1},
+  }, func(s *scheduler, nodes []node, links []Link) {
+    s.updCapacity()
+    checkCapacity(t, s, links[0], 2)
+  })
 
-  checkCapacity(t, s, links[0], 10)
+  buildTest(t, []node{
+    node{10, 10},
+    node{10, 2},
+  }, []link{
+    link{0, 1},
+  }, func(s *scheduler, nodes []node, links []Link) {
+    s.updCapacity()
+    checkCapacity(t, s, links[0], 2)
+  })
 }
