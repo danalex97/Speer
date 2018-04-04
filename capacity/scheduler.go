@@ -49,7 +49,6 @@ func (s *scheduler) Schedule() {
   s.cntMutex.RLock()
   defer s.cntMutex.RUnlock()
 
-
 }
 
 func (s *scheduler) RegisterLink(l Link) {

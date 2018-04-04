@@ -2,7 +2,6 @@ package capacity
 
 import (
   "container/list"
-  . "github.com/danalex97/Speer/overlay"
 )
 
 /**
@@ -16,8 +15,14 @@ type Link interface {
   Upload(Data)
   Download() <-chan Data
 
+  From() Node
+  To()   Node
+
   Up()   int
   Down() int
+}
+
+type Node interface {
 }
 
 const MaxConnections int = 100
@@ -30,13 +35,13 @@ type Data struct {
 type PerfectLink struct {
   up        int
   down      int
-  from      UnreliableNode
-  to        UnreliableNode
+  from      Node
+  to        Node
   queue     list.List
   download  chan Data
 }
 
-func NewPerfectLink(from, to UnreliableNode, up, down int) Link {
+func NewPerfectLink(from, to Node, up, down int) Link {
   link := new(PerfectLink)
 
   link.up = up
@@ -64,4 +69,12 @@ func (p *PerfectLink) Up() int {
 
 func (p *PerfectLink) Down() int {
   return p.down
+}
+
+func (p *PerfectLink) From() Node {
+  return p.from
+}
+
+func (p *PerfectLink) To() Node {
+  return p.to
 }
