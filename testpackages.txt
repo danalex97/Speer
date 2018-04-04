@@ -1,6 +1,8 @@
+./structs
 ./events
 ./metrics
 ./model
 ./overlay
 ./underlay
 ./sdk/go
+./capacity
