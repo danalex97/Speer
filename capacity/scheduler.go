@@ -90,14 +90,6 @@ type elem struct {
   seq  int
 }
 
-func capacity(link Link, outDeg, inDeg int) float64 {
-  upCap := float64(link.From().Up()) / float64(outDeg)
-  downCap := float64(link.To().Down()) / float64(inDeg)
-
-  cap := math.Min(upCap, downCap)
-  return cap
-}
-
 func (s *scheduler) updCapacity() {
   pq  := NewPriorityQueue()
   seq := make(map[Link]int)
@@ -105,14 +97,19 @@ func (s *scheduler) updCapacity() {
   in  := make(map[Node]map[Link]bool)
   out := make(map[Node]map[Link]bool)
 
+  up   := make(map[Node]float64)
+  down := make(map[Node]float64)
+
   // build in, out map
   for link, status := range s.linkStatus {
     if status.active {
       if _, ok := in[link.From()]; !ok {
         in[link.From()] = make(map[Link]bool)
+        up[link.From()] = float64(link.From().Up())
       }
       if _, ok := out[link.To()]; !ok {
-        in[link.To()] = make(map[Link]bool)
+        out[link.To()] = make(map[Link]bool)
+        down[link.To()] = float64(link.To().Down())
       }
 
       in[link.From()][link] = true
@@ -120,10 +117,21 @@ func (s *scheduler) updCapacity() {
     }
   }
 
+  capacity := func(link Link) float64 {
+    outDeg := len(out[link.From()])
+    inDeg  := len(in[link.To()])
+
+    upCap := up[link.From()] / float64(outDeg)
+    downCap := down[link.From()] / float64(inDeg)
+
+    cap := math.Min(upCap, downCap)
+    return cap
+  }
+
   // build pq
   for link, status := range s.linkStatus {
     if status.active {
-      cap := capacity(link, len(out[link.From()]), len(in[link.To()]))
+      cap := capacity(link)
 
       seq[link] = 0
       pq.Push(Float(cap), &elem{link, seq[link]})
@@ -151,18 +159,23 @@ func (s *scheduler) updCapacity() {
     delete(in[link.To()], link)
 
     // update new link capacities
-    for l, _ := range out[link.From()] {
-      cap := capacity(l, len(out[l.From()]), len(in[l.To()]))
+    update := func(l Link) {
+      cap := capacity(l)
 
       seq[l] = seq[l] + 1
       pq.Push(Float(cap), &elem{l, seq[l]})
+
+      // update the download and upload capacities
+      up[l.From()] = up[l.From()] - cap
+      down[l.To()] = down[l.To()] - cap
+    }
+
+    for l, _ := range out[link.From()] {
+      update(l)
     }
 
     for l, _ := range in[link.To()] {
-      cap := capacity(l, len(out[l.From()]), len(in[l.To()]))
-
-      seq[l] = seq[l] + 1
-      pq.Push(Float(cap), &elem{l, seq[l]})
+      update(l)
     }
   }
 }
