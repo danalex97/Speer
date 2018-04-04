@@ -158,16 +158,16 @@ func (s *scheduler) updCapacity() {
     delete(out[link.From()], link)
     delete(in[link.To()], link)
 
+    // update download and upload capacities
+    up[link.From()] = up[link.From()] - cap
+    down[link.To()] = down[link.To()] - cap
+
     // update new link capacities
     update := func(l Link) {
       cap := capacity(l)
 
       seq[l] = seq[l] + 1
       pq.Push(Float(cap), &elem{l, seq[l]})
-
-      // update the download and upload capacities
-      up[l.From()] = up[l.From()] - cap
-      down[l.To()] = down[l.To()] - cap
     }
 
     for l, _ := range out[link.From()] {
