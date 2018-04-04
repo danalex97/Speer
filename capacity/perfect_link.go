@@ -34,7 +34,7 @@ type Data struct {
 type PerfectLink struct {
   from      Node
   to        Node
-  queue     list.List
+  queue     *list.List
   download  chan Data
 }
 
@@ -43,7 +43,7 @@ func NewPerfectLink(from, to Node) Link {
 
   link.from = from
   link.to = to
-  link.queue = *list.New()
+  link.queue = list.New()
   link.download = make(chan Data, MaxConnections)
 
   return link

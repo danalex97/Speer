@@ -6,9 +6,11 @@ import (
 
 func assertEqual(t *testing.T, a interface{}, b interface{}) {
 	if a != b {
-		t.Fatalf("%s != %s", a, b)
+    t.Fatalf("%s != %s", a, b)
 	}
 }
+
+/* Mock structures. */
 
 type node struct {
   down int
@@ -27,6 +29,60 @@ func (n *node) Up() int {
 func (n *node) Down() int {
   return n.down
 }
+
+/* Scheduler full scenario test. */
+
+func TestSchedulerFullScenario(t *testing.T) {
+  s := NewScheduler(10).(*scheduler)
+
+  nodes := []Node{
+    &node{10, 0},
+    &node{0, 30},
+    &node{0, 20},
+  }
+  links := []Link{
+    NewPerfectLink(nodes[1], nodes[0]),
+    NewPerfectLink(nodes[2], nodes[0]),
+  }
+  s.RegisterLink(links[0])
+  s.RegisterLink(links[1])
+
+  // time: 0
+  links[0].Upload(Data{"1-0", 100})
+  links[1].Upload(Data{"2-0", 50})
+  s.Schedule()
+
+  // time: 10
+  links[1].Upload(Data{"2-0", 50})
+  s.Schedule()
+  if len(links[0].Download()) != 0 {
+    t.Fatalf("Link 1-0 transmitted: %s", len(links[0].Download()))
+  }
+  if len(links[1].Download()) != 1 {
+    t.Fatalf("Link 2-0 not transmitted: %s", len(links[1].Download()))
+  }
+
+  // time: 20
+  links[0].Upload(Data{"1-0", 100})
+  s.Schedule()
+  if len(links[0].Download()) != 1 {
+    t.Fatalf("Link 1-0 not transmitted: %s", len(links[0].Download()))
+  }
+  if len(links[1].Download()) != 2 {
+    t.Fatalf("Link 2-0 not transmitted: %s", len(links[1].Download()))
+  }
+
+  // time: 30
+  s.Schedule()
+  if len(links[0].Download()) != 2 {
+    t.Fatalf("Link 1-0 not transmitted: %s", len(links[0].Download()))
+  }
+  if len(links[1].Download()) != 2 {
+    t.Fatalf("Link 2-0 not transmitted: %s", len(links[1].Download()))
+  }
+}
+
+/* Capacity upload checks. */
 
 func buildTest(t *testing.T, nodes []node, idxs []link, callback func(*scheduler, []node, []Link)) {
   s := NewScheduler(0).(*scheduler)
