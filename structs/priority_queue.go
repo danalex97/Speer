@@ -10,7 +10,8 @@ type Element struct {
 }
 
 type PriorityQueue interface {
-  Push(*Element)
+  Len() int
+  Push(int, interface {})
   Pop() *Element
 }
 
@@ -48,10 +49,14 @@ func NewPriorityQueue() PriorityQueue {
   return q
 }
 
-func (q *pq) Push(e *Element) {
-  heap.Push(q.h, e)
+func (q *pq) Push(key int, value interface {}) {
+  heap.Push(q.h, &Element{key, value})
 }
 
 func (q *pq) Pop() *Element {
   return heap.Pop(q.h).(*Element)
+}
+
+func (q *pq) Len() int {
+  return q.h.Len()
 }
