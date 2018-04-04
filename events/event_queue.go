@@ -28,7 +28,7 @@ func (eq *lazyEventQueue) depressure() {
   fmt.Println("Priority queue push channel full. Clearing it.")
   for len(eq.stream) > LazyQueueChanSize / 3 {
     event := <- eq.stream
-    eq.pq.Push(event.timestamp, event)
+    eq.pq.Push(Int(event.timestamp), event)
   }
 }
 
@@ -39,7 +39,7 @@ func (eq *lazyEventQueue) Push(event *Event) {
     // it must be that the channel is full, so we need to
     // relase some pressure
     eq.depressure()
-    eq.pq.Push(event.timestamp, event)
+    eq.pq.Push(Int(event.timestamp), event)
   }
 }
 
@@ -51,7 +51,7 @@ func (eq *lazyEventQueue) Pop() (event *Event) {
       break
     }
 
-    eq.pq.Push(event.timestamp, event)
+    eq.pq.Push(Int(event.timestamp), event)
   }
 
   if eq.pq.Len() > 0 {

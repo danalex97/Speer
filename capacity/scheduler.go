@@ -1,9 +1,10 @@
 package capacity
 
 import (
-  // . "github.com/danalex97/Speer/structs"
+  . "github.com/danalex97/Speer/structs"
   . "github.com/danalex97/Speer/events"
   "sync"
+  "math"
 )
 
 type Scheduler interface {
@@ -84,9 +85,45 @@ func (s *scheduler) updData() {
   }
 }
 
+type elem struct {
+  link Link
+  seq  int
+}
+
 func (s *scheduler) updCapacity() {
-  // pq  := NewPriorityQueue()
-  // seq := new(map[Link]int)
+  pq  := NewPriorityQueue()
+  seq := make(map[Link]int)
+
+  in  := make(map[Node]map[Link]bool)
+  out := make(map[Node]map[Link]bool)
+
+  // build in, out map
+  for link, status := range s.linkStatus {
+    if status.active {
+      if _, ok := in[link.From()]; !ok {
+        in[link.From()] = make(map[Link]bool)
+      }
+      if _, ok := out[link.To()]; !ok {
+        in[link.To()] = make(map[Link]bool)
+      }
+
+      in[link.From()][link] = true
+      out[link.To()][link] = true
+    }
+  }
+
+  // build pq
+  for link, status := range s.linkStatus {
+    if status.active {
+      upCap := float64(link.Up()) / float64(len(out[link.From()]))
+      downCap := float64(link.Down()) / float64(len(in[link.To()]))
+      cap := math.Min(upCap, downCap)
+
+      pq.Push(Float(cap), &elem{link, 0})
+      seq[link] = 0
+    }
+  }
+
 
 }
 

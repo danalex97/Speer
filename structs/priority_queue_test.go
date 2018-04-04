@@ -13,11 +13,17 @@ func assertEqual(t *testing.T, a interface{}, b interface{}) {
 func TestPriorityQueueOrderedElements(t *testing.T) {
   q := NewPriorityQueue()
 
-  q.Push(3, nil)
-  q.Push(1, nil)
-  q.Push(2, nil)
+  assertEqual(t, q.Len(), 0)
 
-  assertEqual(t, q.Pop().Key, 1)
-  assertEqual(t, q.Pop().Key, 2)
-  assertEqual(t, q.Pop().Key, 3)
+  q.Push(Int(3), nil)
+  q.Push(Int(1), nil)
+  q.Push(Int(2), nil)
+
+  assertEqual(t, q.Len(), 3)
+
+  assertEqual(t, q.Pop().Key, Int(1))
+  assertEqual(t, q.Pop().Key, Int(2))
+  assertEqual(t, q.Pop().Key, Int(3))
+
+  assertEqual(t, q.Len(), 0)
 }
