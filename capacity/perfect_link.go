@@ -7,7 +7,8 @@ import (
 
 /**
  Assumptions:
-   - equal link share
+   - equal link share & max capacity
+   - no latency effects
    - end-capacity is the bottleneck
  */
 
@@ -16,7 +17,7 @@ type Link interface {
   Download() <-chan Data
 }
 
-const MaxConnections int = 50
+const MaxConnections int = 100
 
 type Data struct {
   id   string
@@ -24,18 +25,20 @@ type Data struct {
 }
 
 type PerfectLink struct {
-  bandwidth int
+  bwUp      int
+  bwDown    int
   from      UnreliableNode
   to        UnreliableNode
   queue     list.List
-  time      int
   download  chan Data
 }
 
-func NewPerfectLink(from, to UnreliableNode, bandwidth int) Link {
+func NewPerfectLink(from, to UnreliableNode, bwUp, bwDown int) Link {
   link := new(PerfectLink)
 
-  link.bandwidth = bandwidth
+  link.bwUp = bwUp
+  link.bwDown = bwDown
+
   link.from = from
   link.to = to
   link.queue = *list.New()
