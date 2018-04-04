@@ -103,17 +103,17 @@ func (s *scheduler) updCapacity() {
   // build in, out map
   for link, status := range s.linkStatus {
     if status.active {
-      if _, ok := in[link.From()]; !ok {
-        in[link.From()] = make(map[Link]bool)
-        up[link.From()] = float64(link.From().Up())
-      }
-      if _, ok := out[link.To()]; !ok {
-        out[link.To()] = make(map[Link]bool)
+      if _, ok := in[link.To()]; !ok {
+        in[link.To()] = make(map[Link]bool)
         down[link.To()] = float64(link.To().Down())
       }
+      if _, ok := out[link.From()]; !ok {
+        out[link.From()] = make(map[Link]bool)
+        up[link.From()] = float64(link.From().Up())
+      }
 
-      in[link.From()][link] = true
-      out[link.To()][link] = true
+      in[link.To()][link] = true
+      out[link.From()][link] = true
     }
   }
 
@@ -122,7 +122,7 @@ func (s *scheduler) updCapacity() {
     inDeg  := len(in[link.To()])
 
     upCap := up[link.From()] / float64(outDeg)
-    downCap := down[link.From()] / float64(inDeg)
+    downCap := down[link.To()] / float64(inDeg)
 
     cap := math.Min(upCap, downCap)
     return cap
