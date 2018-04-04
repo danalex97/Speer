@@ -90,6 +90,14 @@ type elem struct {
   seq  int
 }
 
+func capacity(link Link, outDeg, inDeg int) float64 {
+  upCap := float64(link.From().Up()) / float64(outDeg)
+  downCap := float64(link.To().Down()) / float64(inDeg)
+
+  cap := math.Min(upCap, downCap)
+  return cap
+}
+
 func (s *scheduler) updCapacity() {
   pq  := NewPriorityQueue()
   seq := make(map[Link]int)
@@ -115,16 +123,48 @@ func (s *scheduler) updCapacity() {
   // build pq
   for link, status := range s.linkStatus {
     if status.active {
-      upCap := float64(link.Up()) / float64(len(out[link.From()]))
-      downCap := float64(link.Down()) / float64(len(in[link.To()]))
-      cap := math.Min(upCap, downCap)
+      cap := capacity(link, len(out[link.From()]), len(in[link.To()]))
 
-      pq.Push(Float(cap), &elem{link, 0})
       seq[link] = 0
+      pq.Push(Float(cap), &elem{link, seq[link]})
     }
   }
 
+  for pq.Len() > 0 {
+    front := pq.Pop()
 
+    top := front.Value.(*elem)
+    cap := float64(front.Key.(Float))
+
+    link := top.link
+    if top.seq < seq[link] {
+      // the element is stale, so we can continue
+      continue
+    }
+
+    // update the link
+    status := s.linkStatus[link]
+    status.capacity = cap
+
+    // remove the smallest capacity link
+    delete(out[link.From()], link)
+    delete(in[link.To()], link)
+
+    // update new link capacities
+    for l, _ := range out[link.From()] {
+      cap := capacity(l, len(out[l.From()]), len(in[l.To()]))
+
+      seq[l] = seq[l] + 1
+      pq.Push(Float(cap), &elem{l, seq[l]})
+    }
+
+    for l, _ := range in[link.To()] {
+      cap := capacity(l, len(out[l.From()]), len(in[l.To()]))
+
+      seq[l] = seq[l] + 1
+      pq.Push(Float(cap), &elem{l, seq[l]})
+    }
+  }
 }
 
 func (s *scheduler) Schedule() {
