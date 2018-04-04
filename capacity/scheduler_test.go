@@ -108,3 +108,44 @@ func TestUpdCapacitySimpleGraph(t *testing.T) {
     checkCapacity(t, s, links[2], 6)
   })
 }
+
+func TestUpdCapacityMultipleToOne(t *testing.T) {
+  buildTest(t, []node{
+    node{5, 0},
+    node{0, 2},
+    node{0, 2},
+  }, []link{
+    link{1, 0},
+    link{2, 0},
+  }, func(s *scheduler, nodes []node, links []Link) {
+    s.updCapacity()
+    checkCapacity(t, s, links[0], 2)
+    checkCapacity(t, s, links[1], 2)
+  })
+
+  buildTest(t, []node{
+    node{5, 0},
+    node{0, 3},
+    node{0, 3},
+  }, []link{
+    link{1, 0},
+    link{2, 0},
+  }, func(s *scheduler, nodes []node, links []Link) {
+    s.updCapacity()
+    checkCapacity(t, s, links[0], 2.5)
+    checkCapacity(t, s, links[1], 2.5)
+  })
+
+  buildTest(t, []node{
+    node{5, 0},
+    node{0, 10},
+    node{0, 10},
+  }, []link{
+    link{1, 0},
+    link{2, 0},
+  }, func(s *scheduler, nodes []node, links []Link) {
+    s.updCapacity()
+    checkCapacity(t, s, links[0], 2.5)
+    checkCapacity(t, s, links[1], 2.5)
+  })
+}
