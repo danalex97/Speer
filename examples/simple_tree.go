@@ -6,7 +6,6 @@ import (
   "github.com/danalex97/Speer/overlay"
   "runtime"
   "sync"
-  "math/rand"
   "fmt"
 )
 
@@ -77,11 +76,5 @@ func (s *SimpleTree) NewDHTNode() DHTNode {
 }
 
 func (s *SimpleTree) Key() string {
-  const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-
-  b := make([]byte, 30)
-  for i := range b {
-    b[i] = letterBytes[rand.Int63() % int64(len(letterBytes))]
-  }
-  return string(b)
+  return RandomKey()
 }
