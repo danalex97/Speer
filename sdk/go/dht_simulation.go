@@ -29,7 +29,7 @@ type DHTSimulationBuilder struct {
 
 const maxNodeLimit int = 10000000
 
-func NewDHTSimulationBuilder(node DHTNode) *DHTSimulationBuilder {
+func NewDHSimulationBuilder(node DHTNode) *DHTSimulationBuilder {
   builder := new(DHTSimulationBuilder)
   builder.sim = new(DHTSimulation)
   builder.sim.node = node
@@ -217,4 +217,9 @@ func (s *DHTSimulation) Run() {
 
 func (s *DHTSimulation) Stop() {
   s.underlaySimulation.Stop()
+}
+
+// Entry point for torrent simulation
+func (t *DHTSimulationBuilder) WithCapacities() *TorrentSimulationBuilder {
+  return NewTorrentSimulationBuilder(t)
 }
