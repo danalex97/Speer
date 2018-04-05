@@ -76,12 +76,16 @@ func (s *TorrentSimulation) updateEngines() {
       s.toRegister = s.toRegister[idx + 1:]
     }
 
-    newEngine := NewTransferEngine(register.up, register.down)
     for _, node := range s.nodeMap {
       if _, ok := s.engines[node]; !ok {
-        s.engines[node] = newEngine
+        newEngine := NewTransferEngine(
+          register.up,
+          register.down,
+          node.UnreliableNode().Id(),
+        )
 
-        // We autowire the engine
+        // Wire the engine
+        s.engines[node] = newEngine
         node.(TorrentNode).autowireEngine(newEngine)
 
         return true

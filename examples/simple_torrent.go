@@ -13,12 +13,12 @@ type SimpleTorrent struct {
   AutowiredTorrentNode
   sync.Mutex
 
-  id      string
-  ids     []string
-  links   map[string]Link
+  id    string
+  ids   []string
+  links map[string]Link
 }
 
-type controlMsg struct {
+type idBroadcast struct {
   ids []string
 }
 
@@ -26,18 +26,42 @@ type controlMsg struct {
 func (s *SimpleTorrent) OnJoin() {
   go func() {
     for {
+      if s.Transfer() == nil {
+        // engine not ready
+
+        runtime.Gosched()
+        continue
+      }
+
+      // check links
+      for _, l := range s.links {
+        select {
+        case m, _ := <-l.Download():
+            // data := m.(Data)
+            fmt.Println(s.id, "data", m)
+        default:
+          continue
+        }
+      }
+
+      // check for control messages
       select {
       case _, ok := <-s.UnreliableNode().Recv():
         if ok {
           fmt.Println("Packet receive!")
         }
+
       case m, ok := <-s.Transfer().ControlRecv():
         if !ok {
           continue
         }
-        msg := m.(controlMsg)
 
-        s.updateIds(msg.ids)
+        switch msg := m.(type) {
+        case idBroadcast:
+          s.updateIds(msg.ids)
+          // fmt.Println(s.id, "received", msg.ids)
+        }
+
       default:
         runtime.Gosched()
       }
@@ -45,7 +69,21 @@ func (s *SimpleTorrent) OnJoin() {
   }()
 
   go func() {
+    // wait for engine to be ready
+    Wait(func () bool {
+      return s.Transfer() == nil
+    })
 
+    // broadcast neighbours
+    for _, id := range s.ids {
+      if id != s.id {
+        Wait(func () bool {
+          return !s.Transfer().ControlPing(id)
+        })
+
+        s.Transfer().ControlSend(id, idBroadcast{s.ids})
+      }
+    }
   }()
 }
 
@@ -62,8 +100,9 @@ func (s *SimpleTorrent) NewDHTNode() DHTNode {
 
   node.Autowire(s)
 
-  node.id   = node.UnreliableNode().Id()
-  node.ids  = []string{node.id, node.UnreliableNode().Join()}
+  node.id    = node.UnreliableNode().Id()
+  node.ids   = []string{node.id, node.UnreliableNode().Join()}
+  node.links = map[string]Link{}
 
   return node
 }
@@ -86,9 +125,22 @@ func (s *SimpleTorrent) updateIds(ids []string) {
   for id, _ := range allIds {
     s.ids = append(s.ids, id)
 
+    if id == s.id {
+      continue
+    }
+
     // register link if not registered
-    // if _, ok := s.links[id]; !ok {
-    //   s.links[id] = s.Transfer().Connect
-    // }
+    if _, ok := s.links[id]; !ok {
+      s.links[id] = s.Transfer().Connect(id)
+
+      // if the link is new, we broadcast our list again
+      Wait(func () bool {
+        return !s.Transfer().ControlPing(id)
+      })
+      s.Transfer().ControlSend(id, idBroadcast{s.ids})
+
+      // send a big packet
+      s.links[id].Upload(Data{s.Key(), 10})
+    }
   }
 }

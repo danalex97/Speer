@@ -2,7 +2,18 @@ package examples
 
 import (
   "math/rand"
+  "runtime"
 )
+
+func Wait(cond func () bool) {
+  for {
+    if cond() {
+      runtime.Gosched()
+    } else {
+      break
+    }
+  }
+}
 
 func RandomKey() string {
   const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"

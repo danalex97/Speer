@@ -11,13 +11,13 @@ type Engine interface {
   Id() string
   Connect(string) Link
 
+  ControlPing(string) bool
   ControlSend(string, interface {})
   ControlRecv() <-chan interface {}
 }
 
 /* Global variables */
-var engineMap = *new(map[string]Engine)
-var ctr       = 0
+var engineMap = make(map[string]Engine)
 var mapLock   = new(sync.RWMutex)
 
 const controlMessageCapacity int = 50
@@ -43,7 +43,7 @@ type TransferEngine struct {
   id   string
 }
 
-func NewTransferEngine(up, down int) Engine {
+func NewTransferEngine(up, down int, id string) Engine {
   mapLock.Lock()
   defer mapLock.Unlock()
 
@@ -53,11 +53,10 @@ func NewTransferEngine(up, down int) Engine {
       down,
     },
     make(chan interface {}, controlMessageCapacity),
-    string(ctr),
+    id,
   }
 
   engineMap[engine.id] = engine
-  ctr++
 
   return engine
 }
@@ -78,6 +77,13 @@ func (e *TransferEngine) ControlSend(id string, message interface{}) {
 
 func (e *TransferEngine) ControlRecv() <-chan interface{} {
   return e.recv
+}
+
+func (e *TransferEngine) ControlPing(id string) bool {
+  mapLock.RLock()
+  defer mapLock.RUnlock()
+
+  return engineMap[id] != nil
 }
 
 func (e *TransferEngine) Id() string {
