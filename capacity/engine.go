@@ -14,6 +14,9 @@ type Engine interface {
   ControlPing(string) bool
   ControlSend(string, interface {})
   ControlRecv() <-chan interface {}
+
+  // seam used to register the links in the SDK
+  SetConnectCallback(func (Link))
 }
 
 /* Global variables */
@@ -39,8 +42,10 @@ func (n *node) Down() int {
 /* Implementation. */
 type TransferEngine struct {
   node
-  recv chan interface {}
-  id   string
+
+  recv             chan interface {}
+  id               string
+  connectCallback  func (Link)
 }
 
 func NewTransferEngine(up, down int, id string) Engine {
@@ -54,6 +59,7 @@ func NewTransferEngine(up, down int, id string) Engine {
     },
     make(chan interface {}, controlMessageCapacity),
     id,
+    func (Link) {},
   }
 
   engineMap[engine.id] = engine
@@ -65,7 +71,10 @@ func (e *TransferEngine) Connect(id string) Link {
   mapLock.RLock()
   defer mapLock.RUnlock()
 
-  return NewPerfectLink(e, engineMap[id])
+  link := NewPerfectLink(e, engineMap[id])
+  e.connectCallback(link)
+
+  return link
 }
 
 func (e *TransferEngine) ControlSend(id string, message interface{}) {
@@ -88,4 +97,8 @@ func (e *TransferEngine) ControlPing(id string) bool {
 
 func (e *TransferEngine) Id() string {
   return e.id
+}
+
+func (e *TransferEngine) SetConnectCallback(callback func (Link)) {
+  e.connectCallback = callback
 }

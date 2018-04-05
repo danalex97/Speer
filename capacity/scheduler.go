@@ -18,9 +18,8 @@ type Scheduler interface {
 type scheduler struct {
   interval int
 
-  cntMutex *sync.RWMutex
+  linkMutex *sync.Mutex
 
-  cnt        int
   linkStatus map[Link]*status
   callback   func ()
 }
@@ -35,8 +34,7 @@ func NewScheduler(interval int) Scheduler {
   s := new(scheduler)
 
   s.interval   = interval
-  s.cntMutex   = new(sync.RWMutex)
-  s.cnt        = 0
+  s.linkMutex   = new(sync.Mutex)
   s.linkStatus = make(map[Link]*status)
   s.callback   = func() {}
 
@@ -44,11 +42,7 @@ func NewScheduler(interval int) Scheduler {
 }
 
 func (s *scheduler) Receive(event *Event) *Event {
-  s.cntMutex.RLock()
-  defer s.cntMutex.RUnlock()
-
   s.Schedule()
-  s.cnt += 1
 
   return NewEvent(
     event.Timestamp() + s.interval,
@@ -185,18 +179,19 @@ func (s *scheduler) updCapacity() {
 }
 
 func (s *scheduler) Schedule() {
-  s.cntMutex.RLock()
-  defer s.cntMutex.RUnlock()
+  s.linkMutex.Lock()
 
   s.updData()
   s.updCapacity()
+
+  s.linkMutex.Unlock()
 
   s.callback()
 }
 
 func (s *scheduler) RegisterLink(l Link) {
-  s.cntMutex.RLock()
-  defer s.cntMutex.RUnlock()
+  s.linkMutex.Lock()
+  defer s.linkMutex.Unlock()
 
   s.linkStatus[l] = &status{false, 0, 0}
 }

@@ -84,6 +84,11 @@ func (s *TorrentSimulation) updateEngines() {
           node.UnreliableNode().Id(),
         )
 
+        // Set connection callback
+        newEngine.SetConnectCallback(func (l Link) {
+          s.scheduler.RegisterLink(l)
+        })
+
         // Wire the engine
         s.engines[node] = newEngine
         node.(TorrentNode).autowireEngine(newEngine)

@@ -59,7 +59,7 @@ func (s *SimpleTorrent) OnJoin() {
         switch msg := m.(type) {
         case idBroadcast:
           s.updateIds(msg.ids)
-          // fmt.Println(s.id, "received", msg.ids)
+          fmt.Println(s.id, "received", msg.ids)
         }
 
       default:
@@ -140,7 +140,7 @@ func (s *SimpleTorrent) updateIds(ids []string) {
       s.Transfer().ControlSend(id, idBroadcast{s.ids})
 
       // send a big packet
-      s.links[id].Upload(Data{s.Key(), 10})
+      s.links[id].Upload(Data{s.Key(), 1000})
     }
   }
 }
