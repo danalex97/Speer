@@ -9,3 +9,11 @@ type TorrentNode interface {
 
   Transfer() capacity.Engine
 }
+
+type AutowiredTorrentNode struct {
+  AutowiredDHTNode
+}
+
+func (n *AutowiredDHTNode) Transfer() capacity.Engine {
+  return nil
+}

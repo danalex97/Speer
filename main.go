@@ -13,7 +13,7 @@ import (
 )
 
 type SimpleTree struct {
-  AutowiredDHTNode
+  AutowiredTorrentNode
   sync.Mutex
 
   id           string
@@ -56,9 +56,7 @@ func (s *SimpleTree) OnQuery(query DHTQuery) error {
       s.neighId,
       query,
     )
-    fmt.Println("Try to send.")
     s.UnreliableNode().Send() <- packet
-    fmt.Println("Sent Done.")
   }
 
   return nil
@@ -100,8 +98,8 @@ func main() {
     WithInternetworkUnderlay(10, 50, 20, 50).
     // WithInternetworkUnderlay(10, 50, 100, 100).
     WithDefaultQueryGenerator().
-    WithLimitedNodes(20).
-    WithMetrics().
+    WithLimitedNodes(100).
+    // WithMetrics().
     Autowire().
     Build()
 

@@ -29,7 +29,7 @@ type DHTSimulationBuilder struct {
 
 const maxNodeLimit int = 10000000
 
-func NewDHSimulationBuilder(node DHTNode) *DHTSimulationBuilder {
+func NewDHTSimulationBuilder(node DHTNode) *DHTSimulationBuilder {
   builder := new(DHTSimulationBuilder)
   builder.sim = new(DHTSimulation)
   builder.sim.node = node
