@@ -13,6 +13,7 @@ type Scheduler interface {
 
   RegisterLink(Link)
   Schedule()
+  SetCallback(func ())
 }
 
 type scheduler struct {
@@ -22,6 +23,7 @@ type scheduler struct {
 
   cnt        int
   linkStatus map[Link]*status
+  callback   func ()
 }
 
 type status struct {
@@ -37,6 +39,7 @@ func NewScheduler(interval int) Scheduler {
   s.cntMutex   = new(sync.RWMutex)
   s.cnt        = 0
   s.linkStatus = make(map[Link]*status)
+  s.callback   = func() {}
 
   return s
 }
@@ -190,6 +193,8 @@ func (s *scheduler) Schedule() {
 
   s.updData()
   s.updCapacity()
+
+  s.callback()
 }
 
 func (s *scheduler) RegisterLink(l Link) {
@@ -197,4 +202,8 @@ func (s *scheduler) RegisterLink(l Link) {
   defer s.cntMutex.RUnlock()
 
   s.linkStatus[l] = &status{false, 0, 0}
+}
+
+func (s *scheduler) SetCallback(callback func ()) {
+  s.callback = callback
 }

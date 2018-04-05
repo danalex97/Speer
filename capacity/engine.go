@@ -29,11 +29,11 @@ type TransferEngine struct {
   recv chan interface {}
 }
 
-func NewTransferEngine(n Node) Engine {
+func NewTransferEngine(up, down int) Engine {
   return &TransferEngine{
     node{
-      n.Up(),
-      n.Down(),
+      up,
+      down,
     },
     make(chan interface {}, controlMessageCapacity),
   }
