@@ -12,22 +12,9 @@ func assertEqual(t *testing.T, a interface{}, b interface{}) {
 
 /* Mock structures. */
 
-type node struct {
-  down int
-  up   int
-}
-
 type link struct {
   from int
   to   int
-}
-
-func (n *node) Up() int {
-  return n.up
-}
-
-func (n *node) Down() int {
-  return n.down
 }
 
 /* Scheduler full scenario test. */
