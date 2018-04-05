@@ -29,10 +29,10 @@ type DHTNode interface {
   Key() string
   // generate a new key for the key space
 
-  autowire() Autowire
+  Autowire(template DHTNode)
   // used to autowire the node to the simulation
 
-  Autowire(template DHTNode)
+  autowire() Autowire
   // used to autowire the node to the simulation
 }
 

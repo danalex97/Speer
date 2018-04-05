@@ -80,6 +80,10 @@ func (s *TorrentSimulation) updateEngines() {
     for _, node := range s.nodeMap {
       if _, ok := s.engines[node]; !ok {
         s.engines[node] = newEngine
+
+        // We autowire the engine
+        node.(TorrentNode).autowireEngine(newEngine)
+
         return true
       }
     }
