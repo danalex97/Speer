@@ -101,6 +101,8 @@ func main() {
     WithLimitedNodes(100).
     // WithMetrics().
     Autowire().
+    WithCapacities().
+    WithTransferInterval(10).
     Build()
 
   s.Run()

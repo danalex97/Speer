@@ -5,10 +5,12 @@ import (
   . "github.com/danalex97/Speer/events"
   "sync"
   "math"
+  "fmt"
 )
 
 type Scheduler interface {
   Receiver
+
   RegisterLink(Link)
   Schedule()
 }
@@ -183,6 +185,8 @@ func (s *scheduler) updCapacity() {
 func (s *scheduler) Schedule() {
   s.cntMutex.RLock()
   defer s.cntMutex.RUnlock()
+
+  fmt.Println("Scheduler running.")
 
   s.updData()
   s.updCapacity()
