@@ -2,13 +2,10 @@ package overlay
 
 import (
   "github.com/danalex97/Speer/underlay"
+  "github.com/danalex97/Speer/interfaces"
 )
 
-type UnreliableNode interface {
-  Id()   string
-  Join() string
-  Bridge
-}
+type UnreliableNode interfaces.UnreliableNode
 
 type UnreliableSimulatedNode struct {
   simulation *underlay.NetworkSimulation

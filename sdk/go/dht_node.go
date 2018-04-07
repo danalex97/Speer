@@ -6,7 +6,7 @@ import (
 )
 
 type DHTNode interface {
-  UnreliableNode() overlay.UnreliableNode
+  UnreliableNode() interfaces.UnreliableNode
   // an unreliable node interface is a mean of interaction with an
   // underlay simulation through the overlay
 
@@ -45,7 +45,7 @@ func autowiredUnreliableNode(node DHTNode) overlay.UnreliableNode {
 
 // autowiring mechanism to hide simulation injection at construction
 type Autowire interface {
-  UnreliableNode() overlay.UnreliableNode
+  UnreliableNode() interfaces.UnreliableNode
   autowire() Autowire
   Autowire(template DHTNode)
 }
@@ -63,6 +63,6 @@ func (a *AutowiredDHTNode) autowire() Autowire {
   return a
 }
 
-func (a *AutowiredDHTNode) UnreliableNode() overlay.UnreliableNode {
+func (a *AutowiredDHTNode) UnreliableNode() interfaces.UnreliableNode {
   return a.node
 }
