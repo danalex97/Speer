@@ -24,20 +24,16 @@ type idBroadcast struct {
 
 /* Interface functions. */
 func (s *SimpleTorrent) OnJoin() {
+  if s.transport == nil {
+    return
+  }
+
   go func() {
     for {
-      if s.transport == nil {
-        // engine not ready
-
-        runtime.Gosched()
-        continue
-      }
-
       // check links
       for _, l := range s.links {
         select {
         case m, _ := <-l.Download():
-            // data := m.(Data)
             fmt.Println(s.id, "data", m)
         default:
           continue
@@ -65,21 +61,18 @@ func (s *SimpleTorrent) OnJoin() {
   }()
 
   go func() {
-    // wait for engine to be ready
-    structs.Wait(func () bool {
-      return s.transport == nil
-    })
-
     // broadcast neighbours
     for _, id := range s.ids {
       if id != s.id {
-        structs.Wait(func () bool {
-          return !s.transport.ControlPing(id)
-        })
+        if !s.transport.ControlPing(id) {
+          continue
+        }
 
         s.transport.ControlSend(id, idBroadcast{s.ids})
       }
     }
+
+      fmt.Println("Done", s.id)
   }()
 }
 
@@ -121,9 +114,9 @@ func (s *SimpleTorrent) updateIds(ids []string) {
       s.links[id] = s.transport.Connect(id)
 
       // if the link is new, we broadcast our list again
-      structs.Wait(func () bool {
-        return !s.transport.ControlPing(id)
-      })
+      if !s.transport.ControlPing(id) {
+        continue
+      }
       s.transport.ControlSend(id, idBroadcast{s.ids})
 
       // send a big packet

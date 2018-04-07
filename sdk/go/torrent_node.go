@@ -10,9 +10,6 @@ type TorrentNode interface {
   interfaces.DHTNode
   interfaces.DHTNodeUtil
   interfaces.TorrentNodeUtil
-
-  // used to autowire the engine
-  autowireEngine(capacity.Engine)
 }
 
 type AutowiredTorrentNode struct {
@@ -58,16 +55,14 @@ func (n *AutowiredTorrentNode) Join() string {
 }
 
 /* Constructor */
-func NewAutowiredTorrentNode(node interfaces.UnreliableNode, template interface {}) DHTNode {
-  s := new(AutowiredTorrentNode)
+func NewAutowiredTorrentNode(node interfaces.UnreliableNode, simulation interface {}) DHTNode {
+  n := new(AutowiredTorrentNode)
 
-  s.node     = node
-  s.template = template.(interfaces.TorrentNodeConstructor).New(s)
+  s := simulation.(*TorrentSimulation)
 
-  return s
-}
+  n.node     = node
+  n.engine   = s.updateEngine(node)
+  n.template = s.template.(interfaces.TorrentNodeConstructor).New(n)
 
-/* Autowire. */
-func (a *AutowiredTorrentNode) autowireEngine(engine capacity.Engine) {
-  a.engine = engine
+  return n
 }

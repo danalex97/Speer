@@ -10,7 +10,6 @@ type TorrentSimulation struct {
   *DHTSimulation
 
   scheduler  Scheduler
-  engines    map[DHTNode]Engine
   toRegister []*registerEntry
 }
 
@@ -28,7 +27,6 @@ func NewTorrentSimulation(s *DHTSimulation) *TorrentSimulation {
   return &TorrentSimulation{
     s,
     nil,
-    make(map[DHTNode]Engine),
     []*registerEntry{},
   }
 }
@@ -38,17 +36,13 @@ func NewTorrentSimulationBuilder(b *DHTSimulationBuilder) *TorrentSimulationBuil
 
   builder.sim = NewTorrentSimulation(b.Build())
   builder.sim.constructor = NewAutowiredTorrentNode
+  builder.sim.simulation  = builder.sim
 
   return builder
 }
 
 func (b *TorrentSimulationBuilder) WithTransferInterval(interval int) *TorrentSimulationBuilder {
   b.sim.scheduler = NewScheduler(interval)
-
-  // Register node update callback
-  b.sim.scheduler.SetCallback(func() {
-    b.sim.updateEngines()
-  })
 
   // Schedule the first interval
   b.sim.underlaySimulation.Push(events.NewEvent(0, nil, b.sim.scheduler))
@@ -70,48 +64,29 @@ func (b *TorrentSimulationBuilder) Build() *TorrentSimulation {
   return b.sim
 }
 
-func (s *TorrentSimulation) updateEngines() {
-  registerEngine := func () bool {
-    idx      := 0
-    register := s.toRegister[idx]
-
-    register.nodes -= 1
-    if register.nodes == 0 {
-      s.toRegister = s.toRegister[idx + 1:]
-    }
-
-    for _, node := range s.nodeMap {
-      if _, ok := s.engines[node]; !ok {
-        newEngine := NewTransferEngine(
-          register.up,
-          register.down,
-          node.UnreliableNode().Id(),
-        )
-
-        // Set connection callback
-        newEngine.SetConnectCallback(func (l interfaces.Link) {
-          s.scheduler.RegisterLink(l)
-        })
-
-        // Wire the engine
-        s.engines[node] = newEngine
-        node.(TorrentNode).autowireEngine(newEngine)
-
-        return true
-      }
-    }
-    return false
-  }
-
+func (s *TorrentSimulation) updateEngine(node interfaces.UnreliableNode) Engine {
   if len(s.toRegister) == 0 {
-    return
+    return nil
   }
 
-  ctr := 0
-  for registerEngine() {
-    ctr = ctr + 1
-    if len(s.toRegister) == 0 {
-      break
-    }
+  idx      := 0
+  register := s.toRegister[idx]
+
+  register.nodes -= 1
+  if register.nodes == 0 {
+    s.toRegister = s.toRegister[idx + 1:]
   }
+
+  newEngine := NewTransferEngine(
+    register.up,
+    register.down,
+    node.Id(),
+  )
+
+  // Set connection callback
+  newEngine.SetConnectCallback(func (l interfaces.Link) {
+    s.scheduler.RegisterLink(l)
+  })
+
+  return newEngine
 }

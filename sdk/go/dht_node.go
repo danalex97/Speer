@@ -36,11 +36,14 @@ func (n *AutowiredDHTNode) UnreliableNode() interfaces.UnreliableNode {
   return n.node
 }
 
-func NewAutowiredDHTNode(node interfaces.UnreliableNode, template interface {}) DHTNode {
-  s := new(AutowiredDHTNode)
+/* Constructor and decorator. */
+func NewAutowiredDHTNode(node interfaces.UnreliableNode, simulation interface {}) DHTNode {
+  n := new(AutowiredDHTNode)
 
-  s.node     = node
-  s.template = template.(interfaces.DHTNodeConstructor).New(s)
+  s := simulation.(*DHTSimulation)
 
-  return s
+  n.node     = node
+  n.template = s.template.(interfaces.DHTNodeConstructor).New(n)
+
+  return n
 }

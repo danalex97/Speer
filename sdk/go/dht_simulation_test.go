@@ -65,7 +65,7 @@ func TestGoSDKQueriesGetGenerated(t *testing.T) {
   queryRate := 10.0
 
   nodeTemplate := new(mockNode)
-  s := NewDHTSimulationBuilder(nodeTemplate, NewAutowiredDHTNode).
+  s := NewDHTSimulationBuilder(nodeTemplate).
     WithPoissonProcessModel(arrRate, queryRate).
     WithRandomUniformUnderlay(1000, 70000, 2, 10).
     WithDefaultQueryGenerator().

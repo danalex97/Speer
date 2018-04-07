@@ -16,6 +16,7 @@ type DHTSimulation struct {
   timeModel          model.TimeModel
   queryGenerator     model.DHTQueryGenerator
   template           interface {}
+  simulation         interface {}
   constructor        func(interfaces.UnreliableNode, interface {}) DHTNode
 
   el                 *eventLooper
@@ -39,7 +40,9 @@ func NewDHTSimulationBuilder(template interface {}) *DHTSimulationBuilder {
   builder.sim.el   = new(eventLooper)
   builder.sim.ql   = new(queryLooper)
   builder.sim.nodeMap = make(map[string]DHTNode)
+
   builder.sim.constructor = NewAutowiredDHTNode
+  builder.sim.simulation  = builder.sim
 
   return builder
 }
@@ -158,7 +161,7 @@ func (s *DHTSimulation) generateEvents() {
 
   // for the moment we will only model joins
   overlayNode := overlay.NewUnreliableSimulatedNode(s.underlaySimulation)
-  newNode := s.constructor(overlayNode, s.template)
+  newNode := s.constructor(overlayNode, s.simulation)
 
   // id selection should probabily be moved to SDK (?)
   // now the overlay sits somewhere between the transport and netowrk layer

@@ -12,8 +12,8 @@ import (
 func main() {
   rand.Seed(time.Now().UTC().UnixNano())
 
-  // nodeTemplate := new(SimpleTorrent)
-  nodeTemplate := new(SimpleTree)
+  nodeTemplate := new(SimpleTorrent)
+  // nodeTemplate := new(SimpleTree)
   s := NewDHTSimulationBuilder(nodeTemplate).
     WithPoissonProcessModel(2, 2).
     // WithRandomUniformUnderlay(1000, 5000, 2, 10).
@@ -23,10 +23,10 @@ func main() {
     WithLimitedNodes(100).
     // WithMetrics().
     //====================================
-    // WithCapacities().
-    // WithTransferInterval(10).
-    // WithCapacityNodes(100, 10, 20).
-    // WithCapacityNodes(100, 30, 30).
+    WithCapacities().
+    WithTransferInterval(10).
+    WithCapacityNodes(100, 10, 20).
+    WithCapacityNodes(100, 30, 30).
     Build()
 
   s.Run()
