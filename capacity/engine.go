@@ -1,19 +1,13 @@
 package capacity
 
 import (
+  . "github.com/danalex97/Speer/interfaces"
   "sync"
 )
 
 /* Interface. */
 type Engine interface {
-  Node
-
-  Id() string
-  Connect(string) Link
-
-  ControlPing(string) bool
-  ControlSend(string, interface {})
-  ControlRecv() <-chan interface {}
+  Transport
 
   // seam used to register the links in the SDK
   SetConnectCallback(func (Link))

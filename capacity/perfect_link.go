@@ -1,6 +1,7 @@
 package capacity
 
 import (
+  . "github.com/danalex97/Speer/interfaces"
   "container/list"
 )
 
@@ -11,25 +12,7 @@ import (
    - end-capacity is the bottleneck
  */
 
-type Link interface {
-  Upload(Data)
-  Download() <-chan Data
-
-  From() Node
-  To()   Node
-}
-
-type Node interface {
-  Up()   int
-  Down() int
-}
-
 const MaxConnections int = 100
-
-type Data struct {
-  Id   string
-  Size int
-}
 
 type PerfectLink struct {
   from      Node

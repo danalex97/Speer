@@ -2,7 +2,6 @@ package examples
 
 import (
   . "github.com/danalex97/Speer/sdk/go"
-  . "github.com/danalex97/Speer/capacity"
   "github.com/danalex97/Speer/interfaces"
   "runtime"
   "sync"
@@ -15,7 +14,7 @@ type SimpleTorrent struct {
 
   id    string
   ids   []string
-  links map[string]Link
+  links map[string]interfaces.Link
 }
 
 type idBroadcast struct {
@@ -102,7 +101,7 @@ func (s *SimpleTorrent) NewDHTNode() DHTNode {
 
   node.id    = node.UnreliableNode().Id()
   node.ids   = []string{node.id, node.UnreliableNode().Join()}
-  node.links = map[string]Link{}
+  node.links = map[string]interfaces.Link{}
 
   return node
 }
@@ -140,7 +139,7 @@ func (s *SimpleTorrent) updateIds(ids []string) {
       s.Transfer().ControlSend(id, idBroadcast{s.ids})
 
       // send a big packet
-      s.links[id].Upload(Data{s.Key(), 1000})
+      s.links[id].Upload(interfaces.Data{s.Key(), 1000})
     }
   }
 }

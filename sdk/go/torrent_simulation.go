@@ -3,6 +3,7 @@ package sdk
 import (
   . "github.com/danalex97/Speer/capacity"
   "github.com/danalex97/Speer/events"
+  "github.com/danalex97/Speer/interfaces"
 )
 
 type TorrentSimulation struct {
@@ -85,7 +86,7 @@ func (s *TorrentSimulation) updateEngines() {
         )
 
         // Set connection callback
-        newEngine.SetConnectCallback(func (l Link) {
+        newEngine.SetConnectCallback(func (l interfaces.Link) {
           s.scheduler.RegisterLink(l)
         })
 
