@@ -45,7 +45,7 @@ func NewAutowiredDHTNode(node interfaces.UnreliableNode, template interfaces.DHT
   s := new(AutowiredDHTNode)
 
   s.node     = node
-  s.template = template
+  s.template = template.New(s)
 
   return s
 }

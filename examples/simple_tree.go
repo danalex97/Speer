@@ -1,28 +1,28 @@
 package examples
 
 import (
-  . "github.com/danalex97/Speer/sdk/go"
+  . "github.com/danalex97/Speer/interfaces"
   "github.com/danalex97/Speer/overlay"
-  "github.com/danalex97/Speer/interfaces"
   "runtime"
   "sync"
   "fmt"
 )
 
 type SimpleTree struct {
-  AutowiredDHTNode
   sync.Mutex
 
   id           string
   neighId      string
   store        map[string]bool
+
+  unreliableNode UnreliableNode
 }
 
 func (s *SimpleTree) OnJoin() {
   go func() {
     for {
       select {
-      case _, ok := <-s.UnreliableNode().Recv():
+      case _, ok := <-s.unreliableNode.Recv():
         if ok {
           fmt.Println("Receive")
         }
@@ -33,7 +33,7 @@ func (s *SimpleTree) OnJoin() {
   }()
 }
 
-func (s *SimpleTree) OnQuery(query interfaces.Query) error {
+func (s *SimpleTree) OnQuery(query Query) error {
   s.Lock()
   defer s.Unlock()
 
@@ -53,7 +53,7 @@ func (s *SimpleTree) OnQuery(query interfaces.Query) error {
       s.neighId,
       query,
     )
-    s.UnreliableNode().Send() <- packet
+    s.unreliableNode.Send() <- packet
   }
 
   return nil
@@ -62,12 +62,13 @@ func (s *SimpleTree) OnQuery(query interfaces.Query) error {
 func (s *SimpleTree) OnLeave() {
 }
 
-func (s *SimpleTree) NewDHTNode() DHTNode {
+func (s *SimpleTree) New(util DHTNodeUtil) DHTNode {
   // Constructor that assumes the UnreliableNode component is filled in
   node := new(SimpleTree)
 
-  node.id       = node.UnreliableNode().Id()
-  node.neighId  = node.UnreliableNode().Join()
+  node.id       = util.UnreliableNode().Id()
+  node.neighId  = util.UnreliableNode().Join()
+  node.unreliableNode = util.UnreliableNode()
   node.store    = make(map[string]bool)
 
   return node

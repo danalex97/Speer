@@ -85,7 +85,7 @@ func (mp *NetworkMap) Join(id string) string {
     }
     i--
   }
-  panic("Join method called on invalid mp.")
+  return ""
 }
 
 func (mp *NetworkMap) Router(id string) underlay.Router {
