@@ -15,7 +15,6 @@ var joins   int = 0
 var queries int = 0
 
 type mockNode struct {
-  AutowiredDHTNode
   sync.Mutex
 
   id           string
@@ -41,14 +40,12 @@ func (s *mockNode) OnQuery(query interfaces.Query) error {
 func (s *mockNode) OnLeave() {
 }
 
-func (s *mockNode) NewDHTNode() DHTNode {
+func (s *mockNode) New(util interfaces.DHTNodeUtil) interfaces.DHTNode {
   // Constructor that assumes the UnreliableNode component is filled in
   node := new(mockNode)
 
-  node.Autowire(s)
-
-  node.id       = node.UnreliableNode().Id()
-  node.neighId  = node.UnreliableNode().Join()
+  node.id       = util.UnreliableNode().Id()
+  node.neighId  = util.UnreliableNode().Join()
 
   return node
 }
@@ -72,7 +69,6 @@ func TestGoSDKQueriesGetGenerated(t *testing.T) {
     WithPoissonProcessModel(arrRate, queryRate).
     WithRandomUniformUnderlay(1000, 70000, 2, 10).
     WithDefaultQueryGenerator().
-    Autowire().
     Build()
 
   go s.Run()
