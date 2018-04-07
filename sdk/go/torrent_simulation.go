@@ -35,7 +35,10 @@ func NewTorrentSimulation(s *DHTSimulation) *TorrentSimulation {
 
 func NewTorrentSimulationBuilder(b *DHTSimulationBuilder) *TorrentSimulationBuilder {
   builder := new(TorrentSimulationBuilder)
+
   builder.sim = NewTorrentSimulation(b.Build())
+  builder.sim.constructor = NewAutowiredTorrentNode
+
   return builder
 }
 

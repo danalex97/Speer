@@ -3,6 +3,7 @@ package examples
 import (
   . "github.com/danalex97/Speer/interfaces"
   "github.com/danalex97/Speer/overlay"
+  "github.com/danalex97/Speer/structs"
   "runtime"
   "sync"
   "fmt"
@@ -75,5 +76,5 @@ func (s *SimpleTree) New(util DHTNodeUtil) DHTNode {
 }
 
 func (s *SimpleTree) Key() string {
-  return RandomKey()
+  return structs.RandomKey()
 }

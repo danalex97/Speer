@@ -27,10 +27,6 @@ func (n *AutowiredDHTNode) OnLeave() {
   n.template.OnLeave()
 }
 
-func (n *AutowiredDHTNode) New(util interfaces.DHTNodeUtil) interfaces.DHTNode {
-  return n.template.New(n)
-}
-
 func (n *AutowiredDHTNode) Key() string {
   return n.template.Key()
 }
@@ -40,12 +36,11 @@ func (n *AutowiredDHTNode) UnreliableNode() interfaces.UnreliableNode {
   return n.node
 }
 
-/* Constructor */
-func NewAutowiredDHTNode(node interfaces.UnreliableNode, template interfaces.DHTNode) DHTNode {
+func NewAutowiredDHTNode(node interfaces.UnreliableNode, template interface {}) DHTNode {
   s := new(AutowiredDHTNode)
 
   s.node     = node
-  s.template = template.New(s)
+  s.template = template.(interfaces.DHTNodeConstructor).New(s)
 
   return s
 }

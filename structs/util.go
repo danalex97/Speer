@@ -1,19 +1,9 @@
-package examples
+package structs
 
 import (
   "math/rand"
   "runtime"
 )
-
-func Wait(cond func () bool) {
-  for {
-    if cond() {
-      runtime.Gosched()
-    } else {
-      break
-    }
-  }
-}
 
 func RandomKey() string {
   const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -23,4 +13,14 @@ func RandomKey() string {
     b[i] = letterBytes[rand.Int63() % int64(len(letterBytes))]
   }
   return string(b)
+}
+
+func Wait(cond func () bool) {
+  for {
+    if cond() {
+      runtime.Gosched()
+    } else {
+      break
+    }
+  }
 }

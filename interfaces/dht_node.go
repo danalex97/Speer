@@ -20,11 +20,13 @@ type DHTNode interface {
   // both operations could result in an error
 
   OnLeave()
-  // a meothd that should be called when a node leaves the network
-
-  New(util DHTNodeUtil) DHTNode
-  // the constructor called by the simulation
+  // a method that should be called when a node leaves the network
 
   Key() string
   // generate a new key for the key space
+}
+
+/* This interface needs to be implemented by a node.*/
+type DHTNodeConstructor interface {
+  New(util DHTNodeUtil) DHTNode
 }
