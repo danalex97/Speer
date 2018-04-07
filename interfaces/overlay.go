@@ -4,9 +4,6 @@ import (
   "github.com/danalex97/Speer/overlay"
 )
 
-type UnreliableNode overlay.UnreliableNode
-/**
-
 type UnreliableNode interface {
   Join()   string
   Id()     string
@@ -14,5 +11,3 @@ type UnreliableNode interface {
   Send()   chan<- interface{}
   Recv()   <-chan interface{}
 }
-
-*/
