@@ -1,6 +1,7 @@
 package capacity
 
 import (
+  . "github.com/danalex97/Speer/interfaces"
   "testing"
 )
 

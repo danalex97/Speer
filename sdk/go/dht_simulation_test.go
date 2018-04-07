@@ -1,7 +1,7 @@
 package sdk
 
 import (
-  . "github.com/danalex97/Speer/model"
+  "github.com/danalex97/Speer/interfaces"
 
   "testing"
   "math/rand"
@@ -30,7 +30,7 @@ func (s *mockNode) OnJoin() {
   runtime.Gosched()
 }
 
-func (s *mockNode) OnQuery(query DHTQuery) error {
+func (s *mockNode) OnQuery(query interfaces.Query) error {
   s.Lock()
   defer s.Unlock()
 
