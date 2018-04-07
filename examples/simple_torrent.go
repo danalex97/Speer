@@ -2,8 +2,8 @@ package examples
 
 import (
   . "github.com/danalex97/Speer/sdk/go"
-  . "github.com/danalex97/Speer/model"
   . "github.com/danalex97/Speer/capacity"
+  "github.com/danalex97/Speer/interfaces"
   "runtime"
   "sync"
   "fmt"
@@ -87,7 +87,7 @@ func (s *SimpleTorrent) OnJoin() {
   }()
 }
 
-func (s *SimpleTorrent) OnQuery(query DHTQuery) error {
+func (s *SimpleTorrent) OnQuery(query interfaces.Query) error {
   return nil
 }
 

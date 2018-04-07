@@ -12,7 +12,7 @@ type DHTNode interface {
   OnJoin()
   // a method that should be called when a node joins the network
 
-  OnQuery(query DHTQuery) error
+  OnQuery(query Query) error
   // a method that should be called with a node receives a query
   // - the query can be either:
   //   - store -- the current node *wants* to store something in the network

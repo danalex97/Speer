@@ -2,8 +2,8 @@ package examples
 
 import (
   . "github.com/danalex97/Speer/sdk/go"
-  . "github.com/danalex97/Speer/model"
   "github.com/danalex97/Speer/overlay"
+  "github.com/danalex97/Speer/interfaces"
   "runtime"
   "sync"
   "fmt"
@@ -33,7 +33,7 @@ func (s *SimpleTree) OnJoin() {
   }()
 }
 
-func (s *SimpleTree) OnQuery(query DHTQuery) error {
+func (s *SimpleTree) OnQuery(query interfaces.Query) error {
   s.Lock()
   defer s.Unlock()
 

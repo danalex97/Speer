@@ -1,9 +1,5 @@
 package interfaces
 
-import (
-  "github.com/danalex97/Speer/capacity"
-)
-
 type Data struct {
   Id   string
   Size int

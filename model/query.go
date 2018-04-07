@@ -2,18 +2,20 @@ package model
 
 import (
   . "github.com/danalex97/Speer/overlay"
+  "github.com/danalex97/Speer/interfaces"
   "math/rand"
 )
 
+type Query interfaces.Query
+
 type DHTQueryGenerator interface {
-  Next() *DHTQuery
+  Next() Query
   // the key for a store query is empty, thus
   // allowing the SDK layer to handle it
 }
 
 const MaxQuerySize int = 100
 
-// each query should be immutable
 type DHTQuery struct {
   key   string // the key of the node
   size  int    // size of key to be transfered in MB
@@ -21,7 +23,7 @@ type DHTQuery struct {
   store bool   // store/retrieve
 }
 
-func NewDHTQuery(key string, size int, node string, store bool) *DHTQuery{
+func NewDHTQuery(key string, size int, node string, store bool) Query {
   q := new(DHTQuery)
   q.key = key
   q.size = size
@@ -47,13 +49,13 @@ func (q *DHTQuery) Store() bool {
 }
 
 type DHTLedger struct {
-  queries   []*DHTQuery
+  queries   []Query
   bootstrap Bootstrap
 }
 
 func NewDHTLedger(bootstrap Bootstrap) *DHTLedger {
   ledger := new(DHTLedger)
-  ledger.queries = []*DHTQuery{}
+  ledger.queries = []Query{}
   ledger.bootstrap = bootstrap
   return ledger
 }
@@ -69,7 +71,7 @@ func randomKey() string {
 }
 
 
-func (l *DHTLedger) Next() *DHTQuery {
+func (l *DHTLedger) Next() Query {
   node := l.bootstrap.Join("")
   size := rand.Intn(MaxQuerySize)
   store := len(l.queries) == 0 || rand.Float32() > 0.5

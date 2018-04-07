@@ -1,8 +1,8 @@
 package sdk
 
 import (
+  "github.com/danalex97/Speer/interfaces"
   "github.com/danalex97/Speer/overlay"
-  "github.com/danalex97/Speer/model"
 )
 
 type DHTNode interface {
@@ -13,7 +13,7 @@ type DHTNode interface {
   OnJoin()
   // a method that should be called when a node joins the network
 
-  OnQuery(query model.DHTQuery) error
+  OnQuery(query interfaces.Query) error
   // a method that should be called with a node receives a query
   // - the query can be either:
   //   - store -- the current node *wants* to store something in the network
