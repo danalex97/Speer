@@ -22,7 +22,7 @@ func main() {
     WithDefaultQueryGenerator().
     WithLimitedNodes(100).
     // WithMetrics().
-    Autowire().
+    //====================================
     // WithCapacities().
     // WithTransferInterval(10).
     // WithCapacityNodes(100, 10, 20).

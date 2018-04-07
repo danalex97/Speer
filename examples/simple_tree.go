@@ -66,8 +66,6 @@ func (s *SimpleTree) NewDHTNode() DHTNode {
   // Constructor that assumes the UnreliableNode component is filled in
   node := new(SimpleTree)
 
-  node.Autowire(s)
-
   node.id       = node.UnreliableNode().Id()
   node.neighId  = node.UnreliableNode().Join()
   node.store    = make(map[string]bool)

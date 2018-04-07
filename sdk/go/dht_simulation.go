@@ -1,6 +1,7 @@
 package sdk
 
 import (
+  "github.com/danalex97/Speer/interfaces"
   "github.com/danalex97/Speer/events"
   "github.com/danalex97/Speer/underlay"
   "github.com/danalex97/Speer/overlay"
@@ -14,7 +15,7 @@ type DHTSimulation struct {
   underlaySimulation *underlay.NetworkSimulation
   timeModel          model.TimeModel
   queryGenerator     model.DHTQueryGenerator
-  node               DHTNode
+  template           interfaces.DHTNode
 
   el                 *eventLooper
   ql                 *queryLooper
@@ -29,10 +30,10 @@ type DHTSimulationBuilder struct {
 
 const maxNodeLimit int = 10000000
 
-func NewDHTSimulationBuilder(node DHTNode) *DHTSimulationBuilder {
+func NewDHTSimulationBuilder(template interfaces.DHTNode) *DHTSimulationBuilder {
   builder := new(DHTSimulationBuilder)
   builder.sim = new(DHTSimulation)
-  builder.sim.node = node
+  builder.sim.template = template
 
   builder.sim.el   = new(eventLooper)
   builder.sim.ql   = new(queryLooper)
@@ -113,12 +114,6 @@ func (b *DHTSimulationBuilder) WithInternetworkUnderlay(
   return b;
 }
 
-func (b *DHTSimulationBuilder) Autowire() *DHTSimulationBuilder{
-  aw := b.sim.node.autowire().(*AutowiredDHTNode)
-  aw.node = overlay.NewUnreliableSimulatedNode(b.sim.underlaySimulation)
-  return b
-}
-
 func (b *DHTSimulationBuilder) Build() *DHTSimulation {
   if b.sim.underlaySimulation == nil {
     panic("Underlay simulation component has to be appended to build")
@@ -129,8 +124,8 @@ func (b *DHTSimulationBuilder) Build() *DHTSimulation {
   if b.sim.queryGenerator == nil {
     panic("Query generator component has to be appended to build")
   }
-  if b.sim.node == nil {
-    panic("Node protocol component has to be appended to build")
+  if b.sim.template == nil {
+    panic("Template component has to be appended to build")
   }
 
   sim := b.sim;
@@ -160,7 +155,9 @@ func (s *DHTSimulation) generateEvents() {
   }
 
   // for the moment we will only model joins
-  newNode := s.node.NewDHTNode()
+  overlayNode := overlay.NewUnreliableSimulatedNode(s.underlaySimulation)
+  newNode := NewAutowiredDHTNode(overlayNode, s.template)
+
   // id selection should probabily be moved to SDK (?)
   // now the overlay sits somewhere between the transport and netowrk layer
   id      := newNode.UnreliableNode().Id()

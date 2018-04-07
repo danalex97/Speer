@@ -97,8 +97,6 @@ func (s *SimpleTorrent) NewDHTNode() DHTNode {
   // Constructor that assumes the UnreliableNode component is filled in
   node := new(SimpleTorrent)
 
-  node.Autowire(s)
-
   node.id    = node.UnreliableNode().Id()
   node.ids   = []string{node.id, node.UnreliableNode().Join()}
   node.links = map[string]interfaces.Link{}
