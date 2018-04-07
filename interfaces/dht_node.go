@@ -22,7 +22,7 @@ type DHTNode interface {
   OnLeave()
   // a meothd that should be called when a node leaves the network
 
-  New(util DHTNodeUtil)
+  New(util DHTNodeUtil) DHTNode
   // the constructor called by the simulation
 
   Key() string

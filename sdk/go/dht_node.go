@@ -2,67 +2,50 @@ package sdk
 
 import (
   "github.com/danalex97/Speer/interfaces"
-  "github.com/danalex97/Speer/overlay"
 )
 
 type DHTNode interface {
-  UnreliableNode() interfaces.UnreliableNode
-  // an unreliable node interface is a mean of interaction with an
-  // underlay simulation through the overlay
-
-  OnJoin()
-  // a method that should be called when a node joins the network
-
-  OnQuery(query interfaces.Query) error
-  // a method that should be called with a node receives a query
-  // - the query can be either:
-  //   - store -- the current node *wants* to store something in the network
-  //   - query -- the current node *wants* to retrieve something from the network
-  // both operations could result in an error
-
-  OnLeave()
-  // a meothd that should be called when a node leaves the network
-
-  NewDHTNode() DHTNode
-  // used to generate a DHTNode
-
-  Key() string
-  // generate a new key for the key space
-
-  Autowire(template DHTNode)
-  // used to autowire the node to the simulation
-
-  autowire() Autowire
-  // used to autowire the node to the simulation
-}
-
-func autowiredUnreliableNode(node DHTNode) overlay.UnreliableNode {
-  simulation := node.autowire().(*AutowiredDHTNode).node.(*overlay.UnreliableSimulatedNode).Simulation()
-  newNode := overlay.NewUnreliableSimulatedNode(simulation)
-
-  return newNode
-}
-
-// autowiring mechanism to hide simulation injection at construction
-type Autowire interface {
-  UnreliableNode() interfaces.UnreliableNode
-  autowire() Autowire
-  Autowire(template DHTNode)
+  interfaces.DHTNode
+  interfaces.DHTNodeUtil
 }
 
 type AutowiredDHTNode struct {
-  node overlay.UnreliableNode
+  node     interfaces.UnreliableNode
+  template interfaces.DHTNode
 }
 
-func (a *AutowiredDHTNode) Autowire(template DHTNode) {
-  unreliableNode := autowiredUnreliableNode(template)
-  a.autowire().(*AutowiredDHTNode).node = unreliableNode
+/* DHTNode interface */
+func (n *AutowiredDHTNode) OnJoin() {
+  n.template.OnJoin()
 }
 
-func (a *AutowiredDHTNode) autowire() Autowire {
-  return a
+func (n *AutowiredDHTNode) OnQuery(query interfaces.Query) error {
+  return n.template.OnQuery(query)
 }
 
-func (a *AutowiredDHTNode) UnreliableNode() interfaces.UnreliableNode {
-  return a.node
+func (n *AutowiredDHTNode) OnLeave() {
+  n.template.OnLeave()
+}
+
+func (n *AutowiredDHTNode) New(util interfaces.DHTNodeUtil) interfaces.DHTNode {
+  return n.template.New(n)
+}
+
+func (n *AutowiredDHTNode) Key() string {
+  return n.template.Key()
+}
+
+/* DHTNodeUtil interface */
+func (n *AutowiredDHTNode) UnreliableNode() interfaces.UnreliableNode {
+  return n.node
+}
+
+/* Constructor */
+func NewAutowiredDHTNode(node interfaces.UnreliableNode, template interfaces.DHTNode) DHTNode {
+  s := new(AutowiredDHTNode)
+
+  s.node     = node
+  s.template = template
+
+  return s
 }
