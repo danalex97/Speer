@@ -2,9 +2,11 @@ package interfaces
 
 type TorrentNodeUtil interface {
   Transport() Transport
-  
+
   Id()   string
   Join() string
+
+  Time() func() int
 }
 
 /* This interface needs to be implemented by a node.*/
