@@ -56,6 +56,14 @@ func (s *scheduler) updData() {
   for link, status := range s.linkStatus {
     link := link.(*PerfectLink)
 
+    // lock for the queue
+    link.Lock()
+
+    // If somebody stopped the link, it becomes unactive
+    if link.queue.Len() == 0 {
+      status.active = false
+    }
+
     if status.active {
       status.data += status.capacity * float64(s.interval)
 
@@ -81,6 +89,8 @@ func (s *scheduler) updData() {
         status.data   = 0
       }
     }
+
+    link.Unlock()
   }
 }
 

@@ -13,6 +13,7 @@ type Node interface {
 type Link interface {
   Upload(Data)
   Download() <-chan Data
+  Clear()
 
   From() Node
   To()   Node

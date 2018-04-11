@@ -3,6 +3,7 @@ package capacity
 import (
   . "github.com/danalex97/Speer/interfaces"
   "container/list"
+  "sync"
 )
 
 /**
@@ -15,6 +16,8 @@ import (
 const MaxConnections int = 100
 
 type PerfectLink struct {
+  *sync.Mutex
+
   from      Node
   to        Node
   queue     *list.List
@@ -22,17 +25,19 @@ type PerfectLink struct {
 }
 
 func NewPerfectLink(from, to Node) Link {
-  link := new(PerfectLink)
-
-  link.from = from
-  link.to = to
-  link.queue = list.New()
-  link.download = make(chan Data, MaxConnections)
-
-  return link
+  return &PerfectLink{
+    new(sync.Mutex),
+    from,
+    to,
+    list.New(),
+    make(chan Data, MaxConnections),
+  }
 }
 
 func (p *PerfectLink) Upload(data Data) {
+  p.Lock()
+  defer p.Unlock()
+
   p.queue.PushBack(data)
 }
 
@@ -46,4 +51,11 @@ func (p *PerfectLink) From() Node {
 
 func (p *PerfectLink) To() Node {
   return p.to
+}
+
+func (p *PerfectLink) Clear() {
+  p.Lock()
+  defer p.Unlock()
+
+  p.queue = list.New()
 }
