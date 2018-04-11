@@ -36,12 +36,12 @@ func TestSchedulerFullScenario(t *testing.T) {
   s.RegisterLink(links[1])
 
   // time: 0
-  links[0].Upload(Data{"1-0", 100})
-  links[1].Upload(Data{"2-0", 50})
+  links[0].Upload(Data{"1-0-0", 100})
+  links[1].Upload(Data{"2-0-0", 50})
   s.Schedule()
 
   // time: 10
-  links[1].Upload(Data{"2-0", 50})
+  links[1].Upload(Data{"2-0-1", 50})
   s.Schedule()
   if len(links[0].Download()) != 0 {
     t.Fatalf("Link 1-0 transmitted: %s", len(links[0].Download()))
@@ -51,7 +51,7 @@ func TestSchedulerFullScenario(t *testing.T) {
   }
 
   // time: 20
-  links[0].Upload(Data{"1-0", 100})
+  links[0].Upload(Data{"1-0-1", 100})
   s.Schedule()
   if len(links[0].Download()) != 1 {
     t.Fatalf("Link 1-0 not transmitted: %s", len(links[0].Download()))
@@ -68,6 +68,11 @@ func TestSchedulerFullScenario(t *testing.T) {
   if len(links[1].Download()) != 2 {
     t.Fatalf("Link 2-0 not transmitted: %s", len(links[1].Download()))
   }
+
+  assertEqual(t, Data{"1-0-0", 100}, <-links[0].Download())
+  assertEqual(t, Data{"1-0-1", 100}, <-links[0].Download())
+  assertEqual(t, Data{"2-0-0", 50}, <-links[1].Download())
+  assertEqual(t, Data{"2-0-1", 50}, <-links[1].Download())
 }
 
 /* Capacity upload checks. */
