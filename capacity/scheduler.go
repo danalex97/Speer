@@ -80,6 +80,9 @@ func (s *scheduler) updData() {
           status.data   = 0
           break
         }
+
+        // update data
+        data = link.queue.Front().Value.(Data)
       }
     } else {
       // If we have pending requests, make the link active
