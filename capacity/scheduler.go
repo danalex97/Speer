@@ -13,7 +13,6 @@ type Scheduler interface {
 
   RegisterLink(Link)
   Schedule()
-  SetCallback(func ())
 }
 
 type scheduler struct {
@@ -196,8 +195,6 @@ func (s *scheduler) Schedule() {
   s.updCapacity()
 
   s.linkMutex.Unlock()
-
-  s.callback()
 }
 
 func (s *scheduler) RegisterLink(l Link) {
@@ -205,8 +202,4 @@ func (s *scheduler) RegisterLink(l Link) {
   defer s.linkMutex.Unlock()
 
   s.linkStatus[l] = &status{false, 0, 0}
-}
-
-func (s *scheduler) SetCallback(callback func ()) {
-  s.callback = callback
 }
