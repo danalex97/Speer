@@ -3,6 +3,7 @@ package capacity
 import (
   . "github.com/danalex97/Speer/interfaces"
   "sync"
+  "fmt"
 )
 
 /* Interface. */
@@ -17,7 +18,8 @@ type Engine interface {
 var engineMap = make(map[string]Engine)
 var mapLock   = new(sync.RWMutex)
 
-const controlMessageCapacity int = 50
+/* There is only one control message queue, so it should be big. */
+const controlMessageCapacity int = 1000000
 
 /* Simple node interface structure. */
 type node struct {
@@ -73,9 +75,13 @@ func (e *TransferEngine) Connect(id string) Link {
 
 func (e *TransferEngine) ControlSend(id string, message interface{}) {
   mapLock.RLock()
-  defer mapLock.RUnlock()
+  engine := engineMap[id].(*TransferEngine)
+  mapLock.RUnlock()
 
-  engineMap[id].(*TransferEngine).recv <- message
+  if len(engine.recv) == cap(engine.recv) {
+    fmt.Println("blocked")
+  }
+  engine.recv <- message
 }
 
 func (e *TransferEngine) ControlRecv() <-chan interface{} {
