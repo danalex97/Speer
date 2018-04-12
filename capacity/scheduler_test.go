@@ -3,6 +3,7 @@ package capacity
 import (
   . "github.com/danalex97/Speer/interfaces"
   "testing"
+  "sync"
 )
 
 func assertEqual(t *testing.T, a interface{}, b interface{}) {
@@ -18,22 +19,68 @@ type link struct {
   to   int
 }
 
-/* Scheduler full scenario test. */
+func simpleScenario() (s *scheduler, nodes []Node, links []Link) {
+  s = NewScheduler(10).(*scheduler)
 
-func TestSchedulerFullScenario(t *testing.T) {
-  s := NewScheduler(10).(*scheduler)
-
-  nodes := []Node{
+  nodes = []Node{
     &node{10, 0},
     &node{0, 30},
     &node{0, 20},
   }
-  links := []Link{
+  links = []Link{
     NewPerfectLink(nodes[1], nodes[0]),
     NewPerfectLink(nodes[2], nodes[0]),
   }
+
   s.RegisterLink(links[0])
   s.RegisterLink(links[1])
+  return
+}
+
+func TestSchedulerConcurrent(t *testing.T) {
+  for i := 0; i < 10; i++ {
+    s, _, links := simpleScenario()
+
+    var wg sync.WaitGroup
+
+    wg.Add(2)
+    go func() {
+      defer wg.Done()
+      links[0].Upload(Data{"1-0-0", 100})
+      links[0].Upload(Data{"1-0-1", 100})
+    }()
+
+    go func() {
+      defer wg.Done()
+      links[1].Upload(Data{"2-0-0", 50})
+      links[1].Upload(Data{"2-0-1", 50})
+    }()
+    wg.Wait()
+
+    go s.Schedule()
+    go s.Schedule()
+    go s.Schedule()
+    go s.Schedule()
+
+    wg.Add(2)
+    go func() {
+      defer wg.Done()
+      assertEqual(t, Data{"1-0-0", 100}, <-links[0].Download())
+      assertEqual(t, Data{"1-0-1", 100}, <-links[0].Download())
+    }()
+
+    go func() {
+      defer wg.Done()
+      assertEqual(t, Data{"2-0-0", 50}, <-links[1].Download())
+      assertEqual(t, Data{"2-0-1", 50}, <-links[1].Download())
+    }()
+    wg.Wait()
+  }
+}
+
+/* Scheduler full scenario test. */
+func TestSchedulerFullScenario(t *testing.T) {
+  s, _, links := simpleScenario()
 
   // time: 0
   links[0].Upload(Data{"1-0-0", 100})
