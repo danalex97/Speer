@@ -37,6 +37,24 @@ func simpleScenario() (s *scheduler, nodes []Node, links []Link) {
   return
 }
 
+func TestSchedulerSmallPackets(t *testing.T) {
+  s, _, links := simpleScenario()
+
+  links[0].Upload(Data{"1", 1})
+  links[0].Upload(Data{"2", 1})
+  links[0].Upload(Data{"3", 1})
+  links[0].Upload(Data{"4", 1})
+
+  s.Schedule()
+  s.Schedule()
+  s.Schedule()
+
+  assertEqual(t, Data{"1", 1}, <-links[0].Download())
+  assertEqual(t, Data{"2", 1}, <-links[0].Download())
+  assertEqual(t, Data{"3", 1}, <-links[0].Download())
+  assertEqual(t, Data{"4", 1}, <-links[0].Download())
+}
+
 func TestSchedulerConcurrent(t *testing.T) {
   for i := 0; i < 10; i++ {
     s, _, links := simpleScenario()
