@@ -19,9 +19,7 @@ type scheduler struct {
   interval int
 
   linkMutex *sync.Mutex
-
   linkStatus map[Link]*status
-  callback   func ()
 }
 
 type status struct {
@@ -36,7 +34,6 @@ func NewScheduler(interval int) Scheduler {
   s.interval   = interval
   s.linkMutex   = new(sync.Mutex)
   s.linkStatus = make(map[Link]*status)
-  s.callback   = func() {}
 
   return s
 }
