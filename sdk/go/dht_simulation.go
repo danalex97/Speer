@@ -24,6 +24,8 @@ type DHTSimulation struct {
   nodeMap            map[string]DHTNode
   nodeLimit          int
   nodes              int
+
+  progressProperties []events.Receiver
 }
 
 type DHTSimulationBuilder struct {
@@ -43,6 +45,8 @@ func NewDHTSimulationBuilder(template interface {}) *DHTSimulationBuilder {
 
   builder.sim.constructor = NewAutowiredDHTNode
   builder.sim.simulation  = builder.sim
+
+  builder.sim.progressProperties = []events.Receiver{}
 
   return builder
 }
@@ -103,6 +107,14 @@ func (b *DHTSimulationBuilder) WithRandomUniformUnderlay(
   b.sim.underlaySimulation = s
 
   return b;
+}
+
+func (b *DHTSimulationBuilder) WithProgress(
+    progress interfaces.Progress, interval int) *DHTSimulationBuilder {
+  property := events.NewProgressProperty(progress, interval)
+  b.sim.progressProperties = append(b.sim.progressProperties, property)
+
+  return b
 }
 
 func (b *DHTSimulationBuilder) WithInternetworkUnderlay(
@@ -214,6 +226,13 @@ func (s *DHTSimulation) Run() {
 
   s.generateEvents()
   s.generateQueries()
+
+  // Run progress properties
+  for _, progress := range s.progressProperties {
+    event := events.NewEvent(0, nil, progress)
+    s.underlaySimulation.Push(event)
+  }
+
   go s.underlaySimulation.Run()
 }
 
