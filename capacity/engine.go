@@ -50,8 +50,8 @@ func NewTransferEngine(up, down int, id string) Engine {
 
   engine := &TransferEngine{
     node{
-      up,
-      down,
+      down : down,
+      up   : up,
     },
     make(chan interface {}, controlMessageCapacity),
     id,

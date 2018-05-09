@@ -50,11 +50,11 @@ func (b *TorrentSimulationBuilder) WithTransferInterval(interval int) *TorrentSi
   return b
 }
 
-func (b *TorrentSimulationBuilder) WithCapacityNodes(nodes int, download int, upload int) *TorrentSimulationBuilder {
+func (b *TorrentSimulationBuilder) WithCapacityNodes(nodes int, upload int, download int) *TorrentSimulationBuilder {
   b.sim.toRegister = append(b.sim.toRegister, &registerEntry{
-    nodes,
-    upload,
-    download,
+    nodes : nodes,
+    up    : upload,
+    down  : download,
   })
 
   return b
