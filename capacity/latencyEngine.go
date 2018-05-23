@@ -14,9 +14,9 @@ type TransferLatencyEngine struct {
   unreliableNode UnreliableNode
 }
 
-func NewTransferLatencyEngine(up, down int, id string, u UnreliableNode) Engine {
+func NewTransferLatencyEngine(e *TransferEngine, u UnreliableNode) Engine {
   engine := &TransferLatencyEngine{
-    TransferEngine : NewTransferEngine(up, down, id).(*TransferEngine),
+    TransferEngine : e,
     unreliableNode : u,
   }
   go engine.establishListener();

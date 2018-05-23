@@ -11,6 +11,8 @@ type TorrentSimulation struct {
 
   scheduler  Scheduler
   toRegister []*registerEntry
+
+  latency    bool
 }
 
 type TorrentSimulationBuilder struct {
@@ -25,9 +27,10 @@ type registerEntry struct {
 
 func NewTorrentSimulation(s *DHTSimulation) *TorrentSimulation {
   return &TorrentSimulation{
-    s,
-    nil,
-    []*registerEntry{},
+    DHTSimulation : s,
+    scheduler     :  nil,
+    toRegister    : []*registerEntry{},
+    latency       : false,
   }
 }
 
@@ -39,6 +42,11 @@ func NewTorrentSimulationBuilder(b *DHTSimulationBuilder) *TorrentSimulationBuil
   builder.sim.simulation  = builder.sim
 
   return builder
+}
+
+func (b *TorrentSimulationBuilder) WithLatency() *TorrentSimulationBuilder {
+  b.sim.latency = true
+  return b
 }
 
 func (b *TorrentSimulationBuilder) WithTransferInterval(interval int) *TorrentSimulationBuilder {
@@ -82,6 +90,9 @@ func (s *TorrentSimulation) updateEngine(node interfaces.UnreliableNode) Engine 
     register.down,
     node.Id(),
   )
+  if s.latency {
+    newEngine = NewTransferLatencyEngine(newEngine.(*TransferEngine), node)
+  }
 
   // Set connection callback
   newEngine.SetConnectCallback(func (l interfaces.Link) {

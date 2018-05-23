@@ -24,6 +24,7 @@ func main() {
     // WithMetrics().
     //====================================
     WithCapacities().
+    // WithLatency().
     WithTransferInterval(10).
     WithCapacityNodes(100, 10, 20).
     WithCapacityNodes(100, 30, 30).
