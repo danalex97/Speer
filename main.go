@@ -24,7 +24,7 @@ func main() {
     // WithMetrics().
     //====================================
     WithCapacities().
-    // WithLatency().
+    WithLatency().
     WithTransferInterval(10).
     WithCapacityNodes(100, 10, 20).
     WithCapacityNodes(100, 30, 30).
@@ -32,7 +32,7 @@ func main() {
 
   s.Run()
 
-  time.Sleep(time.Second * 10)
+  time.Sleep(time.Second * 100)
   fmt.Println("Done")
   s.Stop()
 

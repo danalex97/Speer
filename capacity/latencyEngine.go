@@ -34,11 +34,11 @@ func (e *TransferLatencyEngine) ControlSend(id string, message interface{}) {
 func (e *TransferLatencyEngine) establishListener() {
   for {
     select {
-    case pkt := <- e.unreliableNode.Recv():
+    case pkt := <-e.unreliableNode.Recv():
       if len(e.recv) == cap(e.recv) {
         fmt.Println("Channel blocked at ControlRecv.")
       }
-      e.recv <- pkt.(overlay.Packet).Payload
+      e.recv <- pkt.(overlay.Packet).Payload()
     default:
       // If there are no new packets schedule other routines.
       runtime.Gosched()
