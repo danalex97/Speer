@@ -47,3 +47,28 @@ func TestBridgePacketDelivery(t *testing.T) {
 
   clearUnderChan(bridge1)
 }
+
+func TestSendPacketToSelf(t *testing.T) {
+  done := make(chan bool, 1)
+
+  go func() {
+    id1, _, bridge1, _ := testUnderlayChan(10)
+
+    packet := NewPacket(id1, id1, nil)
+    bridge1.Send() <- packet
+
+    recvPacket := (<-bridge1.Recv()).(Packet)
+    assertEqual(t, packet.Src(), recvPacket.Src())
+    assertEqual(t, packet.Dest(), recvPacket.Dest())
+    assertEqual(t, packet.Payload(), recvPacket.Payload())
+
+    done <- true
+  }();
+
+  time.Sleep(1 * time.Second)
+  select {
+  case <-done:
+  default:
+    t.Fatalf("Test timeout.")
+  }
+}

@@ -76,7 +76,14 @@ func (u *UnderlayChan) establishListeners() {
 
 func (u *UnderlayChan) establishPushers() {
   for {
-    packet := u.UnderlayPacket((<- u.send).(Packet))
+    overPkt := (<- u.send).(Packet)
+    if u.id == overPkt.Dest() {
+      // Packet sent to self.
+      u.notifyRecvPkt(overPkt)
+      continue
+    }
+
+    packet  := u.UnderlayPacket(overPkt)
     u.simulation.SendPacket(packet)
   }
 }
