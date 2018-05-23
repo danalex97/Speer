@@ -1,10 +1,10 @@
 package overlay
 
 import (
-  "fmt"
-  "github.com/danalex97/Speer/underlay"
   . "github.com/danalex97/Speer/events"
+  "github.com/danalex97/Speer/underlay"
   "runtime"
+  "fmt"
 )
 
 type Bridge interface {
@@ -64,7 +64,7 @@ func (u *UnderlayChan) establishListeners() {
       if overPacket.Src() == u.id {
         continue
       }
-      fmt.Printf("Packet delivered: {%s, %s}\n", overPacket.Src(), overPacket.Dest())
+      // fmt.Printf("Packet delivered: {%s, %s}\n", overPacket.Src(), overPacket.Dest())
 
       u.notifyRecvPkt(overPacket)
     default:

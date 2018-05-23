@@ -2,6 +2,7 @@ package events
 
 import (
   . "github.com/danalex97/Speer/structs"
+  "sync"
   "fmt"
 )
 
@@ -10,17 +11,22 @@ type EventQueue interface {
   Pop() *Event
 }
 
-const LazyQueueChanSize int = 50
+const LazyQueueChanSize int = 100
 
 type lazyEventQueue struct {
   pq PriorityQueue
   stream chan *Event
+
+  *sync.Mutex
 }
 
 func NewLazyEventQueue() EventQueue {
   eq := new(lazyEventQueue)
+
   eq.pq     = NewPriorityQueue()
   eq.stream = make(chan *Event, LazyQueueChanSize + 5)
+  eq.Mutex  = new(sync.Mutex)
+
   return eq
 }
 
@@ -36,6 +42,10 @@ func (eq *lazyEventQueue) Push(event *Event) {
   select {
   case eq.stream <- event:
   default:
+    // We need to avoid multiple depressure operations at the same time.
+    eq.Lock()
+    defer eq.Unlock()
+
     // it must be that the channel is full, so we need to
     // relase some pressure
     eq.depressure()
@@ -44,14 +54,17 @@ func (eq *lazyEventQueue) Push(event *Event) {
 }
 
 func (eq *lazyEventQueue) Pop() (event *Event) {
-  eq.Push(nil)
-  for {
-    event = <- eq.stream
-    if event == nil {
-      break
-    }
+  eq.Lock()
+  defer eq.Unlock()
 
-    eq.pq.Push(Int(event.timestamp), event)
+  done := false
+  for !done {
+    select {
+    case ev := <-eq.stream:
+      eq.pq.Push(Int(ev.timestamp), ev)
+    default:
+      done = true
+    }
   }
 
   if eq.pq.Len() > 0 {
