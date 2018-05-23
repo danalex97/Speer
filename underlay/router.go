@@ -2,6 +2,7 @@ package underlay
 
 import (
   . "github.com/danalex97/Speer/events"
+  "fmt"
 )
 
 const RouterCacheSize int = 50
@@ -46,6 +47,14 @@ func (r *shortestPathRouter) Connections() []Connection {
   return r.table;
 }
 
+func (r *shortestPathRouter) logPath(payload *sprPacket) {
+  fmt.Printf("%p - Road payload: %v [", r, payload.packet)
+  for i := 0; i < len(payload.path); i++ {
+    fmt.Printf(" %v", payload.path[i])
+  }
+  fmt.Printf(" ]\n")
+}
+
 func (r *shortestPathRouter) Receive(event *Event) *Event {
   switch payload := event.Payload().(type) {
   case *packet:
@@ -54,9 +63,12 @@ func (r *shortestPathRouter) Receive(event *Event) *Event {
       conn := el.(Connection)
       return buildNextCachedEvent(event, conn, payload)
     }
+    // fmt.Printf("%p - Original payload: %v\n", r, payload)
 
     // first or last hop
     nextPayload, ok := bellman(payload, r, payload.Dest())
+    //r.logPath(nextPayload)
+
     if !ok || len(nextPayload.path) == 0 {
       return nil
     }
@@ -65,6 +77,8 @@ func (r *shortestPathRouter) Receive(event *Event) *Event {
   case *sprPacket:
     // next hops
     nextPayload := payload
+    //r.logPath(payload)
+
     if len(nextPayload.path) == 0 {
       // the packet arrived at destination so don't to anything
       // the packet is used by the observers

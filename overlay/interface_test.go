@@ -5,6 +5,7 @@ import (
   "math"
   "math/rand"
   "time"
+
   "github.com/danalex97/Speer/underlay"
   "github.com/danalex97/Speer/events"
 )
@@ -40,6 +41,13 @@ func TestUnreliableNodesPacketSending(t *testing.T) {
   netsim.Stop()
 }
 
+func printPacket(t *testing.T, mp *NetworkMap, m interface {}) {
+  pkt := m.(Packet)
+  s := mp.Router(pkt.Src())
+  d := mp.Router(pkt.Dest())
+  t.Logf("Retrieved: %p %p\n", s, d)
+}
+
 func TestUnreliableNodesSameNumberOfSentAndReceivedPackets(t *testing.T) {
   netsim := testUnderlayNetsim(100)
 
@@ -52,6 +60,8 @@ func TestUnreliableNodesSameNumberOfSentAndReceivedPackets(t *testing.T) {
   }
   go netsim.Run()
 
+  mp := GetBootstrap(netsim).(*NetworkMap)
+
   for i := 0; i < nbrNodes; i++ {
     n1 := nodes[i]
     n2 := nodes[nbrNodes - i - 1]
@@ -63,10 +73,14 @@ func TestUnreliableNodesSameNumberOfSentAndReceivedPackets(t *testing.T) {
   for i := 0; i < nbrNodes; i++ {
     node := nodes[i]
     for j := 0; j < nbrPackets; j++ {
-      <-node.Recv()
+      m := <-node.Recv()
+      printPacket(t, mp, m)
     }
+    t.Logf("Completed: %p.", mp.Router(nodes[i].Id()))
     select {
-    case <-node.Recv():
+    case m := <-node.Recv():
+      t.Logf("Fail: %p.", mp.Router(nodes[i].Id()))
+      printPacket(t, mp, m)
       t.Fatalf("More packets than expected arrived.")
     default:
     }

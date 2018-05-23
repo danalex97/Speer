@@ -64,6 +64,11 @@ func (u *UnderlayChan) establishListeners() {
       if overPacket.Src() == u.id {
         continue
       }
+
+      // We need to look only at our own packets.
+      if overPacket.Dest() != u.id {
+        continue
+      }
       // fmt.Printf("Packet delivered: {%s, %s}\n", overPacket.Src(), overPacket.Dest())
 
       u.notifyRecvPkt(overPacket)
