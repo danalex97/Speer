@@ -40,6 +40,39 @@ func TestUnreliableNodesPacketSending(t *testing.T) {
   netsim.Stop()
 }
 
+func TestUnreliableNodesSameNumberOfSentAndReceivedPackets(t *testing.T) {
+  netsim := testUnderlayNetsim(100)
+
+  nbrPackets := 50
+  nbrNodes   := 50
+
+  nodes := []UnreliableNode{}
+  for i := 0; i < nbrNodes; i++ {
+    nodes = append(nodes, NewUnreliableSimulatedNode(netsim))
+  }
+  go netsim.Run()
+
+  for i := 0; i < nbrNodes; i++ {
+    n1 := nodes[i]
+    n2 := nodes[nbrNodes - i - 1]
+    for j := 0; j < nbrPackets; j++ {
+      packet := NewPacket(n1.Id(), n2.Id(), nil)
+      n1.Send() <- packet
+    }
+  }
+  for i := 0; i < nbrNodes; i++ {
+    node := nodes[i]
+    for j := 0; j < nbrPackets; j++ {
+      <-node.Recv()
+    }
+    select {
+    case <-node.Recv():
+      t.Fatalf("More packets than expected arrived.")
+    default:
+    }
+  }
+}
+
 func TestUnreliableNodesJoinReturnDifferentID(t *testing.T) {
   netsim := testUnderlayNetsim(10)
 
