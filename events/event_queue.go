@@ -3,7 +3,6 @@ package events
 import (
   . "github.com/danalex97/Speer/structs"
   "sync"
-  "fmt"
 )
 
 type EventQueue interface {
@@ -31,7 +30,7 @@ func NewLazyEventQueue() EventQueue {
 }
 
 func (eq *lazyEventQueue) depressure() {
-  fmt.Println("Priority queue push channel full. Clearing it.")
+  // fmt.Println("Priority queue push channel full. Clearing it.")
   for len(eq.stream) > LazyQueueChanSize / 3 {
     event := <- eq.stream
     eq.pq.Push(Int(event.timestamp), event)
