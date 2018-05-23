@@ -79,7 +79,7 @@ func (e *TransferEngine) ControlSend(id string, message interface{}) {
   mapLock.RUnlock()
 
   if len(engine.recv) == cap(engine.recv) {
-    fmt.Println("blocked")
+    fmt.Println("Channel blocked at ControlSend.")
   }
   engine.recv <- message
 }
