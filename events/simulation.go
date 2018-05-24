@@ -1,9 +1,9 @@
 package events
 
 import (
-  "fmt"
   "runtime"
   "sync"
+  "fmt"
 )
 
 type Simulation struct {
@@ -73,11 +73,26 @@ func (s *Simulation) processEvent(event *Event) {
   }
 }
 
-func (s *Simulation) HandleParallel(eventTime int, event *Event) (int, *Event) {
+// Handling events in parallel
+func (s *Simulation) HandleParallel() {
+  event := s.Pop()
+  if event == nil {
+    // Empty event queue, so we can let other threads run.
+    runtime.Gosched()
+    return
+  }
+
   // Get all events happening at the same time for processing.
-  events := []*Event{event}
-  for ;event == nil || event.timestamp == eventTime; event = s.Pop() {
+  eventTime := event.timestamp
+  events    := []*Event{}
+  // fmt.Println("Event received >", event)
+  for ;event != nil && event.timestamp == eventTime; event = s.Pop() {
+    // fmt.Println("Event received >", event)
     events = append(events, event)
+  }
+  // Push back the next event extracted.
+  if event != nil {
+    s.Push(event)
   }
 
   // The event gets dispached to observers.
@@ -134,22 +149,11 @@ func (s *Simulation) HandleParallel(eventTime int, event *Event) (int, *Event) {
     }
   }
 
-  // Update the time for the next event group.
-  if event == nil {
-    // We add a virtual event and the queue will run with one dead point.
-    eventTime = eventTime
-    event     = NewEvent(eventTime, nil, nil)
-
-    // Empty event queue, so we can let other threads run.
-    runtime.Gosched()
-  } else {
-    eventTime = event.timestamp
-  }
-
-  return eventTime, event
+  return
 }
 
-func (s *Simulation) Handle(eventTime int, event *Event) (_ int, _ *Event) {
+// Handling events synchronously
+func (s *Simulation) Handle() {
   if event:= s.Pop(); event != nil {
     // fmt.Println("Event received >", event)
 
@@ -183,9 +187,6 @@ func (s *Simulation) Handle(eventTime int, event *Event) (_ int, _ *Event) {
 func (s *Simulation) Run() {
   fmt.Println("Starting the simulation.")
 
-  eventTime := 0
-  event     := NewEvent(eventTime, nil, nil)
-
   handler := s.Handle
   if s.parallel {
     handler = s.HandleParallel
@@ -200,7 +201,7 @@ func (s *Simulation) Run() {
 
       s.observers = append(s.observers, observer)
     default:
-      eventTime, event = handler(eventTime, event)
+      handler()
     }
   }
 }
