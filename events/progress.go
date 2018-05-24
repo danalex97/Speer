@@ -2,6 +2,7 @@ package events
 
 import (
   . "github.com/danalex97/Speer/interfaces"
+  "runtime"
   "sync"
 )
 
@@ -29,51 +30,97 @@ func (p *ProgressProperty) Receive(event *Event) *Event {
 }
 
 // A progress property used to wait in groups.
+const progressChanSize int = 1000
+
 type WGProgress struct {
-  cond *sync.Cond
+  *sync.Mutex
 
-  mp   map[string]bool
-  size int
-  val  int
-
-  start int
+  notif chan string
+  size  int
 }
 
-func NewWGProgress(start int) GroupProgress {
+func NewWGProgress() GroupProgress {
   return &WGProgress{
-    cond  : &sync.Cond{L: &sync.Mutex{}},
+    Mutex : new(sync.Mutex),
 
-    mp    : make(map[string]bool),
-    start : start,
+    notif : make(chan string, progressChanSize),
+    size  : 0,
   }
 }
 
 func (p *WGProgress) Add() {
-  p.cond.L.Lock()
-  defer p.cond.L.Unlock()
+  p.Lock()
+  defer p.Unlock()
 
   p.size++
 }
 
-func (p *WGProgress) Progress(id string) {
-  p.cond.L.Lock()
-  defer p.cond.L.Unlock()
+func (p *WGProgress) compact(id string) {
+  p.Lock()
+  defer p.Unlock()
 
-  p.mp[id] = true
-  if len(p.mp) >= p.val  {
-    p.cond.Broadcast()
+  if len(p.notif) < maxRegisterQueue {
+    select {
+      case p.notif <- id:
+      default:
+    }
+    return
+  }
+
+  notif := make(chan string, progressChanSize)
+  mp    := make(map[string]bool)
+
+  // fmt.Println("Before ", len(p.notif))
+
+  for {
+    select {
+    case id := <-p.notif:
+      if _, ok := mp[id]; !ok {
+        mp[id] = true
+      }
+    default:
+      for id, _ := range mp {
+        notif <- id
+      }
+      // fmt.Println("After ", len(notif))
+      p.notif = notif
+      p.notif <- id
+
+      return
+    }
+  }
+}
+
+func (p *WGProgress) Progress(id string) {
+  select {
+  case p.notif <- id:
+  default:
+    p.compact(id)
   }
 }
 
 func (p *WGProgress) Advance() {
-  p.cond.L.Lock()
-  defer p.cond.L.Unlock()
+  p.Lock()
+  defer p.Unlock()
 
-  p.val = p.size
+  target  := p.size
+  current := 0
 
-  if p.size >= p.start {
-    p.mp = make(map[string]bool)
+  mp := make(map[string]bool)
 
-    p.cond.Wait()
+  for current < target {
+    select {
+    case id := <-p.notif:
+      if _, ok := mp[id]; !ok {
+        mp[id] = true
+        current++
+      }
+    default:
+      p.Unlock()
+      runtime.Gosched()
+      p.Lock()
+    }
   }
+
+  p.notif = make(chan string, progressChanSize)
 }
