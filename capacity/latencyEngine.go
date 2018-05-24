@@ -3,8 +3,6 @@ package capacity
 import (
   . "github.com/danalex97/Speer/interfaces"
   "github.com/danalex97/Speer/overlay"
-  "github.com/danalex97/Speer/structs"
-  "runtime"
   "fmt"
 )
 
@@ -41,24 +39,12 @@ func (e *TransferLatencyEngine) ControlSend(id string, message interface{}) {
 }
 
 func (e *TransferLatencyEngine) establishListener() {
-  e.prog.PullProgress.Add()
-  listenerId := structs.RandomKey()
-
   for {
-    select {
-    case pkt := <-e.unreliableNode.Recv():
-      if len(e.recv) == cap(e.recv) {
-        fmt.Println("Channel blocked at ControlRecv.")
-      }
-      e.recv <- pkt.(overlay.Packet).Payload()
-    default:
-      // If there are no packets pending, we checked the channel, so we
-      // can mark progress being made.
-      e.prog.PullProgress.Progress(listenerId)
-
-      // If there are no new packets schedule other routines.
-      runtime.Gosched()
+    pkt := <-e.unreliableNode.Recv()
+    if len(e.recv) == cap(e.recv) {
+      fmt.Println("Channel blocked at ControlRecv.")
     }
+    e.recv <- pkt.(overlay.Packet).Payload()
   }
 }
 

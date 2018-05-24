@@ -33,8 +33,8 @@ func GetTransmissionProgress(simulation *underlay.NetworkSimulation) (progress *
     progress = oldProgress
   } else {
     progress = &TransmissionProgress{
-      PushProgress : events.NewWGProgress(progressInterval),
-      PullProgress : events.NewWGProgress(progressInterval),
+      PushProgress : events.NewWGProgress(),
+      PullProgress : events.NewWGProgress(),
       simulation   : simulation,
     }
 

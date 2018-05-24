@@ -3,7 +3,7 @@ package overlay
 import (
   . "github.com/danalex97/Speer/events"
   "github.com/danalex97/Speer/underlay"
-  "runtime"
+  // "runtime"
   "fmt"
 )
 
@@ -46,8 +46,8 @@ func NewUnderlayChan(
   chn.prog = GetTransmissionProgress(simulation)
 
   // Register the current channel as part of both progress groups.
-  chn.prog.PushProgress.Add()
-  chn.prog.PullProgress.Add()
+  // chn.prog.PushProgress.Add()
+  // chn.prog.PullProgress.Add()
 
   go chn.establishListeners()
   go chn.establishPushers()
@@ -69,57 +69,39 @@ func (u *UnderlayChan) establishListeners() {
   u.simulation.RegisterObserver(obs)
 
   for {
-    select {
-    case event := <- obs.EventChan():
-      packet := event.Payload().(underlay.Packet)
-      overPacket := u.OverlayPacket(packet)
+    event := <- obs.EventChan()
+    packet := event.Payload().(underlay.Packet)
+    overPacket := u.OverlayPacket(packet)
 
-      if packet.Src() == nil {
-        continue
-      }
-      if overPacket.Src() == u.id {
-        continue
-      }
-
-      // We need to look only at our own packets.
-      if overPacket.Dest() != u.id {
-        continue
-      }
-      // fmt.Printf("Packet delivered: {%s, %s}\n", overPacket.Src(), overPacket.Dest())
-
-      u.notifyRecvPkt(overPacket)
-    default:
-      // If there are no packets pending, we checked the channel, so we
-      // can mark progress being made.
-      u.prog.PullProgress.Progress(u.id)
-
-      // If there are no new packets schedule other goroutine.
-      runtime.Gosched()
+    if packet.Src() == nil {
+      continue
     }
+    if overPacket.Src() == u.id {
+      continue
+    }
+
+    // We need to look only at our own packets.
+    if overPacket.Dest() != u.id {
+      continue
+    }
+    // fmt.Printf("Packet delivered: {%s, %s}\n", overPacket.Src(), overPacket.Dest())
+
+    u.notifyRecvPkt(overPacket)
   }
 }
 
 func (u *UnderlayChan) establishPushers() {
   for {
-    select {
-    case msg := <-u.send:
-      overPacket := msg.(Packet)
-      if u.id == overPacket.Dest() {
-        // Packet sent to self.
-        u.notifyRecvPkt(overPacket)
-        continue
-      }
-
-      packet  := u.UnderlayPacket(overPacket)
-      u.simulation.SendPacket(packet)
-    default:
-      // If there are no packets pending, we checked the channel, so we
-      // can mark progress being made.
-      u.prog.PushProgress.Progress(u.id)
-
-      // If there are no new packets schedule other goroutine.
-      runtime.Gosched()
+    msg := <-u.send
+    overPacket := msg.(Packet)
+    if u.id == overPacket.Dest() {
+      // Packet sent to self.
+      u.notifyRecvPkt(overPacket)
+      continue
     }
+
+    packet  := u.UnderlayPacket(overPacket)
+    u.simulation.SendPacket(packet)
   }
 }
 
