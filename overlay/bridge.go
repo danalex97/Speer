@@ -20,6 +20,10 @@ type UnderlayChan struct {
 
   simulation *underlay.NetworkSimulation
   netMap     OverlayMap
+
+  // Progress properties for pushing and pulling packets
+  // out of the underlay network.
+  prog *TransmissionProgress
 }
 
 const sendSize int = 50
@@ -29,7 +33,7 @@ func NewUnderlayChan(
     id         string,
     simulation *underlay.NetworkSimulation,
     netMap     OverlayMap) Bridge {
-  
+
   chn := new(UnderlayChan)
 
   chn.id         = id
@@ -38,6 +42,12 @@ func NewUnderlayChan(
 
   chn.send = make(chan interface{}, sendSize)
   chn.recv = make(chan interface{}, recvSize)
+
+  chn.prog = GetTransmissionProgress(simulation)
+
+  // Register the current channel as part of both progress groups.
+  chn.prog.pushProgress.Add()
+  chn.prog.pullProgress.Add()
 
   go chn.establishListeners()
   go chn.establishPushers()
@@ -79,7 +89,11 @@ func (u *UnderlayChan) establishListeners() {
 
       u.notifyRecvPkt(overPacket)
     default:
-      // If there are no new packets schedule new packets
+      // If there are no packets pending, we checked the channel, so we
+      // can mark progress being made.
+      u.prog.pullProgress.Progress(u.id)
+
+      // If there are no new packets schedule other goroutine.
       runtime.Gosched()
     }
   }
@@ -87,15 +101,25 @@ func (u *UnderlayChan) establishListeners() {
 
 func (u *UnderlayChan) establishPushers() {
   for {
-    overPkt := (<- u.send).(Packet)
-    if u.id == overPkt.Dest() {
-      // Packet sent to self.
-      u.notifyRecvPkt(overPkt)
-      continue
-    }
+    select {
+    case msg := <-u.send:
+      overPacket := msg.(Packet)
+      if u.id == overPacket.Dest() {
+        // Packet sent to self.
+        u.notifyRecvPkt(overPacket)
+        continue
+      }
 
-    packet  := u.UnderlayPacket(overPkt)
-    u.simulation.SendPacket(packet)
+      packet  := u.UnderlayPacket(overPacket)
+      u.simulation.SendPacket(packet)
+    default:
+      // If there are no packets pending, we checked the channel, so we
+      // can mark progress being made.
+      u.prog.pushProgress.Progress(u.id)
+
+      // If there are no new packets schedule other goroutine.
+      runtime.Gosched()
+    }
   }
 }
 

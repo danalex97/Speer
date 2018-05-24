@@ -6,7 +6,6 @@ import (
   "github.com/danalex97/Speer/underlay"
 
   "sync"
-  "fmt"
 )
 
 type GroupProgress interfaces.GroupProgress
@@ -19,6 +18,8 @@ var mutex       = new(sync.Mutex)
 const progressInterval int = 100
 
 type TransmissionProgress struct {
+  simulation *underlay.NetworkSimulation
+
   // Progress properties that regulate the transfer of packets.
   pushProgress GroupProgress
   pullProgress GroupProgress
@@ -34,6 +35,7 @@ func GetTransmissionProgress(simulation *underlay.NetworkSimulation) (progress *
     progress = &TransmissionProgress{
       pushProgress : events.NewWGProgress(progressInterval),
       pullProgress : events.NewWGProgress(progressInterval),
+      simulation   : simulation,
     }
 
     // Initialize and update the progress map.
@@ -44,5 +46,12 @@ func GetTransmissionProgress(simulation *underlay.NetworkSimulation) (progress *
 }
 
 func (p *TransmissionProgress) Init() {
-  fmt.Println("Init")
+  p.simulation.RegisterProgress(events.NewProgressProperty(
+    p.pushProgress,
+    progressInterval,
+  ))
+  p.simulation.RegisterProgress(events.NewProgressProperty(
+    p.pullProgress,
+    progressInterval,
+  ))
 }
