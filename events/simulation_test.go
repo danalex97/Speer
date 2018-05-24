@@ -4,31 +4,47 @@ import (
   "testing"
 )
 
+func setParallel(t *testing.T, s Simulation, parallel bool) {
+  if parallel {
+    t.Log("Testing sequential simulation.")
+  } else {
+    t.Log("Testing parallel simulation.")
+  }
+  s.SetParallel(parallel)
+}
+
 func TestMultipleTimeReads(t *testing.T) {
   /*
    * There is no current time ordering guarantee!
    * This is just to make sure there is a locking mechanism over the timer.
    */
-  s := NewLazySimulation()
-  r := new(mockReceiver)
+  test := func(parallel bool) {
+    s := NewLazySimulation()
+    setParallel(t, s, parallel)
 
-  go s.Run()
+    r := new(mockReceiver)
 
-  done := make(chan bool)
+    go s.Run()
 
-  for i := 1; i < LazyQueueChanSize; i++ {
-    go func() {
-      s.Push(NewEvent(i, nil, r))
-      done <- true
-      s.Time()
-    }()
+    done := make(chan bool)
+
+    for i := 1; i < LazyQueueChanSize; i++ {
+      go func() {
+        s.Push(NewEvent(i, nil, r))
+        done <- true
+        s.Time()
+      }()
+    }
+
+    for i := 1; i < LazyQueueChanSize; i++ {
+      <-done
+    }
+
+    s.Stop()
   }
 
-  for i := 1; i < LazyQueueChanSize; i++ {
-    <-done
-  }
-
-  s.Stop()
+  test(false)
+  test(true)
 }
 
 func TestObserversGetNotified(t *testing.T) {
@@ -37,44 +53,50 @@ func TestObserversGetNotified(t *testing.T) {
    * Test observers get notified.
    */
 
-  r1  := new(mockReceiver)
-  r2  := new(mockReceiver)
+  test := func(parallel bool) {
+    r1  := new(mockReceiver)
+    r2  := new(mockReceiver)
 
-  o := NewEventObserver(r1)
-  s := NewLazySimulation()
+    o := NewEventObserver(r1)
+    s := NewLazySimulation()
+    setParallel(t, s, parallel)
 
-  go s.Run()
-  s.RegisterObserver(o)
+    go s.Run()
+    s.RegisterObserver(o)
 
-  done := make(chan bool)
+    done := make(chan bool)
 
-  go func() {
-    for i := 1; i <= LazyQueueChanSize / 2; i++ {
-      s.Push(NewEvent(i, nil, r1))
-      done <- true
+    go func() {
+      for i := 1; i <= LazyQueueChanSize / 2; i++ {
+        s.Push(NewEvent(i, nil, r1))
+        done <- true
+      }
+    }()
+    go func() {
+      for i := 1; i <= LazyQueueChanSize / 2; i++ {
+        s.Push(NewEvent(i, nil, r2))
+        done <- true
+      }
+    }()
+
+    for i := 1; i <= LazyQueueChanSize; i++ {
+      <-done
     }
-  }()
-  go func() {
-    for i := 1; i <= LazyQueueChanSize / 2; i++ {
-      s.Push(NewEvent(i, nil, r2))
-      done <- true
-    }
-  }()
 
-  for i := 1; i <= LazyQueueChanSize; i++ {
-    <-done
+    for i := 1; i < LazyQueueChanSize/2; i++ {
+      e := <- o.EventChan()
+      if e.Timestamp() > LazyQueueChanSize/2 {
+    		t.Fatalf("Inconsistent simulation times.")
+    	}
+      // For assserting time ordering
+      // assertEqual(t, e.Timestamp(), i)
+    }
+
+    s.Stop()
   }
 
-  for i := 1; i < LazyQueueChanSize/2; i++ {
-    e := <- o.EventChan()
-    if e.Timestamp() > LazyQueueChanSize/2 {
-  		t.Fatalf("Inconsistent simulation times.")
-  	}
-    // For assserting time ordering
-    // assertEqual(t, e.Timestamp(), i)
-  }
-
-  s.Stop()
+  test(false)
+  test(true)
 }
 
 type oneTimePushReceiver struct {
@@ -95,28 +117,35 @@ func TestReceiversPushNewEvents(t *testing.T) {
    * Test receivers push new events if new events get generated.
    */
 
-   s := NewLazySimulation()
-   r := new(oneTimePushReceiver)
-   o := NewEventObserver(r)
+   test := func(parallel bool) {
+     s := NewLazySimulation()
+     setParallel(t, s, parallel)
 
-   go s.Run()
-   s.RegisterObserver(o)
+     r := new(oneTimePushReceiver)
+     o := NewEventObserver(r)
 
-   done := make(chan bool)
+     go s.Run()
+     s.RegisterObserver(o)
 
-   for i := 1; i <= LazyQueueChanSize; i++ {
-     go func() {
-       s.Push(NewEvent(i, nil, r))
-       done <- true
-     }()
-   }
+     done := make(chan bool)
 
-   for i := 1; i <= LazyQueueChanSize; i++ {
-     <-done
-   }
-   for i := 1; i <= LazyQueueChanSize + 1; i++ {
-     <-o.EventChan()
-   }
+     for i := 1; i <= LazyQueueChanSize; i++ {
+       go func() {
+         s.Push(NewEvent(i, nil, r))
+         done <- true
+       }()
+     }
 
-   s.Stop()
+     for i := 1; i <= LazyQueueChanSize; i++ {
+       <-done
+     }
+     for i := 1; i <= LazyQueueChanSize + 1; i++ {
+       <-o.EventChan()
+     }
+
+     s.Stop()
+  }
+
+  test(false)
+  test(true)
 }

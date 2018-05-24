@@ -35,6 +35,10 @@ func NewLazySimulation() (s Simulation) {
   return
 }
 
+func (s *Simulation) SetParallel(parallel bool) {
+  s.parallel = parallel
+}
+
 func (s *Simulation) RegisterProgress(property *ProgressProperty) {
   event := NewEvent(s.Time(), nil, property)
   s.Push(event)
@@ -71,6 +75,60 @@ func (s *Simulation) processEvent(event *Event) {
   if newEvent != nil {
     s.Push(newEvent)
   }
+}
+
+func (s *Simulation) Run() {
+  fmt.Println("Starting the simulation.")
+
+  handler := s.Handle
+  if s.parallel {
+    handler = s.HandleParallel
+  }
+
+  for {
+    select {
+    case <-s.stopped:
+      break
+    case observer := <-s.newObservers:
+      // fmt.Println("New Observer >", observer)
+
+      s.observers = append(s.observers, observer)
+    default:
+      handler()
+    }
+  }
+}
+
+// Handling events synchronously
+func (s *Simulation) Handle() {
+  if event:= s.Pop(); event != nil {
+    // fmt.Println("Event received >", event)
+
+    // The event gets dispached to observers
+    for _, observer := range(s.observers) {
+      observer.EnqueEvent(event)
+    }
+
+    s.timeMutex.Lock()
+    s.time = event.timestamp
+    s.timeMutex.Unlock()
+
+    receiver := event.receiver
+
+    if receiver == nil {
+      return
+    }
+
+    newEvent := receiver.Receive(event)
+
+    if newEvent != nil {
+      s.Push(newEvent)
+    }
+  } else {
+    runtime.Gosched()
+  }
+
+  return
 }
 
 // Handling events in parallel
@@ -150,58 +208,4 @@ func (s *Simulation) HandleParallel() {
   }
 
   return
-}
-
-// Handling events synchronously
-func (s *Simulation) Handle() {
-  if event:= s.Pop(); event != nil {
-    // fmt.Println("Event received >", event)
-
-    // The event gets dispached to observers
-    for _, observer := range(s.observers) {
-      observer.EnqueEvent(event)
-    }
-
-    s.timeMutex.Lock()
-    s.time = event.timestamp
-    s.timeMutex.Unlock()
-
-    receiver := event.receiver
-
-    if receiver == nil {
-      return
-    }
-
-    newEvent := receiver.Receive(event)
-
-    if newEvent != nil {
-      s.Push(newEvent)
-    }
-  } else {
-    runtime.Gosched()
-  }
-
-  return
-}
-
-func (s *Simulation) Run() {
-  fmt.Println("Starting the simulation.")
-
-  handler := s.Handle
-  if s.parallel {
-    handler = s.HandleParallel
-  }
-
-  for {
-    select {
-    case <-s.stopped:
-      break
-    case observer := <-s.newObservers:
-      // fmt.Println("New Observer >", observer)
-
-      s.observers = append(s.observers, observer)
-    default:
-      handler()
-    }
-  }
 }
