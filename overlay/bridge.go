@@ -25,12 +25,16 @@ type UnderlayChan struct {
 const sendSize int = 50
 const recvSize int = 10000
 
-func NewUnderlayChan(id string, simulation *underlay.NetworkSimulation, netMap OverlayMap) Bridge {
+func NewUnderlayChan(
+    id         string,
+    simulation *underlay.NetworkSimulation,
+    netMap     OverlayMap) Bridge {
+  
   chn := new(UnderlayChan)
 
-  chn.id = id
+  chn.id         = id
   chn.simulation = simulation
-  chn.netMap  = netMap
+  chn.netMap     = netMap
 
   chn.send = make(chan interface{}, sendSize)
   chn.recv = make(chan interface{}, recvSize)

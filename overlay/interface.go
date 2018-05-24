@@ -30,10 +30,11 @@ func GetBootstrap(simulation *underlay.NetworkSimulation) Bootstrap {
 func NewUnreliableSimulatedNode(simulation *underlay.NetworkSimulation) UnreliableNode {
   node := new(UnreliableSimulatedNode)
 
-  netMap := NewNetworkMap(simulation.Network())
+  var netMap OverlayMap
   if mp, ok := activeSet[simulation]; ok {
     netMap = mp
   } else {
+    netMap = NewNetworkMap(simulation.Network())
     activeSet[simulation] = netMap
   }
 
