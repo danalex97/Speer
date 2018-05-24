@@ -30,6 +30,11 @@ func NewLazySimulation() (s Simulation) {
   return
 }
 
+func (s *Simulation) RegisterProgress(property *ProgressProperty) {
+  event := NewEvent(s.Time(), nil, property)
+  s.Push(event)
+}
+
 func (s *Simulation) RegisterObserver(eventObserver EventObserver) {
   select {
   case s.newObservers <- eventObserver:

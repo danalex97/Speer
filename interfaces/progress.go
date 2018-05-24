@@ -7,3 +7,10 @@ type Progress interface {
     // The function that should block until we have Progressed enough.
     Advance()
 }
+
+type GroupProgress interface {
+  Progress
+
+  // The function that should be used to Add an entity to a Progress.
+  Add()
+}
