@@ -21,8 +21,8 @@ type TransmissionProgress struct {
   simulation *underlay.NetworkSimulation
 
   // Progress properties that regulate the transfer of packets.
-  pushProgress GroupProgress
-  pullProgress GroupProgress
+  PushProgress GroupProgress
+  PullProgress GroupProgress
 }
 
 func GetTransmissionProgress(simulation *underlay.NetworkSimulation) (progress *TransmissionProgress) {
@@ -33,8 +33,8 @@ func GetTransmissionProgress(simulation *underlay.NetworkSimulation) (progress *
     progress = oldProgress
   } else {
     progress = &TransmissionProgress{
-      pushProgress : events.NewWGProgress(progressInterval),
-      pullProgress : events.NewWGProgress(progressInterval),
+      PushProgress : events.NewWGProgress(progressInterval),
+      PullProgress : events.NewWGProgress(progressInterval),
       simulation   : simulation,
     }
 
@@ -47,11 +47,11 @@ func GetTransmissionProgress(simulation *underlay.NetworkSimulation) (progress *
 
 func (p *TransmissionProgress) Init() {
   p.simulation.RegisterProgress(events.NewProgressProperty(
-    p.pushProgress,
+    p.PushProgress,
     progressInterval,
   ))
   p.simulation.RegisterProgress(events.NewProgressProperty(
-    p.pullProgress,
+    p.PullProgress,
     progressInterval,
   ))
 }

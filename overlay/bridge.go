@@ -46,8 +46,8 @@ func NewUnderlayChan(
   chn.prog = GetTransmissionProgress(simulation)
 
   // Register the current channel as part of both progress groups.
-  chn.prog.pushProgress.Add()
-  chn.prog.pullProgress.Add()
+  chn.prog.PushProgress.Add()
+  chn.prog.PullProgress.Add()
 
   go chn.establishListeners()
   go chn.establishPushers()
@@ -91,7 +91,7 @@ func (u *UnderlayChan) establishListeners() {
     default:
       // If there are no packets pending, we checked the channel, so we
       // can mark progress being made.
-      u.prog.pullProgress.Progress(u.id)
+      u.prog.PullProgress.Progress(u.id)
 
       // If there are no new packets schedule other goroutine.
       runtime.Gosched()
@@ -115,7 +115,7 @@ func (u *UnderlayChan) establishPushers() {
     default:
       // If there are no packets pending, we checked the channel, so we
       // can mark progress being made.
-      u.prog.pushProgress.Progress(u.id)
+      u.prog.PushProgress.Progress(u.id)
 
       // If there are no new packets schedule other goroutine.
       runtime.Gosched()

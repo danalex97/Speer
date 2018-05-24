@@ -3,6 +3,7 @@ package sdk
 import (
   . "github.com/danalex97/Speer/capacity"
   "github.com/danalex97/Speer/events"
+  "github.com/danalex97/Speer/overlay"
   "github.com/danalex97/Speer/interfaces"
 )
 
@@ -91,7 +92,11 @@ func (s *TorrentSimulation) updateEngine(node interfaces.UnreliableNode) Engine 
     node.Id(),
   )
   if s.latency {
-    newEngine = NewTransferLatencyEngine(newEngine.(*TransferEngine), node)
+    newEngine = NewTransferLatencyEngine(
+      newEngine.(*TransferEngine),
+      node,
+      overlay.GetTransmissionProgress(s.underlaySimulation),
+    )
   }
 
   // Set connection callback
