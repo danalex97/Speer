@@ -21,6 +21,7 @@ type Simulation struct {
 
 const maxRegisterQueue int = 50
 const minRegisterQueue int = 10
+const settleTime       int = 200
 
 func NewLazySimulation() (s Simulation) {
   s = Simulation{
@@ -86,6 +87,8 @@ func (s *Simulation) Run() {
     handler = s.HandleParallel
   }
 
+  settled := false
+
   for {
     select {
     case <-s.stopped:
@@ -95,10 +98,11 @@ func (s *Simulation) Run() {
 
       s.observers = append(s.observers, observer)
     default:
-      if s.Time() < 200 {
+      if !settled && s.Time() < 200 {
         // At the beginning we run the sequential simulator.
         s.Handle()
       } else {
+        settled = true
         handler()
       }
     }
@@ -233,14 +237,14 @@ func (s *Simulation) HandleParallel() {
       }
     }
   default:
-    fmt.Println("Parallel")
-    for _, group := range groups {
-      fmt.Printf("Group > %p \n", group[0].Receiver())
-      fmt.Println("  Receiver type > ", reflect.TypeOf(group[0].Receiver()))
-      for _, event := range group {
-        fmt.Println("   Event received >", event, reflect.TypeOf(event.Payload()))
-      }
-    }
+    // fmt.Println("Parallel")
+    // for _, group := range groups {
+    //   fmt.Printf("Group > %p \n", group[0].Receiver())
+    //   fmt.Println("  Receiver type > ", reflect.TypeOf(group[0].Receiver()))
+    //   for _, event := range group {
+    //     fmt.Println("   Event received >", event, reflect.TypeOf(event.Payload()))
+    //   }
+    // }
 
     done     := make(chan bool)
     routines := 0
