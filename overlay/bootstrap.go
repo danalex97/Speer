@@ -1,11 +1,19 @@
 package overlay
 
 import (
+  "github.com/danalex97/Speer/events"
+  "github.com/danalex97/Speer/underlay"
+  "github.com/danalex97/Speer/interfaces"
+
   "sync"
   "strconv"
   "math/rand"
-  "github.com/danalex97/Speer/underlay"
 )
+
+type GroupProgress interfaces.GroupProgress
+
+// The delay for pushing a packet into the network is at most 100ms.
+const progressInterval int = 100
 
 type Bootstrap interface {
   Join(id string) string // returns bootstrap node
@@ -13,17 +21,26 @@ type Bootstrap interface {
 
 type OverlayMap interface {
   Bootstrap
+
   NewId() string // returns node ID
+
   Router(id string) underlay.Router // ID -> underlay.Router
   Id(router underlay.Router) string // underlay.Router -> ID
 }
 
 type NetworkMap struct {
   sync.Mutex
+
   network *underlay.Network
-  id map[string]underlay.Router
-  inv map[underlay.Router]string
+
+  id    map[string]underlay.Router
+  inv   map[underlay.Router]string
+
   idCtr map[string]int
+
+  // Progress properties that regulate the transfer of packets.
+  pushProgress GroupProgress
+  pullProgress GroupProgress
 }
 
 func NewNetworkMap(network *underlay.Network) OverlayMap {
@@ -33,6 +50,9 @@ func NewNetworkMap(network *underlay.Network) OverlayMap {
   mp.id      = make(map[string]underlay.Router)
   mp.inv     = make(map[underlay.Router]string)
   mp.idCtr   = make(map[string]int)
+
+  mp.pushProgress = events.NewWGProgress(progressInterval)
+  mp.pullProgress = events.NewWGProgress(progressInterval)
 
   return mp
 }

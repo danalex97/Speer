@@ -14,8 +14,10 @@ type Bridge interface {
 
 type UnderlayChan struct {
   id string
+
   send chan interface{}
   recv chan interface{}
+
   simulation *underlay.NetworkSimulation
   netMap     OverlayMap
 }
