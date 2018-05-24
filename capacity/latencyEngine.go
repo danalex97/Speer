@@ -6,25 +6,20 @@ import (
   "fmt"
 )
 
-type TransmissionProgress *overlay.TransmissionProgress
-
 /* Implementation. */
 type TransferLatencyEngine struct {
   *TransferEngine
 
   unreliableNode UnreliableNode
-  prog           TransmissionProgress
 }
 
 func NewTransferLatencyEngine(
     e *TransferEngine,
-    u UnreliableNode,
-    p TransmissionProgress) Engine {
+    u UnreliableNode) Engine {
 
   engine := &TransferLatencyEngine{
     TransferEngine : e,
     unreliableNode : u,
-    prog           : p,
   }
   go engine.establishListener();
   return engine

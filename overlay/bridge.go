@@ -20,10 +20,6 @@ type UnderlayChan struct {
 
   simulation *underlay.NetworkSimulation
   netMap     OverlayMap
-
-  // Progress properties for pushing and pulling packets
-  // out of the underlay network.
-  prog *TransmissionProgress
 }
 
 const sendSize int = 50
@@ -42,12 +38,6 @@ func NewUnderlayChan(
 
   chn.send = make(chan interface{}, sendSize)
   chn.recv = make(chan interface{}, recvSize)
-
-  chn.prog = GetTransmissionProgress(simulation)
-
-  // Register the current channel as part of both progress groups.
-  // chn.prog.PushProgress.Add()
-  // chn.prog.PullProgress.Add()
 
   go chn.establishListeners()
   go chn.establishPushers()
