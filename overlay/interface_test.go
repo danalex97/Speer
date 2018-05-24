@@ -73,14 +73,14 @@ func TestUnreliableNodesSameNumberOfSentAndReceivedPackets(t *testing.T) {
   for i := 0; i < nbrNodes; i++ {
     node := nodes[i]
     for j := 0; j < nbrPackets; j++ {
-      m := <-node.Recv()
-      printPacket(t, mp, m)
+      <-node.Recv()
+      // printPacket(t, mp, m)
     }
-    t.Logf("Completed: %p.", mp.Router(nodes[i].Id()))
+    // t.Logf("Completed: %p.", mp.Router(nodes[i].Id()))
     select {
-    case m := <-node.Recv():
+    case <-node.Recv():
       t.Logf("Fail: %p.", mp.Router(nodes[i].Id()))
-      printPacket(t, mp, m)
+      // printPacket(t, mp, m)
       t.Fatalf("More packets than expected arrived.")
     default:
     }
