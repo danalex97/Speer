@@ -1,12 +1,13 @@
 package overlay
 
 import (
+  "github.com/danalex97/Speer/underlay"
+  "github.com/danalex97/Speer/events"
+
   "testing"
   "math"
   "math/rand"
   "time"
-  "github.com/danalex97/Speer/underlay"
-  "github.com/danalex97/Speer/events"
 )
 
 func testUnderlayChan(nodes int) (string, string, Bridge, Bridge) {
@@ -22,6 +23,8 @@ func testUnderlayChan(nodes int) (string, string, Bridge, Bridge) {
   netSim := underlay.NewNetworkSimulation(simulation, network)
   go netSim.Run()
 
+  time.Sleep(100 * time.Millisecond)
+
   bridge1 := NewUnderlayChan(id1, netSim, netmap)
   bridge2 := NewUnderlayChan(id2, netSim, netmap)
 
@@ -36,6 +39,7 @@ func TestBridgePacketDelivery(t *testing.T) {
   id1, id2, bridge1, bridge2 := testUnderlayChan(10)
 
   for i := 0; i < 10; i++ {
+    t.Logf("Bridge packet delivery test -- packet %d\n", i)
     packet := NewPacket(id1, id2, nil)
     bridge1.Send() <- packet
 

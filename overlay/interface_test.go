@@ -51,6 +51,9 @@ func printPacket(t *testing.T, mp *NetworkMap, m interface {}) {
 func TestUnreliableNodesSameNumberOfSentAndReceivedPackets(t *testing.T) {
   netsim := testUnderlayNetsim(100)
 
+  go netsim.Run()
+  time.Sleep(100 * time.Millisecond)
+
   nbrPackets := 50
   nbrNodes   := 50
 
@@ -58,7 +61,6 @@ func TestUnreliableNodesSameNumberOfSentAndReceivedPackets(t *testing.T) {
   for i := 0; i < nbrNodes; i++ {
     nodes = append(nodes, NewUnreliableSimulatedNode(netsim))
   }
-  go netsim.Run()
 
   mp := GetBootstrap(netsim).(*NetworkMap)
 
@@ -85,6 +87,8 @@ func TestUnreliableNodesSameNumberOfSentAndReceivedPackets(t *testing.T) {
     default:
     }
   }
+
+  netsim.Stop()
 }
 
 func TestUnreliableNodesJoinReturnDifferentID(t *testing.T) {
