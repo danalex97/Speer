@@ -1,6 +1,7 @@
 package events
 
 import (
+  "reflect"
   "runtime"
   "sync"
   "fmt"
@@ -29,7 +30,7 @@ func NewLazySimulation() (s Simulation) {
     timeMutex    : new(sync.RWMutex),
     time         : 0,
 
-    parallel     : false,
+    parallel     : true,
     EventQueue   : NewLazyEventQueue(),
   }
   return
@@ -94,7 +95,12 @@ func (s *Simulation) Run() {
 
       s.observers = append(s.observers, observer)
     default:
-      handler()
+      if s.Time() < 200 {
+        // At the beginning we run the sequential simulator.
+        s.Handle()
+      } else {
+        handler()
+      }
     }
   }
 }
@@ -131,6 +137,20 @@ func (s *Simulation) Handle() {
   return
 }
 
+func (s *Simulation) processGroup(group []*Event, done chan bool) {
+  toProcess := []*Event{}
+  for _, event := range group {
+    toProcess = append(toProcess, event)
+  }
+
+  go func() {
+    for _, event := range toProcess {
+      s.processEvent(event)
+    }
+    done <- true
+  }()
+}
+
 // Handling events in parallel
 func (s *Simulation) HandleParallel() {
   event := s.Pop()
@@ -140,12 +160,13 @@ func (s *Simulation) HandleParallel() {
     return
   }
 
-  // Get all events happening at the same time for processing.
+  // Starting new timeslice parallel execution.
   eventTime := event.timestamp
-  events    := []*Event{}
-  // fmt.Println("Event received >", event)
+  // fmt.Println("New slice", eventTime)
+
+  // Get all events happening at the same time for processing.
+  events := []*Event{}
   for ;event != nil && event.timestamp == eventTime; event = s.Pop() {
-    // fmt.Println("Event received >", event)
     events = append(events, event)
   }
   // Push back the next event extracted.
@@ -164,6 +185,26 @@ func (s *Simulation) HandleParallel() {
   s.timeMutex.Lock()
   s.time = events[0].timestamp
   s.timeMutex.Unlock()
+
+  // Find special events.
+  special := []*Event{}
+  rest    := []*Event{}
+  for _, event := range events {
+    if event == nil || event.Receiver() == nil {
+      continue
+    }
+    if reflect.TypeOf(event.Receiver()).String() == "*underlay.shortestPathRouter" {
+      rest = append(rest, event)
+    } else {
+      special = append(special, event)
+    }
+  }
+  events = rest
+
+  // Process special events
+  for _, event := range special {
+    s.processEvent(event)
+  }
 
   // Group events by Receiver.
   groups := make(map[Receiver][]*Event)
@@ -192,17 +233,24 @@ func (s *Simulation) HandleParallel() {
       }
     }
   default:
-    done := make(chan bool)
+    fmt.Println("Parallel")
     for _, group := range groups {
-      go func() {
-        for _, event := range group {
-          s.processEvent(event)
-        }
-        done <- true
-      }()
+      fmt.Printf("Group > %p \n", group[0].Receiver())
+      fmt.Println("  Receiver type > ", reflect.TypeOf(group[0].Receiver()))
+      for _, event := range group {
+        fmt.Println("   Event received >", event, reflect.TypeOf(event.Payload()))
+      }
     }
 
-    for range groups {
+    done     := make(chan bool)
+    routines := 0
+    for _, group := range groups {
+      // Process group.
+      routines += 1
+      s.processGroup(group, done)
+    }
+
+    for i := 0; i < routines; i++ {
       <-done
     }
   }
