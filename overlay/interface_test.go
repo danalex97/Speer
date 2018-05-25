@@ -24,9 +24,11 @@ func testUnderlayNetsim(nodes int) *underlay.NetworkSimulation {
 func TestUnreliableNodesPacketSending(t *testing.T) {
   netsim := testUnderlayNetsim(10)
 
+  go netsim.Run()
+  time.Sleep(100 * time.Millisecond)
+
   n1 := NewUnreliableSimulatedNode(netsim)
   n2 := NewUnreliableSimulatedNode(netsim)
-  go netsim.Run()
 
   for i := 0; i < 10; i++ {
     packet := NewPacket(n1.Id(), n2.Id(), nil)
