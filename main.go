@@ -74,6 +74,7 @@ func main() {
     WithPoissonProcessModel(2, 2).
     // WithRandomUniformUnderlay(1000, 5000, 2, 10).
     WithInternetworkUnderlay(10, 20, 20, 50).
+    // WithParallelSimulation().
     // WithInternetworkUnderlay(10, 50, 100, 100).
     WithDefaultQueryGenerator().
     WithLimitedNodes(100).

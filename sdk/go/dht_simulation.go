@@ -51,6 +51,15 @@ func NewDHTSimulationBuilder(template interface {}) *DHTSimulationBuilder {
   return builder
 }
 
+func (b *DHTSimulationBuilder) WithParallelSimulation() *DHTSimulationBuilder {
+  if b.sim.underlaySimulation == nil {
+    panic("Underlay simulation component has to be appended first.")
+  }
+
+  b.sim.underlaySimulation.SetParallel(true)
+  return b
+}
+
 func (b *DHTSimulationBuilder) WithMetrics() *DHTSimulationBuilder {
   globalObserver := events.NewGlobalEventObserver()
   b.sim.underlaySimulation.RegisterObserver(globalObserver)
@@ -73,7 +82,7 @@ func (b *DHTSimulationBuilder) WithPoissonProcessModel(
 func (b *DHTSimulationBuilder) WithDefaultQueryGenerator(
     ) *DHTSimulationBuilder {
   if b.sim.underlaySimulation == nil {
-    panic("Underlay simulation component has to be appended first")
+    panic("Underlay simulation component has to be appended first.")
   }
 
   bootstrap := overlay.GetBootstrap(b.sim.underlaySimulation)

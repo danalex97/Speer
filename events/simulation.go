@@ -31,7 +31,7 @@ func NewLazySimulation() (s Simulation) {
     timeMutex    : new(sync.RWMutex),
     time         : 0,
 
-    parallel     : true,
+    parallel     : false,
     EventQueue   : NewLazyEventQueue(),
   }
   return

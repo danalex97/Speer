@@ -78,9 +78,6 @@ func (mp *NetworkMap) NewId() string {
 }
 
 func (mp *NetworkMap) Join(id string) string {
-  // mp.Lock()
-  // defer mp.Unlock()
-
   i := rand.Intn(len(mp.id))
   for k := range(mp.id) {
     if i == 0 {
