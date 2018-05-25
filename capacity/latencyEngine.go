@@ -26,11 +26,11 @@ func NewTransferLatencyEngine(
 }
 
 func (e *TransferLatencyEngine) ControlSend(id string, message interface{}) {
-  e.unreliableNode.Send() <- overlay.NewPacket(
+  e.unreliableNode.Send(overlay.NewPacket(
     e.id,
     id,
     message,
-  )
+  ))
 }
 
 func (e *TransferLatencyEngine) establishListener() {
