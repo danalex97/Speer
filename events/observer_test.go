@@ -32,7 +32,7 @@ func TestEventsAreDeliveredToRightObserver(t *testing.T) {
   }()
 
   go func() {
-    assertEqual(t, <-o.EventChan(), e1)
+    assertEqual(t, (<-o.Recv()).(*Event), e1)
   }()
 }
 
@@ -51,9 +51,9 @@ func TestEnquedEventsAreDeliveredInOrder(t *testing.T) {
   }()
 
   go func() {
-    assertEqual(t, <-o.EventChan(), e1)
-    assertEqual(t, <-o.EventChan(), e2)
-    assertEqual(t, <-o.EventChan(), e3)
+    assertEqual(t, (<-o.Recv()).(*Event), e1)
+    assertEqual(t, (<-o.Recv()).(*Event), e2)
+    assertEqual(t, (<-o.Recv()).(*Event), e3)
   }()
 }
 
@@ -74,8 +74,8 @@ func TestAllEventsAreDeliveredToGlobalObserver(t *testing.T) {
   }()
 
   go func() {
-    assertEqual(t, <-o.EventChan(), e1)
-    assertEqual(t, <-o.EventChan(), e2)
-    assertEqual(t, <-o.EventChan(), e3)
+    assertEqual(t, (<-o.Recv()).(*Event), e1)
+    assertEqual(t, (<-o.Recv()).(*Event), e2)
+    assertEqual(t, (<-o.Recv()).(*Event), e3)
   }()
 }

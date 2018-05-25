@@ -4,26 +4,27 @@ import (
   "runtime"
 )
 
-type EventObserver interface {
-  EventChan() <-chan *Event
+type Observer interface {
+  Recv() <-chan interface{}
   EnqueEvent(*Event)
 }
 
-const maxObserverQueue int = 1000
+const maxGlobalObserverQueue int = 1000
+const maxObserverQueue       int = 1000
 
 type eventObserver struct {
   receiver Receiver
-  observer chan *Event
+  observer chan interface {}
 }
 
-func NewEventObserver(receiver Receiver) EventObserver {
-  obs := new(eventObserver)
-  obs.observer = make(chan *Event)
-  obs.receiver = receiver
-  return obs
+func NewEventObserver(receiver Receiver) Observer {
+  return &eventObserver{
+    observer : make(chan interface {}, maxObserverQueue),
+    receiver : receiver,
+  }
 }
 
-func (o *eventObserver) EventChan() <-chan *Event {
+func (o *eventObserver) Recv() <-chan interface{} {
   return o.observer
 }
 
@@ -34,16 +35,16 @@ func (o *eventObserver) EnqueEvent(e *Event) {
 }
 
 type globalObserver struct {
-  observer chan *Event
+  observer chan interface {}
 }
 
-func NewGlobalEventObserver() EventObserver {
-  obs := new(globalObserver)
-  obs.observer = make(chan *Event, maxObserverQueue)
-  return obs
+func NewGlobalEventObserver() Observer {
+  return &globalObserver{
+    observer : make(chan interface {}, maxObserverQueue),
+  }
 }
 
-func (o *globalObserver) EventChan() <-chan *Event {
+func (o *globalObserver) Recv() <-chan interface {} {
   return o.observer
 }
 

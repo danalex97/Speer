@@ -8,8 +8,8 @@ import (
 )
 
 type Simulation struct {
-  newObservers chan EventObserver
-  observers []EventObserver
+  newObservers chan Observer
+  observers []Observer
   stopped chan interface {}
   timeMutex *sync.RWMutex
   time    int
@@ -25,8 +25,8 @@ const settleTime       int = 200
 
 func NewLazySimulation() (s Simulation) {
   s = Simulation{
-    newObservers : make(chan EventObserver, maxRegisterQueue),
-    observers    : make([]EventObserver, 0),
+    newObservers : make(chan Observer, maxRegisterQueue),
+    observers    : make([]Observer, 0),
     stopped      : make(chan interface {}, 1),
     timeMutex    : new(sync.RWMutex),
     time         : 0,
@@ -46,7 +46,7 @@ func (s *Simulation) RegisterProgress(property *ProgressProperty) {
   s.Push(event)
 }
 
-func (s *Simulation) RegisterObserver(eventObserver EventObserver) {
+func (s *Simulation) RegisterObserver(eventObserver Observer) {
   select {
   case s.newObservers <- eventObserver:
   default:
