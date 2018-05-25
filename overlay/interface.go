@@ -3,11 +3,18 @@ package overlay
 import (
   "github.com/danalex97/Speer/underlay"
   "github.com/danalex97/Speer/interfaces"
+  "github.com/danalex97/Speer/events"
 )
 
-type UnreliableNode interfaces.UnreliableNode
+type UnreliableNode interface {
+  events.Decorable
+
+  interfaces.UnreliableNode
+}
 
 type UnreliableSimulatedNode struct {
+  events.Decorable
+
   simulation *underlay.NetworkSimulation
   bridge     Bridge
   bootstrap  Bootstrap
@@ -43,6 +50,10 @@ func NewUnreliableSimulatedNode(simulation *underlay.NetworkSimulation) Unreliab
   node.bootstrap  = netMap
   node.simulation = simulation
 
+  // The actual decorable is at bridge level.
+  // To allow direct interfacing, we create a tunnnel.
+  node.Decorable = events.NewTunnel(node.bridge)
+
   return node
 }
 
@@ -50,8 +61,8 @@ func (n *UnreliableSimulatedNode) Id() string {
   return n.id
 }
 
-func (n *UnreliableSimulatedNode) Send() chan<- interface{} {
-  return n.bridge.Send()
+func (n *UnreliableSimulatedNode) Send(msg interface {}) {
+  n.bridge.Send(msg)
 }
 
 func (n *UnreliableSimulatedNode) Recv() <-chan interface{} {

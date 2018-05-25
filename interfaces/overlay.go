@@ -1,9 +1,9 @@
 package interfaces
 
 type UnreliableNode interface {
-  Join()   string
-  Id()     string
+  Join() string
+  Id()   string
 
-  Send()   chan<- interface{}
-  Recv()   <-chan interface{}
+  Send(interface {})
+  Recv() <-chan interface{}
 }

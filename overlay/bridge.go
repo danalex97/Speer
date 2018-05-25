@@ -3,132 +3,89 @@ package overlay
 import (
   . "github.com/danalex97/Speer/events"
   "github.com/danalex97/Speer/underlay"
-  "runtime"
-  "fmt"
 )
 
 type Bridge interface {
-  Send() chan<- interface{}
+  Decorable
+
+  Send(interface{})
   Recv() <-chan interface{}
 }
 
 type UnderlayChan struct {
-  id string
+  *Decorator
 
-  send chan interface{}
-  recv chan interface{}
+  id string
 
   simulation *underlay.NetworkSimulation
   netMap     OverlayMap
 
-  // Progress properties for pushing and pulling packets
-  // out of the underlay network.
-  prog *TransmissionProgress
+  observer   DecorableObserver
 }
-
-const sendSize int = 50
-const recvSize int = 10000
 
 func NewUnderlayChan(
     id         string,
     simulation *underlay.NetworkSimulation,
     netMap     OverlayMap) Bridge {
 
-  chn := new(UnderlayChan)
+  u := new(UnderlayChan)
 
-  chn.id         = id
-  chn.simulation = simulation
-  chn.netMap     = netMap
+  u.id         = id
+  u.simulation = simulation
+  u.netMap     = netMap
 
-  chn.send = make(chan interface{}, sendSize)
-  chn.recv = make(chan interface{}, recvSize)
+  // Allow decoration at bigger levels.
+  u.Decorator = NewDecorator()
 
-  chn.prog = GetTransmissionProgress(simulation)
+  // Establish listener
+  u.observer = NewEventObserver(u.netMap.Router(u.id))
+  u.observer.SetProxy(u.ReceiveEvent)
+  u.simulation.RegisterObserver(u.observer)
 
-  // Register the current channel as part of both progress groups.
-  chn.prog.PushProgress.Add()
-  chn.prog.PullProgress.Add()
-
-  go chn.establishListeners()
-  go chn.establishPushers()
-
-  return chn
+  return u
 }
 
-func (u *UnderlayChan) notifyRecvPkt(overPacket Packet) {
-  select {
-  case u.recv <- overPacket:
-  default:
-    // Packet dropped when receiver queue is full
-    fmt.Println("Receiver queue full, packet dropped!")
+// Notify observer directly by creating an event and delivering it to the
+// observer directly.
+func (u *UnderlayChan) notifyPacket(packet underlay.Packet) {
+  // We need to run this in a separate routine since enqueing can be blocking,
+  // resulting in a problem when sending a packet to self.
+  go u.observer.EnqueEvent(NewEvent(0, packet, packet.Dest()))
+}
+
+func (u *UnderlayChan) ReceiveEvent(m interface {}) interface{} {
+  event  := (m).(*Event)
+  packet := event.Payload().(underlay.Packet)
+  overPacket := u.OverlayPacket(packet)
+
+  if packet.Src() == nil {
+    return nil
   }
-}
 
-func (u *UnderlayChan) establishListeners() {
-  obs := NewEventObserver(u.netMap.Router(u.id))
-  u.simulation.RegisterObserver(obs)
-
-  for {
-    select {
-    case event := <- obs.EventChan():
-      packet := event.Payload().(underlay.Packet)
-      overPacket := u.OverlayPacket(packet)
-
-      if packet.Src() == nil {
-        continue
-      }
-      if overPacket.Src() == u.id {
-        continue
-      }
-
-      // We need to look only at our own packets.
-      if overPacket.Dest() != u.id {
-        continue
-      }
-      // fmt.Printf("Packet delivered: {%s, %s}\n", overPacket.Src(), overPacket.Dest())
-
-      u.notifyRecvPkt(overPacket)
-    default:
-      // If there are no packets pending, we checked the channel, so we
-      // can mark progress being made.
-      u.prog.PullProgress.Progress(u.id)
-
-      // If there are no new packets schedule other goroutine.
-      runtime.Gosched()
-    }
+  // We need to look only at our own packets.
+  if overPacket.Dest() != u.id {
+    return nil
   }
+  // fmt.Printf("Packet delivered: {%s, %s}\n", overPacket.Src(), overPacket.Dest())
+
+  return u.Proxy(overPacket)
 }
 
-func (u *UnderlayChan) establishPushers() {
-  for {
-    select {
-    case msg := <-u.send:
-      overPacket := msg.(Packet)
-      if u.id == overPacket.Dest() {
-        // Packet sent to self.
-        u.notifyRecvPkt(overPacket)
-        continue
-      }
+func (u *UnderlayChan) Send(msg interface {}) {
+  overPacket := msg.(Packet)
+  packet     := u.UnderlayPacket(overPacket)
 
-      packet  := u.UnderlayPacket(overPacket)
-      u.simulation.SendPacket(packet)
-    default:
-      // If there are no packets pending, we checked the channel, so we
-      // can mark progress being made.
-      u.prog.PushProgress.Progress(u.id)
-
-      // If there are no new packets schedule other goroutine.
-      runtime.Gosched()
-    }
+  if u.id == overPacket.Dest() {
+    // Packet sent to self.
+    u.notifyPacket(packet)
+    return
   }
-}
 
-func (u *UnderlayChan) Send() chan<- interface{} {
-  return u.send
+  u.simulation.SendPacket(packet)
 }
 
 func (u *UnderlayChan) Recv() <-chan interface{} {
-  return u.recv
+  return u.observer.Recv()
 }
 
 func (u *UnderlayChan) UnderlayPacket(p Packet) underlay.Packet {

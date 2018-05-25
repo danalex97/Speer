@@ -4,46 +4,59 @@ import (
   "runtime"
 )
 
-type EventObserver interface {
-  EventChan() <-chan *Event
+type Observer interface {
+  Recv() <-chan interface{}
   EnqueEvent(*Event)
 }
 
-const maxObserverQueue int = 1000
+type DecorableObserver interface {
+  Decorable
+  Observer
+}
 
-type eventObserver struct {
+const maxGlobalObserverQueue int = 1000
+const maxObserverQueue       int = 1000
+
+type EventObserver struct {
+  *Decorator
+
   receiver Receiver
-  observer chan *Event
+  observer chan interface {}
 }
 
-func NewEventObserver(receiver Receiver) EventObserver {
-  obs := new(eventObserver)
-  obs.observer = make(chan *Event)
-  obs.receiver = receiver
-  return obs
+func NewEventObserver(receiver Receiver) *EventObserver {
+  return &EventObserver{
+    Decorator : NewDecorator(),
+
+    observer  : make(chan interface {}, maxObserverQueue),
+    receiver  : receiver,
+  }
 }
 
-func (o *eventObserver) EventChan() <-chan *Event {
+func (o *EventObserver) Recv() <-chan interface{} {
   return o.observer
 }
 
-func (o *eventObserver) EnqueEvent(e *Event) {
+func (o *EventObserver) EnqueEvent(e *Event) {
   if e.Receiver() == o.receiver {
-    o.observer <- e
+    deliver := o.Proxy(e)
+    if deliver != nil {
+      o.observer <- deliver
+    }
   }
 }
 
 type globalObserver struct {
-  observer chan *Event
+  observer chan interface {}
 }
 
-func NewGlobalEventObserver() EventObserver {
-  obs := new(globalObserver)
-  obs.observer = make(chan *Event, maxObserverQueue)
-  return obs
+func NewGlobalEventObserver() Observer {
+  return &globalObserver{
+    observer : make(chan interface {}, maxObserverQueue),
+  }
 }
 
-func (o *globalObserver) EventChan() <-chan *Event {
+func (o *globalObserver) Recv() <-chan interface {} {
   return o.observer
 }
 

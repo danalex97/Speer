@@ -94,8 +94,7 @@ func (s *TorrentSimulation) updateEngine(node interfaces.UnreliableNode) Engine 
   if s.latency {
     newEngine = NewTransferLatencyEngine(
       newEngine.(*TransferEngine),
-      node,
-      overlay.GetTransmissionProgress(s.underlaySimulation),
+      node.(overlay.UnreliableNode),
     )
   }
 

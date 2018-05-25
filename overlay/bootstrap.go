@@ -3,9 +3,9 @@ package overlay
 import (
   "github.com/danalex97/Speer/underlay"
 
-  "sync"
-  "strconv"
   "math/rand"
+  "strconv"
+  "sync"
 )
 
 type Bootstrap interface {
@@ -22,7 +22,7 @@ type OverlayMap interface {
 }
 
 type NetworkMap struct {
-  sync.Mutex
+  *sync.RWMutex
 
   network *underlay.Network
 
@@ -33,14 +33,16 @@ type NetworkMap struct {
 }
 
 func NewNetworkMap(network *underlay.Network) OverlayMap {
-  mp := new(NetworkMap)
+  return &NetworkMap{
+    RWMutex : new(sync.RWMutex),
 
-  mp.network = network
-  mp.id      = make(map[string]underlay.Router)
-  mp.inv     = make(map[underlay.Router]string)
-  mp.idCtr   = make(map[string]int)
+    network : network,
 
-  return mp
+    id      : make(map[string]underlay.Router),
+    inv     : make(map[underlay.Router]string),
+
+    idCtr   : make(map[string]int),
+  }
 }
 
 func newId(mp *NetworkMap, domain string) (id string) {
@@ -76,9 +78,6 @@ func (mp *NetworkMap) NewId() string {
 }
 
 func (mp *NetworkMap) Join(id string) string {
-  // mp.Lock()
-  // defer mp.Unlock()
-
   i := rand.Intn(len(mp.id))
   for k := range(mp.id) {
     if i == 0 {
@@ -95,8 +94,8 @@ func (mp *NetworkMap) Join(id string) string {
 }
 
 func (mp *NetworkMap) Router(id string) underlay.Router {
-  mp.Lock()
-  defer mp.Unlock()
+  mp.RLock()
+  defer mp.RUnlock()
 
   if router, ok := mp.id[id]; ok{
     return router
@@ -106,8 +105,8 @@ func (mp *NetworkMap) Router(id string) underlay.Router {
 }
 
 func (mp *NetworkMap) Id(router underlay.Router) string {
-  mp.Lock()
-  defer mp.Unlock()
+  mp.RLock()
+  defer mp.RUnlock()
 
   if id, ok := mp.inv[router]; ok {
     return id

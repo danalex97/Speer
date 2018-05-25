@@ -54,7 +54,7 @@ func (s *SimpleTree) OnQuery(query Query) error {
       s.neighId,
       query,
     )
-    s.unreliableNode.Send() <- packet
+    s.unreliableNode.Send(packet)
   }
 
   return nil

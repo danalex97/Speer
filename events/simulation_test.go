@@ -84,7 +84,7 @@ func TestObserversGetNotified(t *testing.T) {
     }
 
     for i := 1; i < LazyQueueChanSize/2; i++ {
-      e := <- o.EventChan()
+      e := (<-o.Recv()).(*Event)
       if e.Timestamp() > LazyQueueChanSize/2 {
     		t.Fatalf("Inconsistent simulation times.")
     	}
@@ -140,7 +140,7 @@ func TestReceiversPushNewEvents(t *testing.T) {
        <-done
      }
      for i := 1; i <= LazyQueueChanSize + 1; i++ {
-       <-o.EventChan()
+       <-o.Recv()
      }
 
      s.Stop()
