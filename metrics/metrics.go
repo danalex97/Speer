@@ -11,15 +11,15 @@ import (
 )
 
 type Metrics struct {
-  events <-chan *Event
-  netmap        *overlay.NetworkMap
+  events <-chan interface {}
+  netmap *overlay.NetworkMap
 }
 
-func NewMetrics(o EventObserver, netmap *overlay.NetworkMap) *Metrics {
-  metrics := new(Metrics)
-  metrics.events = o.EventChan()
-  metrics.netmap = netmap
-  return metrics
+func NewMetrics(o Observer, netmap *overlay.NetworkMap) *Metrics {
+  return &Metrics{
+    events : o.Recv(),
+    netmap : netmap,
+  }
 }
 
 var file = "metrics.txt"
@@ -36,7 +36,8 @@ func (m *Metrics) Run() {
 
   for {
     select {
-    case event := <-m.events:
+    case msg := <-m.events:
+      event := msg.(*Event)
       entry := ""
 
       switch payload := event.Payload().(type) {

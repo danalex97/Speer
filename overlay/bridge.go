@@ -58,7 +58,7 @@ func (u *UnderlayChan) establishListeners() {
   u.simulation.RegisterObserver(obs)
 
   for {
-    event := <- obs.EventChan()
+    event := (<-obs.Recv()).(*Event)
     packet := event.Payload().(underlay.Packet)
     overPacket := u.OverlayPacket(packet)
 
