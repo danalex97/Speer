@@ -50,8 +50,8 @@ func (n *UnreliableSimulatedNode) Id() string {
   return n.id
 }
 
-func (n *UnreliableSimulatedNode) Send() chan<- interface{} {
-  return n.bridge.Send()
+func (n *UnreliableSimulatedNode) Send(msg interface {}) {
+  n.bridge.Send(msg)
 }
 
 func (n *UnreliableSimulatedNode) Recv() <-chan interface{} {

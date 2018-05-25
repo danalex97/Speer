@@ -41,7 +41,7 @@ func TestBridgePacketDelivery(t *testing.T) {
   for i := 0; i < 10; i++ {
     t.Logf("Bridge packet delivery test -- packet %d\n", i)
     packet := NewPacket(id1, id2, nil)
-    bridge1.Send() <- packet
+    bridge1.Send(packet)
 
     recvPacket := (<-bridge2.Recv()).(Packet)
     assertEqual(t, packet.Src(), recvPacket.Src())
@@ -59,7 +59,7 @@ func TestSendPacketToSelf(t *testing.T) {
     id1, _, bridge1, _ := testUnderlayChan(10)
 
     packet := NewPacket(id1, id1, nil)
-    bridge1.Send() <- packet
+    bridge1.Send(packet)
 
     recvPacket := (<-bridge1.Recv()).(Packet)
     assertEqual(t, packet.Src(), recvPacket.Src())

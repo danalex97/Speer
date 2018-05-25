@@ -8,7 +8,7 @@ import (
 )
 
 type Bridge interface {
-  Send() chan<- interface{}
+  Send(interface{})
   Recv() <-chan interface{}
 }
 
@@ -40,7 +40,6 @@ func NewUnderlayChan(
   chn.recv = make(chan interface{}, recvSize)
 
   go chn.establishListeners()
-  go chn.establishPushers()
 
   return chn
 }
@@ -80,23 +79,16 @@ func (u *UnderlayChan) establishListeners() {
   }
 }
 
-func (u *UnderlayChan) establishPushers() {
-  for {
-    msg := <-u.send
-    overPacket := msg.(Packet)
-    if u.id == overPacket.Dest() {
-      // Packet sent to self.
-      u.notifyRecvPkt(overPacket)
-      continue
-    }
-
-    packet  := u.UnderlayPacket(overPacket)
-    u.simulation.SendPacket(packet)
+func (u *UnderlayChan) Send(msg interface {}) {
+  overPacket := msg.(Packet)
+  if u.id == overPacket.Dest() {
+    // Packet sent to self.
+    u.notifyRecvPkt(overPacket)
+    return
   }
-}
 
-func (u *UnderlayChan) Send() chan<- interface{} {
-  return u.send
+  packet := u.UnderlayPacket(overPacket)
+  u.simulation.SendPacket(packet)
 }
 
 func (u *UnderlayChan) Recv() <-chan interface{} {

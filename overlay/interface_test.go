@@ -30,7 +30,7 @@ func TestUnreliableNodesPacketSending(t *testing.T) {
 
   for i := 0; i < 10; i++ {
     packet := NewPacket(n1.Id(), n2.Id(), nil)
-    n1.Send() <- packet
+    n1.Send(packet)
 
     recvPacket := (<-n2.Recv()).(Packet)
     assertEqual(t, packet.Src(), recvPacket.Src())
@@ -69,7 +69,7 @@ func TestUnreliableNodesSameNumberOfSentAndReceivedPackets(t *testing.T) {
     n2 := nodes[nbrNodes - i - 1]
     for j := 0; j < nbrPackets; j++ {
       packet := NewPacket(n1.Id(), n2.Id(), nil)
-      n1.Send() <- packet
+      n1.Send(packet)
     }
   }
   for i := 0; i < nbrNodes; i++ {
