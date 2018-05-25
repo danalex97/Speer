@@ -3,15 +3,18 @@ package overlay
 import (
   . "github.com/danalex97/Speer/events"
   "github.com/danalex97/Speer/underlay"
-  // "runtime"
 )
 
 type Bridge interface {
+  Decorable
+
   Send(interface{})
   Recv() <-chan interface{}
 }
 
 type UnderlayChan struct {
+  *Decorator
+
   id string
 
   simulation *underlay.NetworkSimulation
@@ -31,6 +34,9 @@ func NewUnderlayChan(
   u.simulation = simulation
   u.netMap     = netMap
 
+  // Allow decoration at bigger levels.
+  u.Decorator = NewDecorator()
+
   // Establish listener
   u.observer = NewEventObserver(u.netMap.Router(u.id))
   u.observer.SetProxy(u.ReceiveEvent)
@@ -42,7 +48,9 @@ func NewUnderlayChan(
 // Notify observer directly by creating an event and delivering it to the
 // observer directly.
 func (u *UnderlayChan) notifyPacket(packet underlay.Packet) {
-  u.observer.EnqueEvent(NewEvent(0, packet, packet.Dest()))
+  // We need to run this in a separate routine since enqueing can be blocking,
+  // resulting in a problem when sending a packet to self.
+  go u.observer.EnqueEvent(NewEvent(0, packet, packet.Dest()))
 }
 
 func (u *UnderlayChan) ReceiveEvent(m interface {}) interface{} {
@@ -60,7 +68,7 @@ func (u *UnderlayChan) ReceiveEvent(m interface {}) interface{} {
   }
   // fmt.Printf("Packet delivered: {%s, %s}\n", overPacket.Src(), overPacket.Dest())
 
-  return overPacket
+  return u.Proxy(overPacket)
 }
 
 func (u *UnderlayChan) Send(msg interface {}) {

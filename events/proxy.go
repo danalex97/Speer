@@ -21,3 +21,15 @@ func NewDecorator() *Decorator {
 func (d *Decorator) SetProxy(p Proxy) {
   d.Proxy = p
 }
+
+type Tunnel struct {
+  Decorable
+}
+
+func NewTunnel(d Decorable) *Tunnel {
+  return &Tunnel{d}
+}
+
+func (t *Tunnel) SetProxy(p Proxy) {
+  t.Decorable.SetProxy(p)
+}
