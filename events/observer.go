@@ -9,28 +9,37 @@ type Observer interface {
   EnqueEvent(*Event)
 }
 
+type DecorableObserver interface {
+  Decorable
+  Observer
+}
+
 const maxGlobalObserverQueue int = 1000
 const maxObserverQueue       int = 1000
 
-type eventObserver struct {
+type EventObserver struct {
+  *Decorator
+
   receiver Receiver
   observer chan interface {}
 }
 
-func NewEventObserver(receiver Receiver) Observer {
-  return &eventObserver{
-    observer : make(chan interface {}, maxObserverQueue),
-    receiver : receiver,
+func NewEventObserver(receiver Receiver) *EventObserver {
+  return &EventObserver{
+    Decorator : NewDecorator(),
+
+    observer  : make(chan interface {}, maxObserverQueue),
+    receiver  : receiver,
   }
 }
 
-func (o *eventObserver) Recv() <-chan interface{} {
+func (o *EventObserver) Recv() <-chan interface{} {
   return o.observer
 }
 
-func (o *eventObserver) EnqueEvent(e *Event) {
+func (o *EventObserver) EnqueEvent(e *Event) {
   if e.Receiver() == o.receiver {
-    o.observer <- e
+    o.observer <- o.Proxy(e)
   }
 }
 

@@ -7,7 +7,6 @@ func Identity(m interface {}) interface{} {
 }
 
 type Decorable interface {
-  GetProxy() Proxy
   SetProxy(Proxy)
 }
 
@@ -15,12 +14,8 @@ type Decorator struct {
   Proxy
 }
 
-func NewDecorator() Decorable {
+func NewDecorator() *Decorator {
   return &Decorator{Identity}
-}
-
-func (d *Decorator) GetProxy() Proxy {
-  return d.Proxy
 }
 
 func (d *Decorator) SetProxy(p Proxy) {
