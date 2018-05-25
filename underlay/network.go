@@ -20,7 +20,7 @@ func (n *Network) RandomRouter() Router {
   }
 }
 
-/* Constants used in the stub-generation algorithm.
+/* Constants used in the stub-generation algorithm:
 
   Wtt  = avg. weight of transit-transit connections
   Wttd = Wtt delta, that is the weight is in [Wtt - Wttd, Wtt + Wttd]
@@ -45,7 +45,7 @@ func (n *Network) RandomRouter() Router {
 const Wtt  int = 100
 const Wttd int = 2
 
-const Ntd     int = 5
+const Ntd     int = 2
 const minNt   int = 5
 const edgeNtf int = 2
 
@@ -55,7 +55,7 @@ const maxLatency int = 10
 const Wts  int = 100
 const Wtsd int = 2
 
-const Nsd     int = 5
+const Nsd     int = 2
 const minNs   int = 5
 const edgeNsf int = 2
 
