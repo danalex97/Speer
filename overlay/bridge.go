@@ -4,7 +4,6 @@ import (
   . "github.com/danalex97/Speer/events"
   "github.com/danalex97/Speer/underlay"
   // "runtime"
-  "fmt"
 )
 
 type Bridge interface {
@@ -15,84 +14,70 @@ type Bridge interface {
 type UnderlayChan struct {
   id string
 
-  send chan interface{}
-  recv chan interface{}
-
   simulation *underlay.NetworkSimulation
   netMap     OverlayMap
-}
 
-const sendSize int = 50
-const recvSize int = 10000
+  observer   DecorableObserver
+}
 
 func NewUnderlayChan(
     id         string,
     simulation *underlay.NetworkSimulation,
     netMap     OverlayMap) Bridge {
 
-  chn := new(UnderlayChan)
+  u := new(UnderlayChan)
 
-  chn.id         = id
-  chn.simulation = simulation
-  chn.netMap     = netMap
+  u.id         = id
+  u.simulation = simulation
+  u.netMap     = netMap
 
-  chn.send = make(chan interface{}, sendSize)
-  chn.recv = make(chan interface{}, recvSize)
+  // Establish listener
+  u.observer = NewEventObserver(u.netMap.Router(u.id))
+  u.observer.SetProxy(u.ReceiveEvent)
+  u.simulation.RegisterObserver(u.observer)
 
-  go chn.establishListeners()
-
-  return chn
+  return u
 }
 
-func (u *UnderlayChan) notifyRecvPkt(overPacket Packet) {
-  select {
-  case u.recv <- overPacket:
-  default:
-    // Packet dropped when receiver queue is full
-    fmt.Println("Receiver queue full, packet dropped!")
-  }
+// Notify observer directly by creating an event and delivering it to the
+// observer directly.
+func (u *UnderlayChan) notifyPacket(packet underlay.Packet) {
+  u.observer.EnqueEvent(NewEvent(0, packet, packet.Dest()))
 }
 
-func (u *UnderlayChan) establishListeners() {
-  obs := NewEventObserver(u.netMap.Router(u.id))
-  u.simulation.RegisterObserver(obs)
+func (u *UnderlayChan) ReceiveEvent(m interface {}) interface{} {
+  event  := (m).(*Event)
+  packet := event.Payload().(underlay.Packet)
+  overPacket := u.OverlayPacket(packet)
 
-  for {
-    event := (<-obs.Recv()).(*Event)
-    packet := event.Payload().(underlay.Packet)
-    overPacket := u.OverlayPacket(packet)
-
-    if packet.Src() == nil {
-      continue
-    }
-    if overPacket.Src() == u.id {
-      continue
-    }
-
-    // We need to look only at our own packets.
-    if overPacket.Dest() != u.id {
-      continue
-    }
-    // fmt.Printf("Packet delivered: {%s, %s}\n", overPacket.Src(), overPacket.Dest())
-
-    u.notifyRecvPkt(overPacket)
+  if packet.Src() == nil {
+    return nil
   }
+
+  // We need to look only at our own packets.
+  if overPacket.Dest() != u.id {
+    return nil
+  }
+  // fmt.Printf("Packet delivered: {%s, %s}\n", overPacket.Src(), overPacket.Dest())
+
+  return overPacket
 }
 
 func (u *UnderlayChan) Send(msg interface {}) {
   overPacket := msg.(Packet)
+  packet     := u.UnderlayPacket(overPacket)
+
   if u.id == overPacket.Dest() {
     // Packet sent to self.
-    u.notifyRecvPkt(overPacket)
+    u.notifyPacket(packet)
     return
   }
 
-  packet := u.UnderlayPacket(overPacket)
   u.simulation.SendPacket(packet)
 }
 
 func (u *UnderlayChan) Recv() <-chan interface{} {
-  return u.recv
+  return u.observer.Recv()
 }
 
 func (u *UnderlayChan) UnderlayPacket(p Packet) underlay.Packet {

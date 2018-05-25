@@ -39,7 +39,10 @@ func (o *EventObserver) Recv() <-chan interface{} {
 
 func (o *EventObserver) EnqueEvent(e *Event) {
   if e.Receiver() == o.receiver {
-    o.observer <- o.Proxy(e)
+    deliver := o.Proxy(e)
+    if deliver != nil {
+      o.observer <- deliver
+    }
   }
 }
 

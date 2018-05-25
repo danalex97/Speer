@@ -58,7 +58,7 @@ func TestSendPacketToSelf(t *testing.T) {
   go func() {
     id1, _, bridge1, _ := testUnderlayChan(10)
 
-    packet := NewPacket(id1, id1, nil)
+    packet := NewPacket(id1, id1, "message")
     bridge1.Send(packet)
 
     recvPacket := (<-bridge1.Recv()).(Packet)
