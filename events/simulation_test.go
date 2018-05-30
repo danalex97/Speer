@@ -13,38 +13,80 @@ func setParallel(t *testing.T, s Simulation, parallel bool) {
   s.SetParallel(parallel)
 }
 
+func testMultipleTimeReads(t *testing.T, parallel bool) {
+  s := NewLazySimulation()
+  setParallel(t, s, parallel)
+
+  r := new(mockReceiver)
+
+  go s.Run()
+
+  done := make(chan bool)
+
+  for i := 1; i < LazyQueueChanSize; i++ {
+    go func() {
+      s.Push(NewEvent(i, nil, r))
+      done <- true
+      s.Time()
+    }()
+  }
+
+  for i := 1; i < LazyQueueChanSize; i++ {
+    <-done
+  }
+
+  s.Stop()
+}
+
 func TestMultipleTimeReads(t *testing.T) {
   /*
    * There is no current time ordering guarantee!
    * This is just to make sure there is a locking mechanism over the timer.
    */
-  test := func(parallel bool) {
-    s := NewLazySimulation()
-    setParallel(t, s, parallel)
+  testMultipleTimeReads(t, false)
+  testMultipleTimeReads(t, true)
+}
 
-    r := new(mockReceiver)
+func testObserversGetNotified(t *testing.T, parallel bool) {
+  r1  := new(mockReceiver)
+  r2  := new(mockReceiver)
 
-    go s.Run()
+  o := NewEventObserver(r1)
+  s := NewLazySimulation()
+  setParallel(t, s, parallel)
 
-    done := make(chan bool)
+  go s.Run()
+  s.RegisterObserver(o)
 
-    for i := 1; i < LazyQueueChanSize; i++ {
-      go func() {
-        s.Push(NewEvent(i, nil, r))
-        done <- true
-        s.Time()
-      }()
+  done := make(chan bool)
+
+  go func() {
+    for i := 1; i <= LazyQueueChanSize / 2; i++ {
+      s.Push(NewEvent(i, nil, r1))
+      done <- true
     }
-
-    for i := 1; i < LazyQueueChanSize; i++ {
-      <-done
+  }()
+  go func() {
+    for i := 1; i <= LazyQueueChanSize / 2; i++ {
+      s.Push(NewEvent(i, nil, r2))
+      done <- true
     }
+  }()
 
-    s.Stop()
+  for i := 1; i <= LazyQueueChanSize; i++ {
+    <-done
   }
 
-  test(false)
-  test(true)
+  for i := 1; i < LazyQueueChanSize/2; i++ {
+    e := (<-o.Recv()).(*Event)
+    if e.Timestamp() > LazyQueueChanSize/2 {
+      t.Fatalf("Inconsistent simulation times.")
+    }
+    // For assserting time ordering
+    // assertEqual(t, e.Timestamp(), i)
+  }
+
+  s.Stop()
 }
 
 func TestObserversGetNotified(t *testing.T) {
@@ -53,50 +95,8 @@ func TestObserversGetNotified(t *testing.T) {
    * Test observers get notified.
    */
 
-  test := func(parallel bool) {
-    r1  := new(mockReceiver)
-    r2  := new(mockReceiver)
-
-    o := NewEventObserver(r1)
-    s := NewLazySimulation()
-    setParallel(t, s, parallel)
-
-    go s.Run()
-    s.RegisterObserver(o)
-
-    done := make(chan bool)
-
-    go func() {
-      for i := 1; i <= LazyQueueChanSize / 2; i++ {
-        s.Push(NewEvent(i, nil, r1))
-        done <- true
-      }
-    }()
-    go func() {
-      for i := 1; i <= LazyQueueChanSize / 2; i++ {
-        s.Push(NewEvent(i, nil, r2))
-        done <- true
-      }
-    }()
-
-    for i := 1; i <= LazyQueueChanSize; i++ {
-      <-done
-    }
-
-    for i := 1; i < LazyQueueChanSize/2; i++ {
-      e := (<-o.Recv()).(*Event)
-      if e.Timestamp() > LazyQueueChanSize/2 {
-    		t.Fatalf("Inconsistent simulation times.")
-    	}
-      // For assserting time ordering
-      // assertEqual(t, e.Timestamp(), i)
-    }
-
-    s.Stop()
-  }
-
-  test(false)
-  test(true)
+  testObserversGetNotified(t, false)
+  testObserversGetNotified(t, true)
 }
 
 type oneTimePushReceiver struct {
@@ -111,41 +111,41 @@ func (m *oneTimePushReceiver) Receive(e *Event) *Event {
   return nil
 }
 
+func testReceiversPushNewEvents(t *testing.T, parallel bool) {
+  s := NewLazySimulation()
+  setParallel(t, s, parallel)
+
+  r := new(oneTimePushReceiver)
+  o := NewEventObserver(r)
+
+  go s.Run()
+  s.RegisterObserver(o)
+
+  done := make(chan bool)
+
+  for i := 1; i <= LazyQueueChanSize; i++ {
+    go func() {
+      s.Push(NewEvent(i, nil, r))
+      done <- true
+    }()
+  }
+
+  for i := 1; i <= LazyQueueChanSize; i++ {
+    <-done
+  }
+  for i := 1; i <= LazyQueueChanSize + 1; i++ {
+    <-o.Recv()
+  }
+
+  s.Stop()
+}
+
 func TestReceiversPushNewEvents(t *testing.T) {
   /*
    * There is no current time ordering guarantee!
    * Test receivers push new events if new events get generated.
    */
 
-   test := func(parallel bool) {
-     s := NewLazySimulation()
-     setParallel(t, s, parallel)
-
-     r := new(oneTimePushReceiver)
-     o := NewEventObserver(r)
-
-     go s.Run()
-     s.RegisterObserver(o)
-
-     done := make(chan bool)
-
-     for i := 1; i <= LazyQueueChanSize; i++ {
-       go func() {
-         s.Push(NewEvent(i, nil, r))
-         done <- true
-       }()
-     }
-
-     for i := 1; i <= LazyQueueChanSize; i++ {
-       <-done
-     }
-     for i := 1; i <= LazyQueueChanSize + 1; i++ {
-       <-o.Recv()
-     }
-
-     s.Stop()
-  }
-
-  test(false)
-  test(true)
+  testReceiversPushNewEvents(t, false)
+  testReceiversPushNewEvents(t, true)
 }
