@@ -4,10 +4,15 @@ import (
   "testing"
 )
 
+const offset int = settleTime
+
 func setParallel(t *testing.T, s Simulation, parallel bool) {
-  if parallel {
+  if !parallel {
     t.Log("Testing sequential simulation.")
   } else {
+    s.check = func(Receiver) bool {
+      return true
+    }
     t.Log("Testing parallel simulation.")
   }
   s.SetParallel(parallel)
@@ -25,7 +30,7 @@ func testMultipleTimeReads(t *testing.T, parallel bool) {
 
   for i := 1; i < LazyQueueChanSize; i++ {
     go func() {
-      s.Push(NewEvent(i, nil, r))
+      s.Push(NewEvent(i + offset, nil, r))
       done <- true
       s.Time()
     }()
@@ -62,13 +67,13 @@ func testObserversGetNotified(t *testing.T, parallel bool) {
 
   go func() {
     for i := 1; i <= LazyQueueChanSize / 2; i++ {
-      s.Push(NewEvent(i, nil, r1))
+      s.Push(NewEvent(i + offset, nil, r1))
       done <- true
     }
   }()
   go func() {
     for i := 1; i <= LazyQueueChanSize / 2; i++ {
-      s.Push(NewEvent(i, nil, r2))
+      s.Push(NewEvent(i + offset, nil, r2))
       done <- true
     }
   }()
@@ -79,11 +84,9 @@ func testObserversGetNotified(t *testing.T, parallel bool) {
 
   for i := 1; i < LazyQueueChanSize/2; i++ {
     e := (<-o.Recv()).(*Event)
-    if e.Timestamp() > LazyQueueChanSize/2 {
+    if e.Timestamp() > LazyQueueChanSize/2 + offset {
       t.Fatalf("Inconsistent simulation times.")
     }
-    // For assserting time ordering
-    // assertEqual(t, e.Timestamp(), i)
   }
 
   s.Stop()
@@ -125,7 +128,7 @@ func testReceiversPushNewEvents(t *testing.T, parallel bool) {
 
   for i := 1; i <= LazyQueueChanSize; i++ {
     go func() {
-      s.Push(NewEvent(i, nil, r))
+      s.Push(NewEvent(i + offset, nil, r))
       done <- true
     }()
   }

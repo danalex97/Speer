@@ -15,6 +15,7 @@ type Simulation struct {
   time    int
 
   parallel bool
+  check    func(Receiver) bool
 
   EventQueue
 }
@@ -23,6 +24,10 @@ const maxRegisterQueue int = 50
 const minRegisterQueue int = 10
 const settleTime       int = 200
 
+func check(r Receiver) bool {
+  return reflect.TypeOf(r).String() == "*underlay.shortestPathRouter"
+}
+
 func NewLazySimulation() (s Simulation) {
   s = Simulation{
     newObservers : make(chan Observer, maxRegisterQueue),
@@ -30,6 +35,7 @@ func NewLazySimulation() (s Simulation) {
     stopped      : make(chan interface {}, 1),
     timeMutex    : new(sync.RWMutex),
     time         : 0,
+    check        : check,
 
     parallel     : false,
     EventQueue   : NewLazyEventQueue(),
@@ -197,7 +203,7 @@ func (s *Simulation) HandleParallel() {
     if event == nil || event.Receiver() == nil {
       continue
     }
-    if reflect.TypeOf(event.Receiver()).String() == "*underlay.shortestPathRouter" {
+    if s.check(event.Receiver()) {
       rest = append(rest, event)
     } else {
       special = append(special, event)
