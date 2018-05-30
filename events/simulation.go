@@ -28,8 +28,8 @@ func check(r Receiver) bool {
   return reflect.TypeOf(r).String() == "*underlay.shortestPathRouter"
 }
 
-func NewLazySimulation() (s Simulation) {
-  s = Simulation{
+func NewLazySimulation() (s *Simulation) {
+  s = &Simulation{
     newObservers : make(chan Observer, maxRegisterQueue),
     observers    : make([]Observer, 0),
     stopped      : make(chan interface {}, 1),
@@ -87,8 +87,8 @@ func (s *Simulation) processEvent(event *Event) {
 
 func (s *Simulation) Run() {
   fmt.Println("Starting the simulation.")
-
   handler := s.Handle
+
   if s.parallel {
     handler = s.HandleParallel
   }

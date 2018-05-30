@@ -6,7 +6,7 @@ import (
 
 const offset int = settleTime
 
-func setParallel(t *testing.T, s Simulation, parallel bool) {
+func setParallel(t *testing.T, s *Simulation, parallel bool) {
   if !parallel {
     t.Log("Testing sequential simulation.")
   } else {

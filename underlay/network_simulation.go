@@ -5,15 +5,15 @@ import (
 )
 
 type NetworkSimulation struct {
-  Simulation
+  *Simulation
   network *Network
 }
 
-func NewNetworkSimulation(s Simulation, n *Network) *NetworkSimulation {
-  ns := new(NetworkSimulation)
-  ns.Simulation = s
-  ns.network = n
-  return ns
+func NewNetworkSimulation(s *Simulation, n *Network) *NetworkSimulation {
+  return &NetworkSimulation{
+    Simulation : s,
+    network    : n,
+  }
 }
 
 func (s *NetworkSimulation) SendPacket(p Packet) {
