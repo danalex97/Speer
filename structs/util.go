@@ -2,7 +2,6 @@ package structs
 
 import (
   "math/rand"
-  "runtime"
 )
 
 func RandomKey() string {
@@ -13,14 +12,4 @@ func RandomKey() string {
     b[i] = letterBytes[rand.Int63() % int64(len(letterBytes))]
   }
   return string(b)
-}
-
-func Wait(cond func () bool) {
-  for {
-    if cond() {
-      runtime.Gosched()
-    } else {
-      break
-    }
-  }
 }

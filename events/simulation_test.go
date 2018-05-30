@@ -173,8 +173,8 @@ func TestParallelProcessing(t *testing.T) {
 
   for i := 1; i <= LazyQueueChanSize; i++ {
     go func() {
-      s.Push(NewEvent(i, nil, r))
-      s.Push(NewEvent(i, nil, r2))
+      s.Push(NewEvent(i + offset, nil, r))
+      s.Push(NewEvent(i + offset, nil, r2))
       done <- true
     }()
   }
