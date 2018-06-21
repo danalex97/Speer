@@ -62,7 +62,7 @@ type TorrentNodeUtil interface {
 }
 ```
 
-Some examples on how to use the **TorrentNodeUtil** can be found in **Examples** the section below.
+Some examples on how to use the **TorrentNodeUtil** can be found in the **Examples** section below.
 
 
 To SDK packet can be used to build and run a simulation. The SDK packet offers a builder interface which allows building custom simulations. An example is:
@@ -113,7 +113,7 @@ A **DHTSimulationBuilder** can be converted into a **TorrentSimulationBuilder** 
 
 ### Examples
 
-We will show some example on how to use the **TorrentNodeUtil**:
+We will show some examples on how to use the **TorrentNodeUtil**:
 - sending a message:
 
 ```go
@@ -151,7 +151,7 @@ link.Upload(Data{
 data := <-link.Download()
 ```
 
-For more examples on how to write a node, check the **examples folder**. For a more complex example, check this [repository](https://github.com/danalex97/nfsTorrent).
+For more examples on how to write the code for a node, check the **examples folder**. For a more complex example, check this [repository](https://github.com/danalex97/nfsTorrent).
 
 To run the *DHTNode* example from the examples folder:
 ```
