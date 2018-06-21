@@ -6,15 +6,12 @@ import (
   "sync"
 )
 
-/**
- Assumptions:
-   - equal link share & max capacity
-   - no latency effects
-   - end-capacity is the bottleneck
- */
-
 const MaxConnections int = 100
 
+ // Assumptions:
+ //   - equal link share & max capacity
+ //   - no latency effects
+ //   - end-capacity is the bottleneck
 type PerfectLink struct {
   *sync.Mutex
 

@@ -8,6 +8,12 @@ import (
   "math"
 )
 
+// The simulator is based on a scheduler which computes the transfer speed
+// associated with each link in the topology. The scheduler runs periodically at
+// an established period, by implementing the Receiver interface and stopping
+// the simulation to recalculate the transfer rates. The main assumption under
+// which the simulator calculates the transfer rates are the equal share and
+// maximum capacity utilization.
 type Scheduler interface {
   Receiver
 
@@ -188,6 +194,18 @@ func (s *scheduler) updCapacity() {
   }
 }
 
+// The Schedule function works in 2 phases:
+//  - transfer the data based on flows for the past interval
+//  - recalculate the flows based on active links
+//
+// To recalculate the flows for active links we sort the connections by
+// min(capacity_upload/degree_out, capacity_download/degree_in). Then we
+// allocate the flow through the smallest capacity connection. The flow
+// allocated will be maximal for it. Afterwards, we eliminate the respective
+// connection and update the costs with the new degree together with the
+// remaining download and upload capacities.
+//
+// The algorithm runs in O(N^3) with O(N^2 log N) for sparse topologies.
 func (s *scheduler) Schedule() {
   s.linkMutex.Lock()
 

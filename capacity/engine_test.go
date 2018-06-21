@@ -22,11 +22,3 @@ func TestCanConnectEngines(t *testing.T) {
 
   assertEqual(t, callbackCalled, true)
 }
-
-// func TestCanSendControlMessages(t *testing.T) {
-//   e1 := NewTransferEngine(10, 20, "1")
-//   e2 := NewTransferEngine(10, 20, "2")
-//
-//   e1.ControlSend("2", "message")
-//   assertEqual(t, (<-e2.ControlRecv()).(string), "message")
-// }

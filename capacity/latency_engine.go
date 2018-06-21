@@ -4,7 +4,8 @@ import (
   "github.com/danalex97/Speer/overlay"
 )
 
-/* Implementation. */
+// A Transport which takes into consideration latency when sending control
+// messages.
 type TransferLatencyEngine struct {
   *TransferEngine
 

@@ -6,7 +6,8 @@ import (
   "fmt"
 )
 
-/* Interface. */
+// The Engine is a Transport decorated with methods which allow the integration
+// of the capacity engine in the SDK.
 type Engine interface {
   Transport
 
@@ -14,14 +15,14 @@ type Engine interface {
   SetConnectCallback(func (Link))
 }
 
-/* Global variables */
+// Global variables
 var engineMap = make(map[string]Engine)
 var mapLock   = new(sync.RWMutex)
 
-/* There is only one control message queue, so it should be big. */
+// There is only one control message queue, so it should be big.
 const controlMessageCapacity int = 1000000
 
-/* Simple node interface structure. */
+// Simple Node interface structure.
 type node struct {
   down int
   up   int
@@ -35,7 +36,8 @@ func (n *node) Down() int {
   return n.down
 }
 
-/* Implementation. */
+// A TransferEngine is a Transport which allows direct transfer of control
+// messages and uses links simulated using the Scheduler.
 type TransferEngine struct {
   node
 
