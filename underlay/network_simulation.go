@@ -4,6 +4,7 @@ import (
   . "github.com/danalex97/Speer/events"
 )
 
+// A NetworkSimulation is a Simulation with a Network attached.
 type NetworkSimulation struct {
   *Simulation
   network *Network

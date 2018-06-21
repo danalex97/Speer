@@ -10,6 +10,8 @@ type Cache interface {
   Get(key interface {}) (interface {}, bool)
 }
 
+// A Cache using the Least Recently Used policy. It is implemented by using a
+// list and a map pointing to list elements.
 type LRUCache struct {
   size  int
   evict *list.List

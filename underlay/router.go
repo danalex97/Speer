@@ -7,10 +7,15 @@ import (
 
 const RouterCacheSize int = 50
 
+// A Router is a Receiver which schedules new events at other routers according
+// to a routing algorithm. We use the Bellman-Ford alogrithm to determine the
+// shortest paths.
 type Router interface {
   Receiver
+
   Connect(Connection) error
   Connections() []Connection
+
   Domain() string
 }
 
@@ -113,8 +118,10 @@ func (r *shortestPathRouter) buildNextEvent(event *Event, nextPayload *sprPacket
   )
 }
 
-// not very good, it does not clear doubled values as well
-// used only as a policy for small tests
+// We replace the Dijkstra’s algorithm with a Bellman-Ford variation, adding
+// the path that the packet will follow as its payload. This results in a memory
+// overhead of only O(E) with time overhead of O(V*E), with a O(E) complexity
+// in the average case.
 func bellman(packet Packet, src *shortestPathRouter, dest Router) (*sprPacket, bool) {
   eq := NewLazyEventQueue()
   eq.Push(NewEvent(0, 0, nil))

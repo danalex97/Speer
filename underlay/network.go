@@ -20,28 +20,27 @@ func (n *Network) RandomRouter() Router {
   }
 }
 
-/* Constants used in the stub-generation algorithm:
-
-  Wtt  = avg. weight of transit-transit connections
-  Wttd = Wtt delta, that is the weight is in [Wtt - Wttd, Wtt + Wttd]
-
-  Ntd     = nodes transit domain delta (see Wttd)
-  minNt   = minimum number of nodes in transit domain
-  edgeNtf = edge factor for a transit domain, that is the number of edges
-    is f * N log N
-
-  minLatency = minimum latency for intra-domain connections
-  maxLatency = maximum latency for intra-domain connections
-
-  Nsd     = ...
-  minNs   = ...
-  edgeNsf = ...
-
-  mhsp = percent of multi-home stub *connections*
-
-  The constant values are currently arbirary, but they can be chosen to respect
-  the invariants in the paper.
-*/
+// Constants used in the stub-generation algorithm:
+//
+//  Wtt  = avg. weight of transit-transit connections
+//  Wttd = Wtt delta, that is the weight is in [Wtt - Wttd, Wtt + Wttd]
+//
+//  Ntd     = nodes transit domain delta (see Wttd)
+//  minNt   = minimum number of nodes in transit domain
+//  edgeNtf = edge factor for a transit domain, that is the number of edges
+//    is f * N log N
+//
+//  minLatency = minimum latency for intra-domain connections
+//  maxLatency = maximum latency for intra-domain connections
+//
+//  Nsd     = ...
+//  minNs   = ...
+//  edgeNsf = ...
+//
+//  mhsp = percent of multi-home stub *connections*
+//
+//  The constant values are currently arbirary, but they can be chosen to respect
+//  the invariants in the paper.
 const Wtt  int = 100
 const Wttd int = 2
 
@@ -61,23 +60,22 @@ const edgeNsf int = 2
 
 const mhsp int = 50
 
-/* Generates a 2-level transit-stub topology following the paper:
- Zegura E., Calvert K. and Bhattacharjee S. How to model an internetwork. In INFOCOM’96 (1996)
-
-  T  = number of tranasit domains
-  Nt = avg. nodes per transit domain
-  S  = number of stub domains
-  Ns = avg. nodes per stub domain
-
-  The transit domains represent the backbone, whereas a stub is attached to a
-  node in the backbone.
-
-  The graph is generated as follows:
-  1. Generate transit domain graph
-  2. Generate graph from tranasit domain
-  3. Add stubs
-  4. Generate multi-homed stubs
-*/
+// Generates a 2-level transit-stub topology following the paper:
+// Zegura E., Calvert K. and Bhattacharjee S. How to model an internetwork. In INFOCOM’96 (1996)
+//
+//  T  = number of tranasit domains
+//  Nt = avg. nodes per transit domain
+//  S  = number of stub domains
+//  Ns = avg. nodes per stub domain
+//
+//  The transit domains represent the backbone, whereas a stub is attached to a
+//  node in the backbone.
+//
+//  The graph is generated as follows:
+//  1. Generate transit domain graph
+//  2. Generate graph from tranasit domain
+//  3. Add stubs
+//  4. Generate multi-homed stubs
 func NewInternetwork(T, Nt, S, Ns int) *Network {
   tdg := generateTransitDomainGraph(T, Wtt, Wttd)
   backbone := generateTransitDomains(tdg, Nt)
