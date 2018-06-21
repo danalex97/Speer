@@ -1,15 +1,20 @@
 package metrics
 
 import (
+  . "github.com/danalex97/Speer/events"
+
   "github.com/danalex97/Speer/underlay"
   "github.com/danalex97/Speer/overlay"
   "github.com/danalex97/Speer/model"
-  . "github.com/danalex97/Speer/events"
+
   "runtime"
   "os"
   "fmt"
 )
 
+// The Metrics structure is used as a logging facility. It uses observers to
+// deep inspect events in order to create a file log with all the relevant
+// events.
 type Metrics struct {
   events <-chan interface {}
   netmap *overlay.NetworkMap

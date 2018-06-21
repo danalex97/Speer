@@ -10,7 +10,6 @@ func NewJoin(nodeId string) *Join {
   return j
 }
 
-
 func (j *Join) NodeId() string {
   return j.nodeId
 }

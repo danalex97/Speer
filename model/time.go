@@ -5,12 +5,14 @@ import (
   "math/rand"
 )
 
+// A time arrival model.
 type TimeModel interface {
   NextArrival() float64    // next time offset for a node arrival to happen
   NextDeparture() float64  // next time offset for a node departure to happen
   NextQuery() float64      // next time offset for a query to happen
 }
 
+// A time arrival model following a Poisson process.
 type PoissonProcessModel struct {
   arrivalRate float64 // arrivals/second
   queryRate float64   // queries/second
