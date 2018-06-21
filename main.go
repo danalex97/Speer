@@ -21,6 +21,8 @@ var cpuprofile = flag.String("cpuprofile", "", "Write cpu profile to `file`.")
 var memprofile = flag.String("memprofile", "", "Write memory profile to `file`.")
 
 var torrent = flag.Bool("torrent", false, "Torrent simulation.")
+var metrics = flag.Bool("metrics", false, "Write metrics.")
+var secs    = flag.Int("time", 10, "The time to run the simulation.")
 
 func makeMemprofile() {
   // Profiling
@@ -73,11 +75,15 @@ func main() {
   var s interfaces.ISimulation
   if *torrent {
     nodeTemplate := new(SimpleTorrent)
-    s = NewDHTSimulationBuilder(nodeTemplate).
+    b := NewDHTSimulationBuilder(nodeTemplate).
       WithPoissonProcessModel(2, 2).
       WithInternetworkUnderlay(10, 20, 20, 50).
       WithDefaultQueryGenerator().
-      WithLimitedNodes(100).
+      WithLimitedNodes(100)
+    if *metrics {
+      b = b.WithMetrics()
+    }
+    s = b.
       WithCapacities().
       WithLatency().
       WithTransferInterval(10).
@@ -86,18 +92,21 @@ func main() {
       Build()
   } else {
     nodeTemplate := new(SimpleTree)
-    s = NewDHTSimulationBuilder(nodeTemplate).
+    b := NewDHTSimulationBuilder(nodeTemplate).
       WithPoissonProcessModel(2, 2).
       WithRandomUniformUnderlay(1000, 5000, 2, 10).
       WithParallelSimulation().
       WithDefaultQueryGenerator().
-      WithLimitedNodes(100).
-      Build()
+      WithLimitedNodes(100)
+    if *metrics {
+      b = b.WithMetrics()
+    }
+    s = b.Build()
   }
 
   s.Run()
 
-  time.Sleep(time.Second * 100)
+  time.Sleep(time.Second * time.Duration(*secs))
   fmt.Println("Done")
   s.Stop()
 
