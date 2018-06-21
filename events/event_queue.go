@@ -5,6 +5,9 @@ import (
   "sync"
 )
 
+// The Event Queue is a priority queue ordered by timestamps which delivers
+// Events to Receivers. The queue is thread-safe and it uses a head together
+// with a push channel which allows faster pushes.
 type EventQueue interface {
   Push(e *Event)
   Pop() *Event
@@ -45,8 +48,7 @@ func (eq *lazyEventQueue) Push(event *Event) {
     eq.Lock()
     defer eq.Unlock()
 
-    // it must be that the channel is full, so we need to
-    // relase some pressure
+    // It must be that the channel is full, so we need to relase some pressure.
     eq.depressure()
     eq.pq.Push(Int(event.timestamp), event)
   }

@@ -7,6 +7,13 @@ import (
   "fmt"
 )
 
+// The Simulation works as follows. At each moment the event with the
+// smallest timestamp is popped out of the priority queue. When we pop the
+// element we also notify all the observers associated with the event’s
+// receiver. Registering an observer has priority over processing events, thus
+// allowing the user to register observers at any moment. Since we allow any
+// process to read the time, updating the time with the time of the current
+// event is protected via a read-write lock.
 type Simulation struct {
   newObservers chan Observer
   observers []Observer
@@ -115,7 +122,7 @@ func (s *Simulation) Run() {
   }
 }
 
-// Handling events synchronously
+// Handling events synchronously.
 func (s *Simulation) Handle() {
   if event:= s.Pop(); event != nil {
     // fmt.Println("Event received >", event)
@@ -161,7 +168,13 @@ func (s *Simulation) processGroup(group []*Event, done chan bool) {
   }()
 }
 
-// Handling events in parallel
+// Handling events in parallel.
+//
+// We allow parallel exectution following the next pipeline:
+// - pop all events with the time-stamp equal with now
+// - group all these events in event groups by the receiver address
+// - execute the receivers in parallel
+// - wait for all receivers to finish their execution
 func (s *Simulation) HandleParallel() {
   event := s.Pop()
   if event == nil {

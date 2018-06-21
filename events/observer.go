@@ -4,6 +4,10 @@ import (
   "runtime"
 )
 
+// When we pop an element during the simulation we notify all the observers
+// associated with the event’s receiver. Registering an observer has priority
+// over processing events, thus allowing the user to register observers at any
+// moment.
 type Observer interface {
   Recv() <-chan interface{}
   EnqueEvent(*Event)
@@ -39,7 +43,10 @@ func (o *EventObserver) Recv() <-chan interface{} {
 
 func (o *EventObserver) EnqueEvent(e *Event) {
   if e.Receiver() == o.receiver {
+    // Call the proxy on the received message before delivering it.
+    // The Proxy can be set by upper layers via SetProxy(Proxy).
     deliver := o.Proxy(e)
+
     if deliver != nil {
       o.observer <- deliver
     }
