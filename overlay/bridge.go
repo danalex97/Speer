@@ -5,6 +5,7 @@ import (
   "github.com/danalex97/Speer/underlay"
 )
 
+// A Bridge is a decorable interface which allows sending and receiving packets.
 type Bridge interface {
   Decorable
 
@@ -12,6 +13,13 @@ type Bridge interface {
   Recv() <-chan interface{}
 }
 
+// The UnderlayChan implements a Bridge by using a proxy to strip the payload
+// of the underlay packets at receiving a packet and sending a packet is done
+// by using the network map to decorate the overlay packet inside an
+// underlay packet.
+//
+// The mechanism used for delivering packets is an observer attached to the
+// router corresponing to the overlay id.
 type UnderlayChan struct {
   *Decorator
 
@@ -53,6 +61,9 @@ func (u *UnderlayChan) notifyPacket(packet underlay.Packet) {
   go u.observer.EnqueEvent(NewEvent(0, packet, packet.Dest()))
 }
 
+// Proxy function used to strip the contents of an underlay packet. The
+// UnderlayChan chan is a Decorator, so we call the Proxy function before
+// delivering the packet.
 func (u *UnderlayChan) ReceiveEvent(m interface {}) interface{} {
   event  := (m).(*Event)
   packet := event.Payload().(underlay.Packet)
@@ -71,6 +82,7 @@ func (u *UnderlayChan) ReceiveEvent(m interface {}) interface{} {
   return u.Proxy(overPacket)
 }
 
+// Send an overlay packet by attaching it as a payload to an underlay packet.
 func (u *UnderlayChan) Send(msg interface {}) {
   overPacket := msg.(Packet)
   packet     := u.UnderlayPacket(overPacket)

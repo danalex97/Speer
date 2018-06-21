@@ -12,6 +12,8 @@ type UnreliableNode interface {
   interfaces.UnreliableNode
 }
 
+// An UnreliableSimulatedNode uses a Bridge along with a Bootstrap to allow
+// interaction with the simulator by providing an utility to the user.
 type UnreliableSimulatedNode struct {
   events.Decorable
 
@@ -23,6 +25,9 @@ type UnreliableSimulatedNode struct {
 
 var activeSet = make(map[*underlay.NetworkSimulation]OverlayMap)
 
+// The Bootstrap is associated directly with the simulation. All the nodes
+// need to refer to the same bootstrap, so we use a global map to associate
+// a NetworkSimulation with a Bootstrap.
 func GetBootstrap(simulation *underlay.NetworkSimulation) Bootstrap {
   netMap := NewNetworkMap(simulation.Network())
   if mp, ok := activeSet[simulation]; ok {
