@@ -23,9 +23,12 @@ func (s *SimpleTree) OnJoin() {
   go func() {
     for {
       select {
-      case _, ok := <-s.unreliableNode.Recv():
+      case p, ok := <-s.unreliableNode.Recv():
         if ok {
-          fmt.Println("Receive")
+          pkt := p.(overlay.Packet)
+          fmt.Printf("Receive packet: src(%s), dest(%s)\n",
+            pkt.Src(),
+            pkt.Dest())
         }
       default:
         runtime.Gosched()

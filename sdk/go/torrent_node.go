@@ -20,46 +20,52 @@ type AutowiredTorrentNode struct {
   time     func() int
 }
 
-/* DHTNode interface */
+// Part of DHTNode interface.
 func (n *AutowiredTorrentNode) OnJoin() {
   n.template.OnJoin()
 }
 
+// Part of DHTNode interface.
 func (n *AutowiredTorrentNode) OnQuery(query interfaces.Query) error {
   return nil
 }
 
+// Part of DHTNode interface.
 func (n *AutowiredTorrentNode) OnLeave() {
   n.template.OnLeave()
 }
 
+// Part of DHTNode interface.
 func (n *AutowiredTorrentNode) Key() string {
   return structs.RandomKey()
 }
 
-/* DHTNodeUtil interface */
+// Part of DHTNodeUtil interface.
 func (n *AutowiredTorrentNode) UnreliableNode() interfaces.UnreliableNode {
   return n.node
 }
 
-/* TorrentNodeUtil interface */
+// Part of TorrentNodeUtil interface.
 func (n *AutowiredTorrentNode) Transport() interfaces.Transport {
   return n.engine
 }
 
+// Part of TorrentNodeUtil interface.
 func (n *AutowiredTorrentNode) Id() string {
   return n.node.Id()
 }
 
+// Part of TorrentNodeUtil interface.
 func (n *AutowiredTorrentNode) Join() string {
   return n.node.Join()
 }
 
+// Part of TorrentNodeUtil interface.
 func (n *AutowiredTorrentNode) Time() func() int {
   return n.time
 }
 
-/* Constructor */
+// Constructor.
 func NewAutowiredTorrentNode(node interfaces.UnreliableNode, simulation interface {}) DHTNode {
   n := new(AutowiredTorrentNode)
 

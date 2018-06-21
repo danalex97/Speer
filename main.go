@@ -3,6 +3,7 @@ package main
 import (
   . "github.com/danalex97/Speer/sdk/go"
   . "github.com/danalex97/Speer/examples"
+  "github.com/danalex97/Speer/interfaces"
 
   errLog "log"
   "runtime/pprof"
@@ -18,6 +19,8 @@ import (
 
 var cpuprofile = flag.String("cpuprofile", "", "Write cpu profile to `file`.")
 var memprofile = flag.String("memprofile", "", "Write memory profile to `file`.")
+
+var torrent = flag.Bool("torrent", false, "Torrent simulation.")
 
 func makeMemprofile() {
   // Profiling
@@ -67,25 +70,30 @@ func main() {
     }
   }()
 
-
-  nodeTemplate := new(SimpleTorrent)
-  // nodeTemplate := new(SimpleTree)
-  s := NewDHTSimulationBuilder(nodeTemplate).
-    WithPoissonProcessModel(2, 2).
-    // WithRandomUniformUnderlay(1000, 5000, 2, 10).
-    WithInternetworkUnderlay(10, 20, 20, 50).
-    // WithParallelSimulation().
-    // WithInternetworkUnderlay(10, 50, 100, 100).
-    WithDefaultQueryGenerator().
-    WithLimitedNodes(100).
-    // WithMetrics().
-    //====================================
-    WithCapacities().
-    WithLatency().
-    WithTransferInterval(10).
-    WithCapacityNodes(100, 10, 20).
-    WithCapacityNodes(100, 30, 30).
-    Build()
+  var s interfaces.ISimulation
+  if *torrent {
+    nodeTemplate := new(SimpleTorrent)
+    s = NewDHTSimulationBuilder(nodeTemplate).
+      WithPoissonProcessModel(2, 2).
+      WithInternetworkUnderlay(10, 20, 20, 50).
+      WithDefaultQueryGenerator().
+      WithLimitedNodes(100).
+      WithCapacities().
+      WithLatency().
+      WithTransferInterval(10).
+      WithCapacityNodes(100, 10, 20).
+      WithCapacityNodes(100, 30, 30).
+      Build()
+  } else {
+    nodeTemplate := new(SimpleTree)
+    s = NewDHTSimulationBuilder(nodeTemplate).
+      WithPoissonProcessModel(2, 2).
+      WithRandomUniformUnderlay(1000, 5000, 2, 10).
+      WithParallelSimulation().
+      WithDefaultQueryGenerator().
+      WithLimitedNodes(100).
+      Build()
+  }
 
   s.Run()
 

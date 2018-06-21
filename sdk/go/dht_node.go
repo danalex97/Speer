@@ -9,34 +9,39 @@ type DHTNode interface {
   interfaces.DHTNodeUtil
 }
 
+// An AutowiredDHTNode is a DHT node which can be used in a simulation. The
+// user needs to provide an interfaces.DHTNode template for this purpose.
 type AutowiredDHTNode struct {
   node     interfaces.UnreliableNode
   template interfaces.DHTNode
 }
 
-/* DHTNode interface */
+// Part of DHTNode interface.
 func (n *AutowiredDHTNode) OnJoin() {
   n.template.OnJoin()
 }
 
+// Part of DHTNode interface.
 func (n *AutowiredDHTNode) OnQuery(query interfaces.Query) error {
   return n.template.OnQuery(query)
 }
 
+// Part of DHTNode interface.
 func (n *AutowiredDHTNode) OnLeave() {
   n.template.OnLeave()
 }
 
+// Part of DHTNode interface.
 func (n *AutowiredDHTNode) Key() string {
   return n.template.Key()
 }
 
-/* DHTNodeUtil interface */
+// Part of DHTNodeUtil interface.
 func (n *AutowiredDHTNode) UnreliableNode() interfaces.UnreliableNode {
   return n.node
 }
 
-/* Constructor and decorator. */
+// Contructor and decorator.
 func NewAutowiredDHTNode(node interfaces.UnreliableNode, simulation interface {}) DHTNode {
   n := new(AutowiredDHTNode)
 

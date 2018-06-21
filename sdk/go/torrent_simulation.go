@@ -73,6 +73,7 @@ func (b *TorrentSimulationBuilder) Build() *TorrentSimulation {
   return b.sim
 }
 
+// updateEngine is called when the TorrentNode is initialized.
 func (s *TorrentSimulation) updateEngine(node interfaces.UnreliableNode) Engine {
   if len(s.toRegister) == 0 {
     return nil
