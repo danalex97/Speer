@@ -1,32 +1,32 @@
 package interfaces
 
-/* The Util interface is provided to a node. */
+// The Util interface is provided to a node.
 type DHTNodeUtil interface {
-  UnreliableNode() UnreliableNode
   // an unreliable node interface is a mean of interaction with an
   // underlay simulation through the overlay
+  UnreliableNode() UnreliableNode
 }
 
-/* This interface has to be implemented by a node. */
+// This interface has to be implemented by a node.
 type DHTNode interface {
+  // OnJoin is a method that should be called when a node joins the network.
   OnJoin()
-  // a method that should be called when a node joins the network
 
+  // OnQuery is a method that should be called with a node receives a query.
+  // The query can be either:
+  //  - store -- the current node *wants* to store something in the network
+  //  - query -- the current node *wants* to retrieve something from the network
+  // Both operations could result in an error.
   OnQuery(query Query) error
-  // a method that should be called with a node receives a query
-  // - the query can be either:
-  //   - store -- the current node *wants* to store something in the network
-  //   - query -- the current node *wants* to retrieve something from the network
-  // both operations could result in an error
 
+  // OnLeave is a method that should be called when a node leaves the network.
   OnLeave()
-  // a method that should be called when a node leaves the network
 
+  // The Key function is used to generate a new key for the key space.
   Key() string
-  // generate a new key for the key space
 }
 
-/* This interface needs to be implemented by a node.*/
+// This interface needs to be implemented by a node.
 type DHTNodeConstructor interface {
   New(util DHTNodeUtil) DHTNode
 }

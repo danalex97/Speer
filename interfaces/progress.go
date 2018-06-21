@@ -1,5 +1,6 @@
 package interfaces
 
+// For more details on Progress properties see events.ProgressProperty
 type Progress interface {
     // The function that should be called after progress has been made.
     Progress(id string)
