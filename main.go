@@ -4,6 +4,7 @@ import (
   . "github.com/danalex97/Speer/sdk/go"
   . "github.com/danalex97/Speer/examples"
   "github.com/danalex97/Speer/interfaces"
+  "github.com/danalex97/Speer/sdk/bridge"
 
   errLog "log"
   "runtime/pprof"
@@ -40,6 +41,10 @@ func makeMemprofile() {
 }
 
 func main() {
+  bridge.NewEnviron("python", "python3 sdk/python/environ.py").Start()
+
+  return
+
   rand.Seed(time.Now().UTC().UnixNano())
 
   // Parsing the flags
