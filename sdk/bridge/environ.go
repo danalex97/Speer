@@ -1,17 +1,25 @@
 package bridge
 
 import (
+  "encoding/json"
+  "encoding/binary"
+
   "os"
   "os/exec"
   "syscall"
   "strings"
-  "encoding/json"
   "fmt"
 )
+
+func GetEnviron() *Environ {
+  return nil
+}
 
 type Environ struct {
   name  string
   cmd   *exec.Cmd
+
+  nodes map[string]*BridgedTorrent
 
   queue *IPCQueue
 }
@@ -38,6 +46,7 @@ func NewEnviron(name string , command ...string) *Environ {
   e.name  = name
   e.cmd   = exec.Command(proc, args...)
   e.queue = NewIPCQueue(NewRawPipeQueue(in, out))
+  e.nodes = make(map[string]*BridgedTorrent)
 
   e.cmd.Stdin = os.Stdin;
   e.cmd.Stdout = os.Stdout;
@@ -46,14 +55,35 @@ func NewEnviron(name string , command ...string) *Environ {
   return e
 }
 
+func (e *Environ) SendMessage(msg Message) {
+  tp := MessageToType(msg)
+
+  typeBytes := make([]byte, 4)
+  binary.LittleEndian.PutUint32(typeBytes, uint32(tp))
+
+  data, _ := json.Marshal(msg)
+  fmt.Println(data)
+  data     = append(typeBytes, data...)
+
+  e.queue.Push(data)
+}
+
+func (e *Environ) ListenIncoming() {
+  for {
+    data, _ := e.queue.Pop()
+    tp      := binary.LittleEndian.Uint32(data[0:4])
+
+    msg := TypeToMessage(int(tp))
+    json.Unmarshal(data, msg)
+
+    e.nodes[msg.GetId()].envChannel <- msg
+  }
+}
+
 func (e *Environ) Start() {
   e.cmd.Start()
 
-  fmt.Println("Do stuff...")
-
-  x, _ := json.Marshal("Valoare")
-
-  e.queue.Push(x)
+  e.SendMessage(&Create{Id : "hello"})
   v, _ := e.queue.Pop()
   fmt.Println(string(v[:]))
 
