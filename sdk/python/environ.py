@@ -4,7 +4,8 @@ import json
 
 from queues    import PipeQueue
 from scheduler import Scheduler
-from messages  import MESSAGES
+from manager   import NodeManager
+from messages  import MAP_ID_MESSAGE, MESSAGES
 
 class Environ( object ):
     def __init__(self):
@@ -13,6 +14,7 @@ class Environ( object ):
 
         self.queue     = PipeQueue(pipe_in, pipe_out)
         self.scheduler = Scheduler()
+        self.manager   = NodeManager()
 
     def recv( self ):
         while True:
@@ -24,16 +26,21 @@ class Environ( object ):
 
             son = json.loads(marshal)
 
-            if tp not in MESSAGES:
+            if tp not in MAP_ID_MESSAGE:
                 print('Message id not unrecognized: {}'.format(tp))
                 continue
 
-            message = MESSAGES[tp]().from_json(son)
+            message = MAP_ID_MESSAGE[tp]().from_json(son)
             yield message
+
+    def run( self ):
+        for message in self.recv():
+            if isinstance(message, MESSAGES.Create):
+                self.manager.create(message)
+
 
 if __name__ == "__main__":
     print("Python environment started...")
 
     env = Environ()
-    message = env.recv().__next__()
-    print(message)
+    env.run()

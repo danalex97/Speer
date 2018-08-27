@@ -27,6 +27,9 @@ class Create( Message ):
             'id' : self.id
         }
 
-MESSAGES = {
+MAP_ID_MESSAGE = {
     0 : Create,
 }
+
+class MESSAGES( object ):
+    Create = Create
