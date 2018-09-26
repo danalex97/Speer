@@ -58,7 +58,7 @@ func main() {
     Build()
 
   ss.Run()
-  time.Sleep(time.Second)
+  time.Sleep(time.Second * 1)
   ss.Stop()
   env.Stop()
 

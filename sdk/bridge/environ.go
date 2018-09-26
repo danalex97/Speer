@@ -85,6 +85,7 @@ func (e *Environ) ListenIncoming() {
   for {
     data, _ := e.queue.Pop()
     tp      := binary.LittleEndian.Uint32(data[0:4])
+    data     = data[4:]
 
     msg := TypeToMessage(int(tp))
     json.Unmarshal(data, msg)
@@ -95,6 +96,8 @@ func (e *Environ) ListenIncoming() {
 
 func (e *Environ) Start() {
   e.cmd.Start()
+  go e.ListenIncoming()
+
   e.cmd.Wait()
 }
 

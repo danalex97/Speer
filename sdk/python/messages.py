@@ -31,5 +31,9 @@ MAP_ID_MESSAGE = {
     0 : Create,
 }
 
+MAP_MESSAGE_ID = {
+    Create : 0,
+}
+
 class MESSAGES( object ):
     Create = Create
