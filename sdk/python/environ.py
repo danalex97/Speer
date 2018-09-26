@@ -3,7 +3,7 @@ import struct
 import json
 
 from queues    import PipeQueue
-from scheduler import Scheduler
+from scheduler import SCHEDULER
 from manager   import NodeManager
 from messages  import MAP_ID_MESSAGE, MESSAGES
 
@@ -13,7 +13,6 @@ class Environ( object ):
         pipe_in  = open(sys.argv[2], 'rb')
 
         self.queue     = PipeQueue(pipe_in, pipe_out)
-        self.scheduler = Scheduler()
         self.manager   = NodeManager()
 
     def recv( self ):
