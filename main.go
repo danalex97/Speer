@@ -42,7 +42,6 @@ func makeMemprofile() {
 
 func main() {
   env := bridge.NewEnviron("python", "python3 sdk/python/environ.py")
-  go env.Start()
 
   nt := new(bridge.BridgedTorrent)
   ss := NewDHTSimulationBuilder(nt).
@@ -55,6 +54,7 @@ func main() {
     WithTransferInterval(10).
     WithCapacityNodes(100, 10, 20).
     WithCapacityNodes(100, 30, 30).
+    WithEnviron(env).
     Build()
 
   ss.Run()

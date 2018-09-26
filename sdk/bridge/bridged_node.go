@@ -2,29 +2,28 @@ package bridge
 
 import (
   . "github.com/danalex97/Speer/interfaces"
-  "fmt"
 )
 
-func getEnviron() *Environ {
-  return nil
-}
-
 type BridgedTorrent struct {
-  envChannel chan<- interface {}
+  envChannel <-chan Message
+  bridge     EnvironBridge
 
   TorrentNodeUtil
 }
 
 func (t *BridgedTorrent) New(util TorrentNodeUtil) TorrentNode {
-  fmt.Println("new")
   return &BridgedTorrent{
     TorrentNodeUtil : util,
-    envChannel      : make(chan interface {}),
+
+    envChannel      : util.Bridge().RecvMessage(util.Id()),
+    bridge          : util.Bridge(),
   }
 }
 
 func (t *BridgedTorrent) OnJoin() {
-  fmt.Println("join")
+  t.bridge.SendMessage(&Create{
+    Id : t.Id(),
+  })
 }
 
 func (t *BridgedTorrent) OnLeave() {

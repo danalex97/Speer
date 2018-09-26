@@ -5,6 +5,7 @@ import (
   "github.com/danalex97/Speer/events"
   "github.com/danalex97/Speer/overlay"
   "github.com/danalex97/Speer/interfaces"
+  "github.com/danalex97/Speer/sdk/bridge"
 )
 
 type TorrentSimulation struct {
@@ -12,6 +13,9 @@ type TorrentSimulation struct {
 
   scheduler  Scheduler
   toRegister []*registerEntry
+
+  // TODO: experimental
+  env *bridge.Environ
 
   latency    bool
 }
@@ -55,6 +59,14 @@ func (b *TorrentSimulationBuilder) WithTransferInterval(interval int) *TorrentSi
 
   // Schedule the first interval
   b.sim.underlaySimulation.Push(events.NewEvent(0, nil, b.sim.scheduler))
+
+  return b
+}
+
+// TODO: experimental
+func (b *TorrentSimulationBuilder) WithEnviron(env *bridge.Environ) *TorrentSimulationBuilder {
+  b.sim.env = env
+  go env.Start()
 
   return b
 }

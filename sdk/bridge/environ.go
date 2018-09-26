@@ -1,6 +1,8 @@
 package bridge
 
 import (
+  . "github.com/danalex97/Speer/interfaces"
+
   "encoding/json"
   "encoding/binary"
 
@@ -8,7 +10,6 @@ import (
   "os/exec"
   "syscall"
   "strings"
-  "fmt"
   "log"
 )
 
@@ -20,7 +21,7 @@ type Environ struct {
   name  string
   cmd   *exec.Cmd
 
-  nodes map[string]*BridgedTorrent
+  bridges map[string]chan Message
 
   queue *IPCQueue
 }
@@ -44,10 +45,10 @@ func NewEnviron(name string , command ...string) *Environ {
   out, _ := os.OpenFile(out_name, os.O_RDWR|syscall.O_NONBLOCK, 0600)
   args = append(args, in_name, out_name)
 
-  e.name  = name
-  e.cmd   = exec.Command(proc, args...)
-  e.queue = NewIPCQueue(NewRawPipeQueue(in, out))
-  e.nodes = make(map[string]*BridgedTorrent)
+  e.name    = name
+  e.cmd     = exec.Command(proc, args...)
+  e.queue   = NewIPCQueue(NewRawPipeQueue(in, out))
+  e.bridges = make(map[string]chan Message)
 
   e.cmd.Stdin = os.Stdin;
   e.cmd.Stdout = os.Stdout;
@@ -63,10 +64,21 @@ func (e *Environ) SendMessage(msg Message) {
   binary.LittleEndian.PutUint32(typeBytes, uint32(tp))
 
   data, _ := json.Marshal(msg)
-  fmt.Println(data)
   data     = append(typeBytes, data...)
 
   e.queue.Push(data)
+}
+
+func (e *Environ) getBridge(id string) chan Message {
+  // TODO: self race condition
+  if _, ok := e.bridges[id]; !ok {
+    e.bridges[id] = make(chan Message)
+  }
+  return e.bridges[id]
+}
+
+func (e *Environ) RecvMessage(Id string) <-chan Message {
+  return e.getBridge(Id)
 }
 
 func (e *Environ) ListenIncoming() {
@@ -77,17 +89,12 @@ func (e *Environ) ListenIncoming() {
     msg := TypeToMessage(int(tp))
     json.Unmarshal(data, msg)
 
-    e.nodes[msg.GetId()].envChannel <- msg
+    e.getBridge(msg.GetId()) <- msg
   }
 }
 
 func (e *Environ) Start() {
   e.cmd.Start()
-
-  e.SendMessage(&Create{Id : "hello"})
-  v, _ := e.queue.Pop()
-  fmt.Println(string(v[:]))
-
   e.cmd.Wait()
 }
 

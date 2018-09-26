@@ -37,6 +37,7 @@ class Environ( object ):
     def run( self ):
         for message in self.recv():
             if isinstance(message, MESSAGES.Create):
+                print(message)
                 self.manager.create(message)
             yield from _schedule()
 

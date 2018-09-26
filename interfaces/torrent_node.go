@@ -8,6 +8,9 @@ type TorrentNodeUtil interface {
   Join() string
 
   Time() func() int
+
+  // TODO: experimental
+  Bridge() EnvironBridge
 }
 
 // This interface needs to be implemented by a node.

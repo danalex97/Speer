@@ -1,8 +1,8 @@
 package bridge
 
-type Message interface {
-  GetId() string
-}
+import (
+  . "github.com/danalex97/Speer/interfaces"
+)
 
 const (
   CREATE = iota
