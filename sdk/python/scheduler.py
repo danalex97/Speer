@@ -44,9 +44,11 @@ class Execution( object ):
         self.args     = args
         self.kwargs   = kwargs
 
-        self.parent   = None
-        self.future   = None
+        self.parent    = None
+        self.future    = None
         self._blocked  = False
+        self._started  = False
+        self._gen      = None
 
     @property
     def blocked( self ):
@@ -61,15 +63,17 @@ class Execution( object ):
         self._blocked = False
 
     def run( self ):
-        while True:
+        if not self._started:
+            self._started = True
             if self.args and not self.kwargs:
-                yield self.method(*self.args)
-            if not self.args and self.kwargs:
-                yield self.method(**self.kwargs)
-            if self.args and self.kwargs:
-                yield self.method(*self.args, **self.kwargs)
+                self._gen = self.method(*self.args)
+            elif not self.args and self.kwargs:
+                self._gen = self.method(**self.kwargs)
+            elif self.args and self.kwargs:
+                self._gen = self.method(*self.args, **self.kwargs)
             else:
-                yield self.method()
+                self._gen = self.method()
+        return self._gen
 
 class Scheduler( object ):
     """
@@ -118,17 +122,21 @@ class Scheduler( object ):
         if execution.blocked:
             # If execution is blocked, skip the execution and renqueue it
             self.executions.append(execution)
+            return
 
         try:
-            yield_tuple = next(execution.run())
-            print(yield_tuple)
+            generator = execution.run()
+            if generator is None:
+                return
+
+            yield_tuple = next(generator)
 
             # If execution has not finished
             if yield_tuple is not None:
                 if isinstance(yield_tuple, tuple):
                     yield_type, rest = yield_tuple[0], yield_tuple[1:]
                 else:
-                    yield_type, rest = yield_tuple[0], None
+                    yield_type, rest = yield_tuple, None
 
                 if yield_type is _return:
                     value = rest[0]

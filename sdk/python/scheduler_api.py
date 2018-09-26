@@ -10,7 +10,7 @@ def _start(function, *args, **kwargs):
     execution = Execution(function, *args, **kwargs)
     future    = Future(execution)
 
-    # ???
+    execution.future = future
     yield signals._start, execution
 
     return future
