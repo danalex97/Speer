@@ -41,7 +41,26 @@ func makeMemprofile() {
 }
 
 func main() {
-  bridge.NewEnviron("python", "python3 sdk/python/environ.py").Start()
+  env := bridge.NewEnviron("python", "python3 sdk/python/environ.py")
+  go env.Start()
+
+  nt := new(bridge.BridgedTorrent)
+  ss := NewDHTSimulationBuilder(nt).
+    WithPoissonProcessModel(2, 2).
+    WithInternetworkUnderlay(10, 20, 20, 50).
+    WithDefaultQueryGenerator().
+    WithLimitedNodes(100).
+    WithCapacities().
+    WithLatency().
+    WithTransferInterval(10).
+    WithCapacityNodes(100, 10, 20).
+    WithCapacityNodes(100, 30, 30).
+    Build()
+
+  ss.Run()
+  time.Sleep(time.Second)
+  ss.Stop()
+  env.Stop()
 
   return
 

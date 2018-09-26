@@ -9,6 +9,7 @@ import (
   "syscall"
   "strings"
   "fmt"
+  "log"
 )
 
 func GetEnviron() *Environ {
@@ -88,4 +89,10 @@ func (e *Environ) Start() {
   fmt.Println(string(v[:]))
 
   e.cmd.Wait()
+}
+
+func (e *Environ) Stop() {
+  if err := e.cmd.Process.Kill(); err != nil {
+    log.Fatal("Failed to kill process: ", err)
+  }
 }

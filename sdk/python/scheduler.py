@@ -108,7 +108,7 @@ class Scheduler( object ):
     def execute( self, function, *args, **kwargs ):
         self.executions.append(Execution(function, *args, **kwargs))
 
-    def start( self ):
+    def run( self ):
         while True:
             self.step()
 

@@ -3,9 +3,11 @@ import struct
 import json
 
 from queues    import PipeQueue
-from scheduler import SCHEDULER
 from manager   import NodeManager
 from messages  import MAP_ID_MESSAGE, MESSAGES
+
+from scheduler import Scheduler
+from scheduler_api import _schedule
 
 class Environ( object ):
     def __init__(self):
@@ -17,7 +19,7 @@ class Environ( object ):
 
     def recv( self ):
         while True:
-            elem        = self.queue.pop()
+            elem        = yield from self.queue.pop()
             tp, marshal = elem[:4], elem[4:]
 
             tp,     = struct.unpack('i', tp)
@@ -36,10 +38,14 @@ class Environ( object ):
         for message in self.recv():
             if isinstance(message, MESSAGES.Create):
                 self.manager.create(message)
-
+            yield from _schedule()
 
 if __name__ == "__main__":
     print("Python environment started...")
 
+    scheduler = Scheduler()
     env = Environ()
-    env.run()
+
+    scheduler.execute(env.run)
+
+    scheduler.run()

@@ -1,5 +1,7 @@
 import struct
 
+from scheduler_api import _schedule
+
 class PipeQueue( object ):
     def __init__(self, pipe_in, pipe_out):
         self.pipe_in  = pipe_in
@@ -9,7 +11,13 @@ class PipeQueue( object ):
         """
         Blocking pop operation.
         """
-        to_read, = struct.unpack('i', self.pipe_in.read(4))
+        read = self.pipe_in.read(4)
+
+        while len(read) == 0:
+            yield from _schedule()
+            read = self.pipe_in.read(4)
+
+        to_read, = struct.unpack('i', read)
         return self.pipe_in.read(to_read)
 
     def push(self, to_write):
