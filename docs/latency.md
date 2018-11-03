@@ -1,4 +1,4 @@
-### Latency
+## Latency
 
 *TL;DR: We model the latency at **packet level** using Bellman-Ford and caching to approximate OSPF. The topologies are realistic and generated automatically.*
 
