@@ -25,5 +25,4 @@ Moreover, the SDK provides a **simulation builder** which can be used to define 
 - [Event simulator](events.md)
 - [Latency](latency.md)
 - [Capacity](capacity.md)
-- [Interfaces](interfaces.md)
 - [Optimizations](optimizations.md)
