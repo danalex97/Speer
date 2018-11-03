@@ -26,9 +26,9 @@ many of them produced ideas for a very narrow field of applications. We aim to c
 
 - For who?
 
-**The goal of Speer is allowing students, researchers and hobbyists to easily
-implement, simulate and study peer to peer networks.** This should align with
-the goal of making the internet more decentralized and bringing peer to peer
+**Speer is made for students, researchers and hobbyists. It's goal is to allow
+them to easily implement, simulate and study peer to peer networks.** This aligns
+with the goal of making the internet more decentralized and bringing peer to peer
 systems to their former glory.
 
 - Why Go?
@@ -40,8 +40,12 @@ we take advantage of the ease of running on multiple cores.
 
 - Other language support?
 
-...
+We plan to support the languages Python and Elixir.
 
 - How does Speer model the network?
 
-...
+Speer aims to study peer-to-peer systems on top of overlays. An overlay network is a computer network that is built on top of another network. We place the networking interface at the application layer on the [OSI model](https://en.wikipedia.org/wiki/OSI_model). However, we model latency distribution at the Network layer, while the throughput assumes an optimal Transport layer.
+
+- Where can I find more about the implementation of Speer?
+
+The [architecture](architecture.md) section describes the general design and implementation details the most important components of Speer.
