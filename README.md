@@ -29,7 +29,7 @@ Requirements:
 
 ## How to contribute
 
-- [Contribution guide](docs/contribute.md)
+- [Contribution guide](CONTRIBUTING.md)
 - [Roadmap](docs/roadmap.md)
 
 ## Projects using Speer

@@ -13,7 +13,7 @@ We decide to prioritize **developer support** in order to be able to acquire a b
 
 We aim to split the work for the project to be **small over larger periods of times**. We aim for a mean contribution time between 2-3 hours weekly.
 
-We aim for the contributor work onto this project to be recreational rather than stressful. See our [contributor guidelines](contribute.md) for more details.
+We aim for the contributor work onto this project to be recreational rather than stressful. See our [contributor guidelines](../CONTRIBUTING.md) for more details.
 
 The Roadmap below is not fixed and contributions for parts in letter stages can be done earlier. If as a contributor you are interested in working on a part planned later, you are free to do so and your code will be reviewed!
 
