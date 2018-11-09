@@ -8,7 +8,7 @@ You can choose to contribute in multiple ways:
 
 If you are not sure how you can contribute write onto the [contributor thread](https://github.com/danalex97/Speer/issues/33).
 
-Once you finish the work on an issue, you can create a pull request. You can use the following [template](templates.md).
+Once you finish the work on an issue, you can create a [pull request](../PULL_REQUEST_TEMPLATE.md). You can use one of the templates for [bugs](../.github/ISSUES_TEMPLATE/bug_report.md) or [feature requests](../.github/ISSUES_TEMPLATE/feature_requests.md).
 
 #### What to work on?
 
