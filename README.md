@@ -13,10 +13,10 @@ It combines event-driven simulations with cycle-based concepts and allows parall
 
 - [Motivation & FAQ](docs/motivation.md)
 - [Architecture](docs/architecture.md)
-  - [Event simulator](events.md)
-  - [Latency](latency.md)
-  - [Capacity](capacity.md)
-  - [Optimizations](optimizations.md)
+  - [Event simulator](docs/events.md)
+  - [Latency](docs/latency.md)
+  - [Capacity](docs/capacity.md)
+  - [Optimizations](docs/optimizations.md)
 - [User guide](docs/usage.md)
 
 ## Install
@@ -29,8 +29,8 @@ Requirements:
 
 ## How to contribute
 
-- [contribution guide](docs/contribute.md)
-- [roadmap](docs/roadmap.md)
+- [Contribution guide](docs/contribute.md)
+- [Roadmap](docs/roadmap.md)
 
 ## Projects using Speer
 
