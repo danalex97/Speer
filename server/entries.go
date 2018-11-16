@@ -7,9 +7,9 @@ type UnderlayPacketEntry struct {
   Dst string `json:"dst"`
   Rtr string `json:"rtr"`
 
-  SrcUid int32 `json:"rtr_uid"`
-  DstUid int32 `json:"rtr_uid"`
-  RtrUid int32 `json:"rtr_uid"`
+  SrcUid string `json:"src_uid"`
+  DstUid string `json:"dst_uid"`
+  RtrUid string `json:"rtr_uid"`
 }
 
 type JoinEntry struct {

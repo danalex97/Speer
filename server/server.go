@@ -22,6 +22,7 @@ func NewServer(o events.Observer, netmap *overlay.NetworkMap) *Server {
 }
 
 func (s *Server) Run() {
+  go s.monitor.GatherEvents()
   s.router.
     HandleFunc("/new_events", s.monitor.GetNewEvents).
     Methods("Get")

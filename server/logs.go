@@ -10,8 +10,11 @@ import (
   "encoding/json"
   "net/http"
   "runtime"
-  "unsafe"
+  "fmt"
 )
+
+const eventQueueCapacity = 1000000
+const maxEvents = 100
 
 type EventMonitor struct {
   newEvents chan interface{}
@@ -22,7 +25,7 @@ type EventMonitor struct {
 
 func NewEventMonitor(o Observer, netmap *overlay.NetworkMap) *EventMonitor {
   return &EventMonitor{
-    newEvents  : make(chan interface{}),
+    newEvents  : make(chan interface{}, eventQueueCapacity),
 
     incomingEvents : o.Recv(),
     netmap         : netmap,
@@ -53,9 +56,9 @@ func (em *EventMonitor) GatherEvents() {
           Dst : dst,
           Rtr : recv,
 
-          SrcUid : *((*int32)(unsafe.Pointer(&underSrc))),
-          DstUid : *((*int32)(unsafe.Pointer(&underDst))),
-          RtrUid : *((*int32)(unsafe.Pointer(&router))),
+          SrcUid : fmt.Sprintf("%p", (&underSrc)),
+          DstUid : fmt.Sprintf("%p", (&underDst)),
+          RtrUid : fmt.Sprintf("%p", (&router)),
         }
       case model.Join:
         nodeId := payload.NodeId()
@@ -72,6 +75,16 @@ func (em *EventMonitor) GatherEvents() {
 }
 
 func (em *EventMonitor) GetNewEvents(w http.ResponseWriter, r *http.Request) {
-  packets := []UnderlayPacketEntry{}
-  json.NewEncoder(w).Encode(packets)
+  events := []interface{}{}
+  for len(events) < maxEvents {
+    select {
+    case event := <-em.newEvents:
+      events = append(events, event)
+    default:
+      json.NewEncoder(w).Encode(events)
+      return
+    }
+  }
+  json.NewEncoder(w).Encode(events)
+  return
 }
