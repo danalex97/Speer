@@ -8,7 +8,6 @@ import (
   "net/http"
   "log"
 
-  "fmt"
   "os"
 )
 
@@ -30,25 +29,39 @@ func NewServer(o events.Observer, netmap *overlay.NetworkMap) *Server {
   }
 }
 
+func NewTestServer() *Server {
+  return &Server{
+    router : mux.NewRouter().StrictSlash(true),
+  }
+}
+
+func (s *Server) bindStatic() {
+  path, _ := os.Getwd()
+  path    += STATIC_DIR
+  dr      := http.Dir(path)
+
+  s.router.
+    PathPrefix(STATIC_ROUTE).
+    Handler(http.StripPrefix(STATIC_ROUTE,
+      http.FileServer(dr)))
+}
+
+func (s *Server) TestRun() {
+  s.router.
+    HandleFunc("/new_events", GetTestEvents).
+    Methods("Get")
+  s.bindStatic()
+
+  log.Fatal(http.ListenAndServe(":" + PORT, s.router))
+}
+
 func (s *Server) Run() {
   go s.monitor.GatherEvents()
 
   s.router.
     HandleFunc("/new_events", s.monitor.GetNewEvents).
     Methods("Get")
-
-  path, _ := os.Getwd()
-  fmt.Println(path)
-
-  path += STATIC_DIR
-  dr := http.Dir(path)
-
-  fmt.Println(dr)
-
-  s.router.
-    PathPrefix(STATIC_ROUTE).
-    Handler(http.StripPrefix(STATIC_ROUTE,
-      http.FileServer(dr)))
+  s.bindStatic()
 
   log.Fatal(http.ListenAndServe(":" + PORT, s.router))
 }

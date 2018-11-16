@@ -1,6 +1,7 @@
 package main
 
 import (
+  srv "github.com/danalex97/Speer/server"
   . "github.com/danalex97/Speer/sdk/go"
   . "github.com/danalex97/Speer/examples"
   "github.com/danalex97/Speer/interfaces"
@@ -24,6 +25,8 @@ var torrent = flag.Bool("torrent", false, "Torrent simulation.")
 var server  = flag.Bool("server", false, "Run server for front-end display.")
 var secs    = flag.Int("time", 10, "The time to run the simulation.")
 
+var test_server = flag.Bool("test-server", false, "Run test server for front-end.")
+
 func makeMemprofile() {
   // Profiling
   if *memprofile != "" {
@@ -44,6 +47,13 @@ func main() {
 
   // Parsing the flags
   flag.Parse()
+
+  // Check test server
+  if *test_server {
+    fmt.Println("Running test server...")
+    s := srv.NewTestServer()
+    s.TestRun()
+  }
 
   // Profiling
   if *cpuprofile != "" {

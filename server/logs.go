@@ -86,5 +86,4 @@ func (em *EventMonitor) GetNewEvents(w http.ResponseWriter, r *http.Request) {
     }
   }
   json.NewEncoder(w).Encode(events)
-  return
 }
