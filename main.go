@@ -21,7 +21,7 @@ var cpuprofile = flag.String("cpuprofile", "", "Write cpu profile to `file`.")
 var memprofile = flag.String("memprofile", "", "Write memory profile to `file`.")
 
 var torrent = flag.Bool("torrent", false, "Torrent simulation.")
-var metrics = flag.Bool("metrics", false, "Write metrics.")
+var server  = flag.Bool("server", false, "Run server for front-end display.")
 var secs    = flag.Int("time", 10, "The time to run the simulation.")
 
 func makeMemprofile() {
@@ -80,8 +80,8 @@ func main() {
       WithInternetworkUnderlay(10, 20, 20, 50).
       WithDefaultQueryGenerator().
       WithLimitedNodes(100)
-    if *metrics {
-      b = b.WithMetrics()
+    if *server {
+      b = b.WithServer()
     }
     s = b.
       WithCapacities().
@@ -98,8 +98,8 @@ func main() {
       WithParallelSimulation().
       WithDefaultQueryGenerator().
       WithLimitedNodes(100)
-    if *metrics {
-      b = b.WithMetrics()
+    if *server {
+      b = b.WithServer()
     }
     s = b.Build()
   }
