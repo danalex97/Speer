@@ -35,11 +35,13 @@ func JSONConfig(path string) *Config {
   raw = trimComments(raw)
 
   var conf Config
-  json.Unmarshal(raw, &conf)
 
   // default parameters
   conf.Latency  = false
   conf.Parallel = false
+  conf.Lang = "go"
+
+  json.Unmarshal(raw, &conf)
 
   return &conf
 }

@@ -1,9 +1,9 @@
 package config
 
 type NodeConf struct {
-  Number    int `json:"number"`
-  Upload    int `json:"upload"`
-  Download  int `json:"download"`
+  Number    uint `json:"number"`
+  Upload    uint `json:"upload"`
+  Download  uint `json:"download"`
 }
 
 type Config struct {
@@ -13,16 +13,16 @@ type Config struct {
   Entry string `json:"entry"`
 
   // number of peers in the system
-  Nodes int `json:"nodes"`
+  Nodes uint `json:"nodes"`
 
   // network level topology parameters
-  TransitDomains     int `json:"transitDomains"`
-  TransitDomainSize  int `json:"transitDomainSize"`
-  StubDomains        int `json:"stubDomains"`
-  StubDomainSize     int `json:"stubDomainSize"`
+  TransitDomains     uint `json:"transitDomains"`
+  TransitDomainSize  uint `json:"transitDomainSize"`
+  StubDomains        uint `json:"stubDomains"`
+  StubDomainSize     uint `json:"stubDomainSize"`
 
   // interval of virtual time units at which the capacity scheduler runs
-  TransferInterval   int `json:"transferInterval"`
+  TransferInterval   uint `json:"transferInterval"`
 
   // list which shows the distribution of node capacities
   CapacityNodes      []NodeConf `json:"capacityNodes"`
