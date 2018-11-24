@@ -1,9 +1,6 @@
 package main
 
 import (
-  . "github.com/danalex97/Speer/sdk/go"
-  . "github.com/danalex97/Speer/examples"
-  "github.com/danalex97/Speer/interfaces"
   "github.com/danalex97/Speer/config"
 
   errLog "log"
@@ -20,8 +17,8 @@ import (
 
 var cpuprofile = flag.String("cpuprofile", "", "Write cpu profile to `file`.")
 var memprofile = flag.String("memprofile", "", "Write memory profile to `file`.")
+var configPath = flag.String("config", "./examples/config/big.json", "Configuration file.")
 
-var torrent = flag.Bool("torrent", false, "Torrent simulation.")
 var metrics = flag.Bool("metrics", false, "Write metrics.")
 var secs    = flag.Int("time", 10, "The time to run the simulation.")
 
@@ -41,11 +38,6 @@ func makeMemprofile() {
 }
 
 func main() {
-  config.CreateStub("github.com/danalex97/Speer/examples/simple_torrent/SimpleTorrent")
-  config.RemoveStub()
-  config.RewriteDefault()
-  os.Exit(0)
-
   rand.Seed(time.Now().UTC().UnixNano())
 
   // Parsing the flags
@@ -78,43 +70,13 @@ func main() {
     }
   }()
 
-  var s interfaces.ISimulation
-  if *torrent {
-    nodeTemplate := new(SimpleTorrent)
-    b := NewDHTSimulationBuilder(nodeTemplate).
-      WithPoissonProcessModel(2, 2).
-      WithInternetworkUnderlay(10, 20, 20, 50).
-      WithDefaultQueryGenerator().
-      WithLimitedNodes(100)
-    if *metrics {
-      b = b.WithMetrics()
-    }
-    s = b.
-      WithCapacities().
-      WithLatency().
-      WithTransferInterval(10).
-      WithCapacityNodes(100, 10, 20).
-      WithCapacityNodes(100, 30, 30).
-      Build()
-  } else {
-    nodeTemplate := new(SimpleTree)
-    b := NewDHTSimulationBuilder(nodeTemplate).
-      WithPoissonProcessModel(2, 2).
-      WithRandomUniformUnderlay(1000, 5000, 2, 10).
-      WithParallelSimulation().
-      WithDefaultQueryGenerator().
-      WithLimitedNodes(100)
-    if *metrics {
-      b = b.WithMetrics()
-    }
-    s = b.Build()
-  }
-
-  s.Run()
+  jsonConfig := config.JSONConfig(*configPath)
+  simulation := config.NewSimulation(jsonConfig)
+  simulation.Run()
 
   time.Sleep(time.Second * time.Duration(*secs))
   fmt.Println("Done")
-  s.Stop()
+  simulation.Stop()
 
   os.Exit(0)
 }

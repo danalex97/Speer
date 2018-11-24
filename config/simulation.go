@@ -6,7 +6,9 @@ import (
   "github.com/danalex97/Speer/interfaces"
   "github.com/danalex97/Speer/sdk/go"
 
+  "fmt"
   "os"
+  "os/exec"
 )
 
 func NewSimulation(config *Config) interfaces.ISimulation {
@@ -17,10 +19,27 @@ func NewSimulation(config *Config) interfaces.ISimulation {
     }
   }()
 
+  fmt.Println(config.Entry)
   if !TemplateExists() {
     CreateTemplate(config)
 
+    pwd, _ := os.Getwd()
+    src := fmt.Sprintf("%s/main.go", pwd)
+
     // run again main
+    args := os.Args[1:]
+    args = append(args, "run")
+    args = append(args, src)
+    cmd := exec.Command("go", args...)
+
+    cmd.Stdin = os.Stdin
+    cmd.Stdout = os.Stdout
+    cmd.Stderr = os.Stderr
+
+    if err := cmd.Start(); err != nil {
+      panic(err)
+    }
+    cmd.Wait()
 
     os.Exit(0)
   }

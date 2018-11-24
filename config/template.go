@@ -60,10 +60,11 @@ func CreateStub(entry string) {
   os.Remove(defaultScript)
   goPath := os.Getenv("GOPATH")
 
-  idx := strings.LastIndex(entry, "/")
+  idxl := strings.LastIndex(entry, "/")
+  idx  := strings.LastIndex(entry[:idxl], "/")
   entryModule := entry[:idx]
-  entryStruct := entry[idx + 1:]
-  entryPath   := path.Join(goPath, "src", fmt.Sprintf("%s.go", entryModule))
+  entryStruct := entry[idxl + 1:]
+  entryPath   := path.Join(goPath, "src", fmt.Sprintf("%s.go", entry[:idxl]))
 
   // read the file at entryPath
   if _, err := ioutil.ReadFile(entryPath); err != nil {
