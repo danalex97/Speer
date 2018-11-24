@@ -4,6 +4,7 @@ import (
   . "github.com/danalex97/Speer/sdk/go"
   . "github.com/danalex97/Speer/examples"
   "github.com/danalex97/Speer/interfaces"
+  "github.com/danalex97/Speer/config"
 
   errLog "log"
   "runtime/pprof"
@@ -40,6 +41,11 @@ func makeMemprofile() {
 }
 
 func main() {
+  config.CreateStub("github.com/danalex97/Speer/examples/simple_torrent/SimpleTorrent")
+  config.RemoveStub()
+  config.RewriteDefault()
+  os.Exit(0)
+
   rand.Seed(time.Now().UTC().UnixNano())
 
   // Parsing the flags

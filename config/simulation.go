@@ -1,17 +1,32 @@
 package config
 
 import (
+  "github.com/danalex97/Speer/config/stub"
+
   "github.com/danalex97/Speer/interfaces"
   "github.com/danalex97/Speer/sdk/go"
+
+  "os"
 )
 
-func NewSimulation(template interface {}, config *Config) interfaces.ISimulation {
+func NewSimulation(config *Config) interfaces.ISimulation {
   defer func() {
     if err := recover(); err != nil {
       RemoveTemplate()
       panic(err)
     }
   }()
+
+  if !TemplateExists() {
+    CreateTemplate(config)
+
+    // run again main
+
+    os.Exit(0)
+  }
+
+  defer RemoveTemplate()
+  template := stub.NewNode()
 
   if config.TransitDomains == 0 || config.TransitDomainSize == 0 {
     panic("Transit domain number or transit domain size not provided or zero.")

@@ -12,11 +12,21 @@ import (
 const (
   stubFile   = "config/stub/stub.go.tmp"
   stubScript = "config/stub/stub.go"
+
+  defaultFile = "config/stub/default.go.tmp"
+  defaultScript = "config/stub/default.go"
 )
 
+func TemplateExists() bool {
+  if _, err := os.Stat(stubScript); os.IsNotExist(err) {
+    return false
+  }
+  return true
+}
 
 func RemoveTemplate() {
   RemoveStub()
+  RewriteDefault()
 }
 
 func CreateTemplate(config *Config) {
@@ -37,11 +47,17 @@ func CreateTemplate(config *Config) {
   }
 }
 
+func RewriteDefault() {
+  defaultCode, _ := ioutil.ReadFile(defaultFile)
+  ioutil.WriteFile(defaultScript, defaultCode, 0700)
+}
+
 func RemoveStub() {
   os.Remove(stubScript)
 }
 
 func CreateStub(entry string) {
+  os.Remove(defaultScript)
   goPath := os.Getenv("GOPATH")
 
   idx := strings.LastIndex(entry, "/")
