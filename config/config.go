@@ -8,7 +8,8 @@ type NodeConf struct {
 
 type Config struct {
   // the language of the entry point and the path of the entry point: file
-  // which will be used as main class running in the simulation
+  // which will be used as main class running in the simulation; entry point
+  // format is [go module]/[nodeStructName]
   Lang string `json:"lang"`
   Entry string `json:"entry"`
 
