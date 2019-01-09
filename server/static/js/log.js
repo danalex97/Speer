@@ -16,9 +16,9 @@ class JoinEntry extends LogEntry {
 	}
 
 	render() {
-		return (<div class="join">
-			<span class="timestamp"> {this.time} </span>
-			<span class="node"> Node {this.node} </span>
+		return (<div className="join row btn-logs">
+			<span className="timestamp col-sm-4"> {this.time} </span>
+			<span className="node col-sm-4"> Node {this.node} </span>
 		</div>);
 	}
 }
@@ -32,10 +32,10 @@ class PacketEntry extends LogEntry {
 	}
 
 	render() {
-		return (<div class="packet">
-			<span class="timestamp"> {this.time} </span>
-			<span class="src"> Src {this.src} </span>
-			<span class="dst"> Dest {this.dst} </span>
+		return (<div className="packet row btn-logs">
+			<span className="timestamp col-sm-4"> {this.time} </span>
+			<span className="src col-sm-4"> Src {this.src} </span>
+			<span className="dst col-sm-4"> Dest {this.dst} </span>
 		</div>);
 	}
 }
@@ -101,14 +101,14 @@ class LogDisplay extends React.Component {
 		const events = this.props.events;
 		const entries = events.map((entry, step) => {
 			return (
-				<li key={step}>
+				<div key={step}>
 					{entry.render()}
-				</li>
+				</div>
 			);
 		});
 
-		return (<ul>
+		return (<div className="container">
 			{entries}
-		</ul>);
+		</div>);
 	}
 }
