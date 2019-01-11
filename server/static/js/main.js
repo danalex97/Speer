@@ -39,7 +39,11 @@ class Main extends React.Component {
         const events = this.state.events;
 
         return (<div>
-            <h1>Hello World</h1>
+            <nav className="navbar navbar-default">
+                <div className="container-fluid">
+                   <NavBar items={navbarData}/>
+                </div>
+            </nav>
             <div>
                 <LogDisplay events={events}/>
             </div>
