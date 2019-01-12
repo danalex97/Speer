@@ -10,7 +10,16 @@ class Main extends React.Component {
 
             // events
             events : [],
+
+            // displayable pages
+            pages : this.initialDisplayedPages()
         };
+
+        this.handleDisplayEvents = this.handleDisplayEvents.bind(this);
+
+        for (let e of DisplayLogEvents) {
+            window.addEventListener(e, this.handleDisplayEvents);
+        }
     }
 
     onUpdate() {
@@ -20,6 +29,30 @@ class Main extends React.Component {
             events : tracker.events(),
             tracker : tracker,
         });
+    }
+
+    initialDisplayedPages() {
+        let pages = {};
+        for (let e of DisplayLogEvents) {
+            pages[e] = false;
+        }
+        pages[DisplayMainEvent] = true;
+        return pages;
+    }
+
+    handleDisplayEvents(event) {
+        // change the displayed page
+        let pages = this.state.pages;
+        for (let k in pages) {
+            if (pages.hasOwnProperty(k)) {
+                pages[k] = false;
+            }
+        }
+        pages[event.type] = true;
+
+        this.setState(state => ({
+            'pages' : pages
+        }));
     }
 
     componentDidMount() {
@@ -37,6 +70,7 @@ class Main extends React.Component {
     render() {
         const load = this.state.load;
         const events = this.state.events;
+        const pages = this.state.pages;
 
         return (<div>
             <nav className="navbar navbar-default">
@@ -45,10 +79,16 @@ class Main extends React.Component {
                 </div>
             </nav>
             <div>
-                <LogDisplay events={events}/>
+                {pages[DisplayLogEvent] ?
+                    <LogDisplay events={events}/> :
+                    null
+                }
             </div>
             <div>
-                <BarChart data={load} size={[500,500]} />
+                {pages[DisplayStatsEvent] ?
+                    <BarChart data={load} size={[500,500]} /> :
+                    null
+                }
             </div>
         </div>);
     }

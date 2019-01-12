@@ -1,24 +1,36 @@
-var navbarData = [{
+const DisplayMainEvent = "DisplayMainEvent";
+const DisplayLogEvent = "DisplayLogEvent";
+const DisplayGraphsEvent = "DisplayGraphsEvent";
+const DisplayStatsEvent = "DisplayStatsEvent";
+
+const DisplayLogEvents = [
+	DisplayMainEvent,
+	DisplayLogEvent,
+	DisplayGraphsEvent,
+	DisplayStatsEvent
+];
+
+const navbarData = [{
 	"text" : "Main",
 	"key" : "l1",
-	"url": "#"
+	"handler": () => window.dispatchEvent(new Event(DisplayMainEvent))
 }, {
 	"text" : "Logs",
 	"key" : "l2",
-	"url": "#",
+	"handler": () => window.dispatchEvent(new Event(DisplayLogEvent))
 }, {
-	"text" : "Display",
+	"text" : "Graphs",
 	"key" : "l3",
-	"url" : "#",
+	"handler" : () => window.dispatchEvent(new Event(DisplayGraphsEvent))
 }, {
 	"text" : "Stats",
 	"key" : "l4",
-	"url" : "#",
+	"handler" : () => window.dispatchEvent(new Event(DisplayStatsEvent))
 }];
 
 class NavBarLink extends React.Component {
 	render() {
-		return (<a href={this.props.url}>
+		return (<a onClick={this.props.handler}>
 			{this.props.text}
 		</a>);
 	}
@@ -42,7 +54,7 @@ class NavBarItem extends React.Component {
 	generateLink() {
 		return (<NavBarLink
 			{...this.state.dropdown}
-			url={this.props.url}
+			handler={this.props.handler}
 			text={this.props.text}
 		/>);
 	}
@@ -55,8 +67,6 @@ class NavBarItem extends React.Component {
 	}
 
 	render() {
-
-
 		let link = this.generateLink();
 		let submenu = <div/>;
 		if (this.props.submenu) {
@@ -76,7 +86,7 @@ class NavBar extends React.Component {
 			key={"_"+item.key}
 			subkey={item.key}
 			text={item.text}
-			url={item.url}
+			handler={item.handler}
 			submenu={item.submenu}
 		/>);
 	}
