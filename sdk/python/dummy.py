@@ -6,8 +6,14 @@ class DummyNode(Node):
         self.util = util
 
     def on_join( self ):
+        ctr = 0
         while True:
-            # print("Alive: {}".format(self.util.node_id))
+            message = self.util.recv()
+            ctr += 1
+            print("{} {}: {}".format(self.util.id, ctr, message))
+            if not message:
+                self.util.wait()
+                yield from _schedule()
             yield from _schedule()
 
     def on_leave( self ):

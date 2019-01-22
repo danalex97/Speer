@@ -14,22 +14,23 @@ class signals:
     _wait     = _wait
 
 class Future( object ):
-    def __init__( self, execution ):
+    def __init__( self, execution : 'Execution' ) -> None:
         self.execution = execution
 
         self._value = None
         self._done  = False
 
-    def _finished( self, value ):
+    def _finished( self, value : object ) -> None:
+        """ Dectorate value when execution finished. """
         self._value = value
         self._done  = True
 
     @property
-    def value( self ):
+    def value( self ) -> object:
         return self._value
 
     @property
-    def done( self ):
+    def done( self ) -> bool:
         return self._done
 
 class Execution( object ):
@@ -39,7 +40,7 @@ class Execution( object ):
     :future  - future associated with execution result
     :parent  - parent execution
     """
-    def __init__( self, method, *args, **kwargs ):
+    def __init__( self, method : 'function', *args, **kwargs ) -> None:
         self.method   = method
         self.args     = args
         self.kwargs   = kwargs
@@ -51,14 +52,14 @@ class Execution( object ):
         self._gen      = None
 
     @property
-    def blocked( self ):
+    def blocked( self ) -> bool:
         return self._blocked
 
-    def block( self ):
+    def block( self ) -> None:
         """ Block execution. """
         self._blocked = True
 
-    def unblock( self ):
+    def unblock( self ) -> None:
         """ Unblock execution. """
         self._blocked = False
 
@@ -105,14 +106,17 @@ class Scheduler( object ):
     def __init__( self ):
         self.executions = deque()
 
-    def execute( self, function, *args, **kwargs ):
-        self.executions.append(Execution(function, *args, **kwargs))
+    def execute( self, function : 'function', *args, **kwargs ) -> Execution:
+        """ Schedules a function for exection and return its execution. """
+        execution = Execution(function, *args, **kwargs)
+        self.executions.append(execution)
+        return execution
 
-    def run( self ):
+    def run( self ) -> None:
         while True:
             self.step()
 
-    def step( self ):
+    def step( self ) -> None:
         if len(self.executions) == 0:
             return
 

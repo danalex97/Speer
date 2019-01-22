@@ -17,11 +17,16 @@ class NodeManager( object ):
 
     def create( self, create : MESSAGES.Create ):
         """ Update node set and execute new node's on_join. """
-        node_id             = create.id
+        node_id  = create.id
+        util     = Util(self.env, node_id)
+
         self.nodes[node_id] = NodeWrapper.new(
             self.template,
-            Util(self.env, node_id)
+            util,
         )
 
         # run node code
-        self.scheduler.execute(self.nodes[node_id].on_join)
+        execution = self.scheduler.execute(self.nodes[node_id].on_join)
+
+        # allow util to explicitly block execution
+        util.set_execution(execution)
