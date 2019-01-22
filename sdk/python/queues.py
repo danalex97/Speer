@@ -8,9 +8,7 @@ class PipeQueue( object ):
         self.pipe_out = pipe_out
 
     def pop(self):
-        """
-        Blocking pop operation.
-        """
+        """ Blocking pop operation. """
         read = self.pipe_in.read(4)
 
         while len(read) == 0:
@@ -21,9 +19,7 @@ class PipeQueue( object ):
         return self.pipe_in.read(to_read)
 
     def push(self, to_write):
-        """
-        Blocking push operation.
-        """
+        """ Blocking push operation. """
         n  = len(to_write)
         nb = struct.pack('i', n)
         return self.pipe_out.write(nb + to_write)
