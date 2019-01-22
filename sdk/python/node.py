@@ -26,10 +26,10 @@ class NodeWrapper( object ):
         return NodeWrapper(node)
 
     def on_join( self ):
-        self.node.on_join()
+        yield from self.node.on_join()
 
     def on_leave( self ):
-        self.node.on_leave()
+        yield from self.node.on_leave()
 
 class Node( NodeInterface ):
     """ Dummy node class which should be replaced by the entry point """
@@ -41,4 +41,4 @@ class Node( NodeInterface ):
         pass
 
     def on_leave( self ):
-        pass 
+        pass

@@ -14,13 +14,13 @@ from scheduler import Scheduler
 from scheduler_api import _schedule
 
 class Environ( object ):
-    def __init__(self, template : type) -> None:
+    def __init__(self, template : type, scheduler : Scheduler) -> None:
         """ The environ needs to receive a node template. """
         pipe_out = open(sys.argv[1], 'wb')
         pipe_in  = open(sys.argv[2], 'rb')
 
         self.queue     = PipeQueue(pipe_in, pipe_out)
-        self.manager   = NodeManager(self, template)
+        self.manager   = NodeManager(self, template, scheduler)
         self.utils     = {}
 
     def recv( self ) -> Generator:
@@ -68,7 +68,7 @@ if __name__ == "__main__":
     print("Python environment started...")
 
     scheduler = Scheduler()
-    env = Environ(DummyNode)
+    env = Environ(DummyNode, scheduler)
 
     scheduler.execute(env.run)
     scheduler.run()
