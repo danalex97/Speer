@@ -90,6 +90,21 @@ class Main extends React.Component {
                 {pages[DisplayStatsEvent] ?
                     <div>
                         <BarChart
+                            id="chart1"
+                            data={load}
+                            size={[500,500]}
+                            margin={60}
+                            dataSize={40}
+                        />
+                        <BarChart
+                            id="chart2"
+                            data={load}
+                            size={[300,300]}
+                            margin={60}
+                            dataSize={40}
+                        />
+                        <BarChart
+                            id="chart3"
                             data={load}
                             size={[500,500]}
                             margin={60}

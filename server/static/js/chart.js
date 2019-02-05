@@ -65,7 +65,7 @@ class BarChart extends React.Component {
 		const dataSize = this.props.dataSize;
 
 		// build the chart
-		const svg   = d3.select('svg');
+		const svg   = d3.select('#' + this.props.id);
 		const chart = svg.append('g')
     		.attr('transform', `translate(
 				${margin},
@@ -103,6 +103,7 @@ class BarChart extends React.Component {
 
 	render() {
 		return (<svg
+			id={this.props.id}
 			margin={this.props.margin}
 			width={this.props.size[0]}
 			height={this.props.size[1]}
