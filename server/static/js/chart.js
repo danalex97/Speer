@@ -17,18 +17,28 @@ class BarChart extends React.Component {
 		const node  = this.node;
 
 		const chart = this.state.chart;
-		const xScale = this.state.xScale;
-		const yScale = this.state.yScale;
-
 		const height = this.state.height;
 		const width  = this.state.width;
-
-		const data = this.props.data;
-
 		const rectWidth = 10;
 
-		console.log(data);
+		const data = this.props.data;
+		const dataSize = this.props.dataSize;
 
+		// update axis
+		const rhs = Math.max(dataSize, data.length);
+		const lhs = rhs - dataSize;
+
+		const xScale = d3.scaleLinear()
+			.range([0, width])
+			.domain([lhs, rhs]);
+		// TODO: change numbers on bottom axis
+		chart.selectAll("g.x.axis")
+			.call(d3.axisBottom(xScale));
+
+		// keep yScale
+		const yScale = this.state.yScale;
+
+		// update values
 		chart.selectAll('rect')
             .data(data)
             .enter()
@@ -79,12 +89,12 @@ class BarChart extends React.Component {
 		chart.append('g')
 	    	.call(d3.axisLeft(yScale));
 		chart.append('g')
-		    .attr('transform', `translate(0, ${height})`)
+			.attr("class", "x axis")
+			.attr('transform', `translate(0, ${height})`)
 			.call(d3.axisBottom(xScale));
 
 		this.setState({
 			chart  : chart,
-			xScale : xScale,
 			yScale : yScale,
 			width  : width,
 			height : height,
@@ -92,10 +102,6 @@ class BarChart extends React.Component {
 	}
 
 	render() {
-		if (this.state != null) {
-			this.updateBarChart();
-		}
-
 		return (<svg
 			margin={this.props.margin}
 			width={this.props.size[0]}
