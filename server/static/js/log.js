@@ -96,6 +96,28 @@ class LogTracker {
 	}
 }
 
+class LogExporter extends React.Component {
+	constructor(props) {
+		super(props);
+		this.handleClick = this.handleClick.bind(this);
+ 	}
+
+	handleClick() {
+		const events = this.props.events;
+
+		// TODO: export log events to json file
+		for (let e of events) {
+			console.log(e);
+		}
+	}
+
+	render() {
+		return (<div className="btn-big" onClick={this.handleClick}>
+			Export Log
+		</div>);
+	}
+}
+
 class LogDisplay extends React.Component {
 	render() {
 		const events = this.props.events;
@@ -107,8 +129,11 @@ class LogDisplay extends React.Component {
 			);
 		});
 
-		return (<div className="container">
-			{entries}
+		return (<div>
+			<LogExporter events={events}/>
+			<div className="container">
+				{entries}
+			</div>
 		</div>);
 	}
 }
