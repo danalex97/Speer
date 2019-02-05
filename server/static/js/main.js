@@ -24,7 +24,7 @@ class Main extends React.Component {
 
     onUpdate() {
         const tracker = this.state.tracker;
-        const windowSize = 5;
+        const windowSize = 10;
 
         this.setState({
             load: new Metric(windowSize, tracker, Metrics.load).data(),
@@ -88,12 +88,14 @@ class Main extends React.Component {
             </div>
             <div>
                 {pages[DisplayStatsEvent] ?
-                    <BarChart
-                        data={load}
-                        size={[500,500]}
-                        margin={60}
-                        dataSize={30}
-                    /> :
+                    <div>
+                        <BarChart
+                            data={load}
+                            size={[500,500]}
+                            margin={60}
+                            dataSize={40}
+                        />
+                    </div>:
                     null
                 }
             </div>

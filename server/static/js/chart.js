@@ -1,6 +1,7 @@
 class BarChart extends React.Component {
 	constructor(props) {
 		super(props);
+
 		this.createBarChart = this.createBarChart.bind(this);
 	}
 
@@ -12,33 +13,42 @@ class BarChart extends React.Component {
 		this.updateBarChart();
 	}
 
-	setStyle(chart) {
-		// d3.select(this.node)
-		// 	.selectAll('rect')
-		// 	.data(this.props.data)
-		// 	.style('fill', '#fe9922')
-		// 	.attr('x', (d, i) => i * height)
-		// 	.attr('y', d => this.props.size[1] - yScale(d))
-		// 	.attr('height', d => yScale(d))
-		// 	.attr('width', height);
-	}
-
 	updateBarChart() {
-		// d3.select(node)
-		// 	.selectAll('rect')
-		// 	.data(this.props.data)
-		// 	.enter()
-		// 	.append('rect');
-		// d3.select(node)
-		// 	.selectAll('rect')
-		// 	.data(this.props.data)
-		// 	.exit()
-		// 	.remove();
+		const node  = this.node;
 
+		const chart = this.state.chart;
+		const xScale = this.state.xScale;
+		const yScale = this.state.yScale;
+
+		const height = this.state.height;
+		const width  = this.state.width;
+
+		const data = this.props.data;
+
+		const rectWidth = 10;
+
+		console.log(data);
+
+		chart.selectAll('rect')
+            .data(data)
+            .enter()
+            .append('rect');
+
+		chart.selectAll('rect')
+            .data(data)
+            .exit()
+            .remove();
+
+		chart.selectAll('rect')
+            .data(data)
+            .style('fill', 'black')
+            .attr('x', (d, i) => i * rectWidth)
+            .attr('y', d => yScale(d))
+            .attr('height', d => height - yScale(d))
+            .attr('width', rectWidth);
 	}
 
 	createBarChart() {
-		// const node = this.node;
 		const margin   = this.props.margin;
 		const height   = this.props.size[1] - 2 * margin;
 		const width    = this.props.size[0] - 2 * margin;
@@ -52,7 +62,10 @@ class BarChart extends React.Component {
 				${margin}
 			)`);
 
-		const dataMax  = d3.max(this.props.data);
+		const dataMax = Math.max(
+			d3.max(this.props.data),
+			100, // some minimum metric value
+		);
 
 		// get the scales
 		const yScale = d3.scaleLinear()
@@ -69,12 +82,21 @@ class BarChart extends React.Component {
 		    .attr('transform', `translate(0, ${height})`)
 			.call(d3.axisBottom(xScale));
 
-		this.setStyle(chart);
+		this.setState({
+			chart  : chart,
+			xScale : xScale,
+			yScale : yScale,
+			width  : width,
+			height : height,
+		});
 	}
 
 	render() {
+		if (this.state != null) {
+			this.updateBarChart();
+		}
+
 		return (<svg
-			ref={node => this.node = node}
 			margin={this.props.margin}
 			width={this.props.size[0]}
 			height={this.props.size[1]}

@@ -24,8 +24,10 @@ class Metric {
 			}
 			currentEvents.push(event);
 		}
-		let metric = this.computation(currentEvents);
-		metrics.push(metric);
+		if (currentEvents.length > 0) {
+			let metric = this.computation(currentEvents);
+			metrics.push(metric);
+		}
 		return metrics;
 	}
 
