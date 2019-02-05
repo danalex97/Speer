@@ -9,7 +9,7 @@ class Metric {
 		this.computation = computation;
 	}
 
-	// this repomputes the metric each time
+	// this recomputes the metric each time
 	data() {
 		let windowEnd = this.windowSize;
 		let currentEvents = new Array();
@@ -24,6 +24,8 @@ class Metric {
 			}
 			currentEvents.push(event);
 		}
+		let metric = this.computation(currentEvents);
+		metrics.push(metric);
 		return metrics;
 	}
 

@@ -5,48 +5,79 @@ class BarChart extends React.Component {
 	}
 
 	componentDidMount() {
-    	this.createBarChart()
+    	this.createBarChart();
     }
 
 	componentDidUpdate() {
-		this.createBarChart()
+		this.updateBarChart();
 	}
 
+	setStyle(chart) {
+		// d3.select(this.node)
+		// 	.selectAll('rect')
+		// 	.data(this.props.data)
+		// 	.style('fill', '#fe9922')
+		// 	.attr('x', (d, i) => i * height)
+		// 	.attr('y', d => this.props.size[1] - yScale(d))
+		// 	.attr('height', d => yScale(d))
+		// 	.attr('width', height);
+	}
+
+	updateBarChart() {
+		// d3.select(node)
+		// 	.selectAll('rect')
+		// 	.data(this.props.data)
+		// 	.enter()
+		// 	.append('rect');
+		// d3.select(node)
+		// 	.selectAll('rect')
+		// 	.data(this.props.data)
+		// 	.exit()
+		// 	.remove();
+
+	}
 
 	createBarChart() {
-		const node = this.node;
-     	const dataMax = d3.max(this.props.data);
-    	const yScale = d3.scaleLinear()
-        	.domain([0, dataMax])
-        	.range([0, this.props.size[1]]);
+		// const node = this.node;
+		const margin   = this.props.margin;
+		const height   = this.props.size[1] - 2 * margin;
+		const width    = this.props.size[0] - 2 * margin;
+		const dataSize = this.props.dataSize;
 
-		d3.select(node)
-			.selectAll('rect')
-			.data(this.props.data)
-			.enter()
-			.append('rect');
+		// build the chart
+		const svg   = d3.select('svg');
+		const chart = svg.append('g')
+    		.attr('transform', `translate(
+				${margin},
+				${margin}
+			)`);
 
-		d3.select(node)
-			.selectAll('rect')
-			.data(this.props.data)
-			.exit()
-			.remove();
+		const dataMax  = d3.max(this.props.data);
 
-		d3.select(node)
-			.selectAll('rect')
-			.data(this.props.data)
-			.style('fill', '#fe9922')
-			.attr('x', (d, i) => i * 25)
-			.attr('y', d => this.props.size[1] - yScale(d))
-			.attr('height', d => yScale(d))
-			.attr('width', 25);
+		// get the scales
+		const yScale = d3.scaleLinear()
+			.range([height, 0])
+			.domain([0, dataMax]);
+		const xScale = d3.scaleLinear()
+			.range([0, width])
+			.domain([0, dataSize]);
+
+		// build the axis
+		chart.append('g')
+	    	.call(d3.axisLeft(yScale));
+		chart.append('g')
+		    .attr('transform', `translate(0, ${height})`)
+			.call(d3.axisBottom(xScale));
+
+		this.setStyle(chart);
 	}
 
 	render() {
 		return (<svg
 			ref={node => this.node = node}
-			width={500}
-			height={500}
+			margin={this.props.margin}
+			width={this.props.size[0]}
+			height={this.props.size[1]}
 		/>);
 	}
 }
