@@ -99,21 +99,52 @@ class LogTracker {
 class LogExporter extends React.Component {
 	constructor(props) {
 		super(props);
+		this.state = {name: ''};
+
+		this.handleChange = this.handleChange.bind(this);
 		this.handleClick = this.handleClick.bind(this);
  	}
 
 	handleClick() {
-		const events = this.props.events;
+		const events  = this.props.events;
+		const altName = this.props.placeholder;
+		const name    = this.state.name;
 
-		// TODO: export log events to json file
-		for (let e of events) {
-			console.log(e);
-		}
+		let content = JSON.stringify(events.map(e => e.ref));
+		let uriContent = "data:application/octet-stream,"
+			+ encodeURIComponent(content);
+
+		let link = document.createElement('a');
+	    link.setAttribute('href', uriContent);
+	    link.setAttribute('download', name ? name : altName);
+
+		let event = document.createEvent('MouseEvents');
+        event.initEvent('click', true, true);
+        link.dispatchEvent(event);
+	}
+
+	handleChange(event) {
+		this.setState({name : event.target.value});
 	}
 
 	render() {
-		return (<div className="btn-big" onClick={this.handleClick}>
-			Export Log
+		return (<div className="row">
+			<div className="col-sm-4"/>
+			<div className="col-sm-4"/>
+			<div className="form-group col-sm-4">
+				<input
+					type="text"
+					placeholder={this.props.placeholder}
+					className="formControl"
+					value={this.state.name}
+					onChange={this.handleChange} />
+		  		<button
+		  			type="submit"
+		  			className="btn btn-outline-dark"
+		  			onClick={this.handleClick}>
+		  				Download Log
+		  		</button>
+			</div>
 		</div>);
 	}
 }
@@ -130,7 +161,9 @@ class LogDisplay extends React.Component {
 		});
 
 		return (<div>
-			<LogExporter events={events}/>
+			<LogExporter
+				events={events}
+				placeholder="file.json"/>
 			<div className="container">
 				{entries}
 			</div>
