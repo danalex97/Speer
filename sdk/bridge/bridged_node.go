@@ -2,6 +2,7 @@ package bridge
 
 import (
   . "github.com/danalex97/Speer/interfaces"
+  "fmt"
 )
 
 type BridgedTorrent struct {
@@ -24,6 +25,14 @@ func (t *BridgedTorrent) OnJoin() {
   t.bridge.SendMessage(&Create{
     Id : t.Id(),
   })
+
+  go func() {
+    incoming := t.bridge.RecvMessage(t.Id())
+    for ;; {
+      message := <- incoming
+      fmt.Println("Bridge received: ", message)
+    }
+  }()
 }
 
 func (t *BridgedTorrent) OnLeave() {
