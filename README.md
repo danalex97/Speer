@@ -1,8 +1,8 @@
-# Speer
+<img src="logo.png" width="300">
+
 [![Build Status](https://travis-ci.org/danalex97/Speer.svg?branch=master)](https://travis-ci.org/danalex97/Speer) [![Coverage Status](https://coveralls.io/repos/github/danalex97/Speer/badge.svg?branch=master)](https://coveralls.io/github/danalex97/Speer?branch=master)
 [![GoDoc](https://godoc.org/github.com/danalex97/Speer?status.png)](https://godoc.org/github.com/danalex97/Speer)
 
-<img src="logo.png" width="200">
 
 A network discrete event **S**imulator for **peer**-to-peer network modeling. **Speer is made for students, researchers and hobbyists.** It's goal is to allow
 them to easily implement, simulate and study peer to peer networks.
