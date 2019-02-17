@@ -1,5 +1,5 @@
 *.swp
 *__pycache__*
 Speer
-metrics.txt
+log.txt
 server/static/libs
