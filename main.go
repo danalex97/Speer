@@ -1,7 +1,6 @@
 package main
 
 import (
-  srv "github.com/danalex97/Speer/server"
   . "github.com/danalex97/Speer/sdk/go"
   . "github.com/danalex97/Speer/examples"
   "github.com/danalex97/Speer/interfaces"
@@ -22,10 +21,8 @@ var cpuprofile = flag.String("cpuprofile", "", "Write cpu profile to `file`.")
 var memprofile = flag.String("memprofile", "", "Write memory profile to `file`.")
 
 var torrent = flag.Bool("torrent", false, "Torrent simulation.")
-var server  = flag.Bool("server", false, "Run server for front-end display.")
+var logs    = flag.String("logs", "", "Write simulation logs to `file`.")
 var secs    = flag.Int("time", 10, "The time to run the simulation.")
-
-var test_server = flag.Bool("test-server", false, "Run test server for front-end.")
 
 func makeMemprofile() {
   // Profiling
@@ -47,13 +44,6 @@ func main() {
 
   // Parsing the flags
   flag.Parse()
-
-  // Check test server
-  if *test_server {
-    fmt.Println("Running test server...")
-    s := srv.NewTestServer()
-    s.TestRun()
-  }
 
   // Profiling
   if *cpuprofile != "" {
@@ -90,8 +80,8 @@ func main() {
       WithInternetworkUnderlay(10, 20, 20, 50).
       WithDefaultQueryGenerator().
       WithLimitedNodes(100)
-    if *server {
-      b = b.WithServer()
+    if *logs != "" {
+      b = b.WithLogs(*logs)
     }
     s = b.
       WithCapacities().
@@ -108,8 +98,8 @@ func main() {
       WithParallelSimulation().
       WithDefaultQueryGenerator().
       WithLimitedNodes(100)
-    if *server {
-      b = b.WithServer()
+    if *logs != "" {
+      b = b.WithLogs(*logs)
     }
     s = b.Build()
   }

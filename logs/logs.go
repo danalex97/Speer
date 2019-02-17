@@ -1,4 +1,4 @@
-package server
+package logs
 
 import (
   . "github.com/danalex97/Speer/events"
@@ -8,9 +8,9 @@ import (
   "github.com/danalex97/Speer/model"
 
   "encoding/json"
-  "net/http"
   "runtime"
   "fmt"
+  "os"
 )
 
 const eventQueueCapacity = 1000000
@@ -21,23 +21,40 @@ type EventMonitor struct {
 
   incomingEvents <-chan interface{}
   netmap *overlay.NetworkMap
+  outFile string
 }
 
-func NewEventMonitor(o Observer, netmap *overlay.NetworkMap) *EventMonitor {
+func NewEventMonitor(
+    o Observer,
+    netmap *overlay.NetworkMap,
+    outFile string,
+  ) *EventMonitor {
   return &EventMonitor{
     newEvents  : make(chan interface{}, eventQueueCapacity),
 
     incomingEvents : o.Recv(),
     netmap         : netmap,
+    outFile        : outFile,
   }
 }
 
 func (em *EventMonitor) GatherEvents() {
+  os.Remove(em.outFile)
+  os.Create(em.outFile)
+
+  f, err := os.OpenFile(em.outFile, os.O_APPEND|os.O_WRONLY, 0644)
+  if err != nil {
+    panic(err)
+  }
+  defer f.Close()
+
   for {
     select {
     case msg := <-em.incomingEvents:
       event := msg.(*Event)
       timestamp := event.Timestamp()
+
+      var newEvent interface{}
 
       switch payload := event.Payload().(type) {
       case underlay.Packet:
@@ -49,7 +66,7 @@ func (em *EventMonitor) GatherEvents() {
         src := em.netmap.Id(underSrc)
         dst := em.netmap.Id(underDst)
 
-        em.newEvents <- UnderlayPacketEntry{
+        newEvent = UnderlayPacketEntry{
           Time   : timestamp,
 
           Src : src,
@@ -63,27 +80,19 @@ func (em *EventMonitor) GatherEvents() {
       case model.Join:
         nodeId := payload.NodeId()
 
-        em.newEvents <- JoinEntry{
+        newEvent = JoinEntry{
           Time : timestamp,
           Node : nodeId,
         }
+      }
+
+      if (newEvent != nil) {
+        son, _ := json.Marshal(newEvent)
+        f.WriteString(string(son))
+        f.WriteString("\n")
       }
     default:
       runtime.Gosched()
     }
   }
-}
-
-func (em *EventMonitor) GetNewEvents(w http.ResponseWriter, r *http.Request) {
-  events := []interface{}{}
-  for len(events) < maxEvents {
-    select {
-    case event := <-em.newEvents:
-      events = append(events, event)
-    default:
-      json.NewEncoder(w).Encode(events)
-      return
-    }
-  }
-  json.NewEncoder(w).Encode(events)
 }

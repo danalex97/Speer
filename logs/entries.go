@@ -1,4 +1,4 @@
-package server
+package logs
 
 type UnderlayPacketEntry struct {
   Time   int `json:"time"`
