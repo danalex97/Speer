@@ -12,6 +12,7 @@ import {
 } from './nav/Pages';
 
 import NavBar from './nav/NavBar';
+import LogDisplay from './logs/LogDisplay';
 
 export default class App extends Component {
   constructor(props) {
@@ -78,7 +79,7 @@ export default class App extends Component {
 
       <div>
         {pages[DisplayLogEvent] ?
-          <p> Log placeholder </p> :
+          <LogDisplay logName="mocklog" /> :
           null
         }
       </div>
