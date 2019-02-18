@@ -13,6 +13,7 @@ import {
 
 import NavBar from './nav/NavBar';
 import LogDisplay from './logs/LogDisplay';
+import LogFetcher from './logs/LogFetcher';
 
 export default class App extends Component {
   constructor(props) {
@@ -28,14 +29,33 @@ export default class App extends Component {
       events : [],
 
       // displayable pages
-      pages : this.initialDisplayedPages()
+      pages : this.initialDisplayedPages(),
+
+      // current log being processed
+      logName : "mocklog",
+
+      // current log entries
+      logEntries : [],
     };
 
     this.handleDisplayEvents = this.handleDisplayEvents.bind(this);
+    this.fetchLogs = this.fetchLogs.bind(this);
+
+    // fetch logs
+    this.fetchLogs(this.state.logName);
+
     // add listeners for events associated with each page change
     for (let e of DisplayLogEvents) {
         window.addEventListener(e, this.handleDisplayEvents);
     }
+  }
+
+  fetchLogs() {
+    new LogFetcher(this.state.logName).fetchLog().then((entries) => {
+      this.setState(Object.assign(this.state, {
+        logEntries : entries,
+      }));
+    });
   }
 
   initialDisplayedPages() {
@@ -73,13 +93,14 @@ export default class App extends Component {
     const username = this.state.username;
     const load     = this.state.load;
     const pages    = this.state.pages;
+    const entries  = this.state.logEntries;
 
     return (<div>
       <NavBar/>
 
       <div>
         {pages[DisplayLogEvent] ?
-          <LogDisplay logName="mocklog" /> :
+          <LogDisplay entries={entries} /> :
           null
         }
       </div>
