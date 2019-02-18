@@ -19,12 +19,12 @@ import { parseEntry } from './logs/Entries';
 
 import {Metric, Metrics} from './metrics/Metrics.js';
 
+// time window size for metric aggregation
+const windowSize = 2;
+
 export default class App extends Component {
   constructor(props) {
     super(props);
-
-    // time window size for metric aggregation
-    const windowSize = 10;
 
     this.state = {
       username : null,
@@ -148,21 +148,21 @@ export default class App extends Component {
               data={metrics.load.data}
               size={[500,500]}
               margin={60}
-              dataSize={40}
+              windowSize={windowSize}
             />
             <BarChart
               id="chart2"
               data={metrics.load.data}
               size={[500,500]}
               margin={60}
-              dataSize={40}
+              windowSize={windowSize}
             />
             <BarChart
               id="chart3"
               data={metrics.load.data}
               size={[500,500]}
               margin={60}
-              dataSize={40}
+              windowSize={windowSize}
             />
           </div>:
             null
