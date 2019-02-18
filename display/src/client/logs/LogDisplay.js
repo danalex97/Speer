@@ -1,8 +1,5 @@
 import React, { Component } from 'react';
 import LogExporter from './LogExporter';
-import { parseEntry } from './Entries';
-
-const SERVER = "http://localhost:8080";
 
 export default class LogDisplay extends Component {
   constructor(props) {
@@ -10,8 +7,7 @@ export default class LogDisplay extends Component {
   }
 
   render() {
-    const events = this.props.entries.map(parseEntry);
-    const entries = events.map((entry, step) => {
+    const entries = this.props.entries.map((entry, step) => {
       return (
         <div key={step}>
           {entry.render()}
@@ -21,7 +17,7 @@ export default class LogDisplay extends Component {
 
     return (<div>
 			<LogExporter
-				events={events}
+				events={this.props.entries}
 				placeholder="file.json"/>
 			<div className="container">
 				{entries}

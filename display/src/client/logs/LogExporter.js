@@ -14,7 +14,7 @@ export default class LogExporter extends Component {
 		const events  = this.props.events;
 		const altName = this.props.placeholder;
 		const name    = this.state.name;
-
+		
 		let content = JSON.stringify(events.map(e => e.ref));
 		let uriContent = "data:application/octet-stream,"
 			+ encodeURIComponent(content);
