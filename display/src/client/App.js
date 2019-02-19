@@ -17,7 +17,8 @@ import LogDisplay from './logs/LogDisplay';
 import LogFetcher from './logs/LogFetcher';
 import { parseEntry } from './logs/Entries';
 
-import {Metric, Metrics} from './metrics/Metrics.js';
+import {Metric, Metrics} from './metrics/Metrics';
+import Canvas from './graph/Canvas';
 
 // time window size for metric aggregation
 const windowSize = 2;
@@ -136,6 +137,17 @@ export default class App extends Component {
       <div>
         {pages[DisplayLogEvent] ?
           <LogDisplay entries={entries} /> :
+          null
+        }
+      </div>
+
+      <div>
+        {pages[DisplayGraphsEvent] ?
+          <Canvas
+            id="canvas1"
+            data={entries}
+            size={[500,500]}
+          /> :
           null
         }
       </div>

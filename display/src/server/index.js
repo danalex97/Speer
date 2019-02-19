@@ -26,7 +26,6 @@ app.get('/api/getLog/:path', (req, res) => {
     });
     let goodLines = parsedLines.filter(x => x != null);
 
-    console.log(JSON.stringify(goodLines));
     res.send(JSON.stringify(goodLines));
   });
 });
