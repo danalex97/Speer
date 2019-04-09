@@ -11,42 +11,7 @@ import (
   "os/exec"
 )
 
-func NewSimulation(config *Config) interfaces.ISimulation {
-  defer func() {
-    if err := recover(); err != nil {
-      RemoveTemplate()
-      panic(err)
-    }
-  }()
-
-  fmt.Println(config.Entry)
-  if !TemplateExists() {
-    CreateTemplate(config)
-
-    pwd, _ := os.Getwd()
-    src := fmt.Sprintf("%s/main.go", pwd)
-
-    // run again main
-    args := os.Args[1:]
-    args = append(args, "run")
-    args = append(args, src)
-    cmd := exec.Command("go", args...)
-
-    cmd.Stdin = os.Stdin
-    cmd.Stdout = os.Stdout
-    cmd.Stderr = os.Stderr
-
-    if err := cmd.Start(); err != nil {
-      panic(err)
-    }
-    cmd.Wait()
-
-    os.Exit(0)
-  }
-
-  defer RemoveTemplate()
-  template := stub.NewNode()
-
+func NewSimulationFromTemplate(config *Config, template interfaces.TorrentNode) interfaces.ISimulation {
   if config.TransitDomains == 0 || config.TransitDomainSize == 0 {
     panic("Transit domain number or transit domain size not provided or zero.")
   }
@@ -90,4 +55,42 @@ func NewSimulation(config *Config) interfaces.ISimulation {
   }
 
   return capBuilder.Build()
+}
+
+func NewSimulation(config *Config) interfaces.ISimulation {
+  defer func() {
+    if err := recover(); err != nil {
+      RemoveTemplate()
+      panic(err)
+    }
+  }()
+
+  if !TemplateExists() {
+    CreateTemplate(config)
+
+    pwd, _ := os.Getwd()
+    src := fmt.Sprintf("%s/main.go", pwd)
+
+    // run again main
+    args := os.Args[1:]
+    args = append(args, "run")
+    args = append(args, src)
+    cmd := exec.Command("go", args...)
+
+    cmd.Stdin = os.Stdin
+    cmd.Stdout = os.Stdout
+    cmd.Stderr = os.Stderr
+
+    if err := cmd.Start(); err != nil {
+      panic(err)
+    }
+    cmd.Wait()
+
+    os.Exit(0)
+  }
+
+  fmt.Println("Template:", config.Entry)
+
+  defer RemoveTemplate()
+  return NewSimulationFromTemplate(config, stub.NewNode())
 }
