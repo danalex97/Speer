@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import LogExporter from './LogExporter';
+import LogUploader from './LogUploader';
 
 export default class LogDisplay extends Component {
   constructor(props) {
@@ -16,9 +17,18 @@ export default class LogDisplay extends Component {
     });
 
     return (<div>
-			<LogExporter
-				events={this.props.entries}
-				placeholder="file.json"/>
+      <div className="row">
+        <div className="col-sm-4"/>
+        <LogUploader
+          className="col-sm-4"
+          placeholder="file.json"
+          handleLogUpdate={this.props.handleLogUpdate}/>
+        <LogExporter
+          className="col-sm-4"
+          events={this.props.entries}
+          placeholder="file.json"/>
+    	</div>
+
 			<div className="container">
 				{entries}
 			</div>

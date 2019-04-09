@@ -15,19 +15,24 @@ app.get('/api/getUsername', (req, res) => res.send({ username: os.userInfo().use
 app.get('/api/getLog/:path', (req, res) => {
   const logname = req.params.path;
 
-  fs.readFile(`logs/${logname}.txt`, 'utf8', (err, data) => {
-    let lines = data.split('\n');
-    let parsedLines = lines.map(l => {
-      try {
-        return JSON.parse(l);
-      } catch {
-        return null;
-      }
+  try {
+    fs.readFile(`logs/${logname}.txt`, 'utf8', (err, data) => {
+      let lines = data.split('\n');
+      let parsedLines = lines.map(l => {
+        try {
+          return JSON.parse(l);
+        } catch {
+          return null;
+        }
+      });
+      let goodLines = parsedLines.filter(x => x != null);
+      
+      res.send(JSON.stringify(goodLines));
     });
-    let goodLines = parsedLines.filter(x => x != null);
-
-    res.send(JSON.stringify(goodLines));
-  });
+  } catch(err) {
+    console.log(err);
+    res.send({});
+  }
 });
 
 

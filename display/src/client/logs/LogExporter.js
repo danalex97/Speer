@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import Textbox from '../components/Textbox';
 
 export default class LogExporter extends Component {
 	constructor(props) {
@@ -14,7 +15,7 @@ export default class LogExporter extends Component {
 		const events  = this.props.events;
 		const altName = this.props.placeholder;
 		const name    = this.state.name;
-		
+
 		let content = JSON.stringify(events.map(e => e.ref));
 		let uriContent = "data:application/octet-stream,"
 			+ encodeURIComponent(content);
@@ -33,23 +34,12 @@ export default class LogExporter extends Component {
 	}
 
 	render() {
-		return (<div className="row">
-			<div className="col-sm-4"/>
-			<div className="col-sm-4"/>
-			<div className="form-group col-sm-4">
-				<input
-					type="text"
-					placeholder={this.props.placeholder}
-					className="formControl"
-					value={this.state.name}
-					onChange={this.handleChange} />
-		  		<button
-		  			type="submit"
-		  			className="btn btn-outline-dark"
-		  			onClick={this.handleClick}>
-		  				Download Log
-		  		</button>
-			</div>
-		</div>);
+		return <Textbox
+			placeholder={this.props.placeholder}
+			name={this.state.name}
+			handleChange={this.handleChange}
+			handleClick={this.handleClick}
+			submitText="Download Log"
+		/>;
 	}
 }

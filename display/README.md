@@ -1,5 +1,13 @@
+## Speer Front-End
+
+#### Install
 ```
 npm install
-npm run dev # for dev
-npm start # for prod
 ```
+
+#### Run server
+```
+npm start
+```
+
+The front-end can be found at the location: `http://localhost:8080`.
