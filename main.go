@@ -1,9 +1,7 @@
 package main
 
 import (
-  . "github.com/danalex97/Speer/sdk/go"
-  . "github.com/danalex97/Speer/examples"
-  "github.com/danalex97/Speer/interfaces"
+  "github.com/danalex97/Speer/config"
 
   errLog "log"
   "runtime/pprof"
@@ -19,10 +17,24 @@ import (
 
 var cpuprofile = flag.String("cpuprofile", "", "Write cpu profile to `file`.")
 var memprofile = flag.String("memprofile", "", "Write memory profile to `file`.")
+var configPath = flag.String("config", "./examples/config/big.json", "Path to configuration file.")
 
-var torrent = flag.Bool("torrent", false, "Torrent simulation.")
 var metrics = flag.Bool("metrics", false, "Write metrics.")
 var secs    = flag.Int("time", 10, "The time to run the simulation.")
+
+func makeCPUProfile() func() {
+  if *cpuprofile != "" {
+    f, err := os.Create(*cpuprofile)
+    if err != nil {
+        errLog.Fatal("could not create CPU profile: ", err)
+    }
+    if err := pprof.StartCPUProfile(f); err != nil {
+        errLog.Fatal("could not start CPU profile: ", err)
+    }
+    return pprof.StopCPUProfile
+  }
+  return func() {}
+}
 
 func makeMemprofile() {
   // Profiling
@@ -39,30 +51,13 @@ func makeMemprofile() {
   }
 }
 
-func main() {
-  rand.Seed(time.Now().UTC().UnixNano())
-
-  // Parsing the flags
-  flag.Parse()
-
-  // Profiling
-  if *cpuprofile != "" {
-    f, err := os.Create(*cpuprofile)
-    if err != nil {
-        errLog.Fatal("could not create CPU profile: ", err)
-    }
-    if err := pprof.StartCPUProfile(f); err != nil {
-        errLog.Fatal("could not start CPU profile: ", err)
-    }
-    defer pprof.StopCPUProfile()
-  }
-  defer makeMemprofile()
+func setSignals() {
   // Get profile even on signal
   c := make(chan os.Signal, 1)
   signal.Notify(c, os.Interrupt)
   go func(){
     for sig := range c {
-      fmt.Println("Singal received:", sig)
+      fmt.Println("Signal received:", sig)
       if *cpuprofile != "" {
         pprof.StopCPUProfile()
       }
@@ -71,44 +66,26 @@ func main() {
       os.Exit(0)
     }
   }()
+}
 
-  var s interfaces.ISimulation
-  if *torrent {
-    nodeTemplate := new(SimpleTorrent)
-    b := NewDHTSimulationBuilder(nodeTemplate).
-      WithPoissonProcessModel(2, 2).
-      WithInternetworkUnderlay(10, 20, 20, 50).
-      WithDefaultQueryGenerator().
-      WithLimitedNodes(100)
-    if *metrics {
-      b = b.WithMetrics()
-    }
-    s = b.
-      WithCapacities().
-      WithLatency().
-      WithTransferInterval(10).
-      WithCapacityNodes(100, 10, 20).
-      WithCapacityNodes(100, 30, 30).
-      Build()
-  } else {
-    nodeTemplate := new(SimpleTree)
-    b := NewDHTSimulationBuilder(nodeTemplate).
-      WithPoissonProcessModel(2, 2).
-      WithRandomUniformUnderlay(1000, 5000, 2, 10).
-      WithParallelSimulation().
-      WithDefaultQueryGenerator().
-      WithLimitedNodes(100)
-    if *metrics {
-      b = b.WithMetrics()
-    }
-    s = b.Build()
-  }
+func main() {
+  rand.Seed(time.Now().UTC().UnixNano())
 
-  s.Run()
+  // Parsing the flags
+  flag.Parse()
+
+  // Profiling
+  defer makeCPUProfile()()
+  defer makeMemprofile()
+  setSignals()
+
+  jsonConfig := config.JSONConfig(*configPath)
+  simulation := config.NewSimulation(jsonConfig)
+  simulation.Run()
 
   time.Sleep(time.Second * time.Duration(*secs))
   fmt.Println("Done")
-  s.Stop()
+  simulation.Stop()
 
   os.Exit(0)
 }
