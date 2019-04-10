@@ -1,7 +1,5 @@
 {
   "lang" : "go",
-  "entry" : "github.com/danalex97/Speer/examples/simple_torrent/SimpleTorrent",
-
   "nodes" : 100,
 
   "transitDomains"    : 10,
@@ -12,11 +10,11 @@
   "transferInterval"  : 10,
 
   "capacityNodes" : [{
-    "number"   : 50,
+    "number"   : 100,
     "upload"   : 10,
     "download" : 20
   }, {
-    "number"   : 50,
+    "number"   : 100,
     "upload"   : 30,
     "download" : 30
   }]
