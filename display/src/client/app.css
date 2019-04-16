@@ -1,0 +1,21 @@
+h1 {
+  color: green;
+}
+
+body {
+  text-align: center;
+  margin: auto;
+}
+
+.btn-logs {
+    padding: 10px 28px;
+    font-size: 100%;
+    line-height: normal;
+	background-color: rgba(255, 255, 255, 0.7);
+
+	border-top: 1px solid rgb(221, 221, 221);
+}
+
+.btn-logs:hover {
+	background-color: rgba(255, 106, 0, 0.5);
+}

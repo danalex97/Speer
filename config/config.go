@@ -13,6 +13,9 @@ type Config struct {
   Lang string `json:"lang"`
   Entry string `json:"entry"`
 
+  // path to the location of the log.json file
+  LogFile string `json:"logFile"`
+
   // number of peers in the system
   Nodes uint `json:"nodes"`
 

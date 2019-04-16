@@ -6,8 +6,8 @@ import (
   "github.com/danalex97/Speer/underlay"
   "github.com/danalex97/Speer/overlay"
   "github.com/danalex97/Speer/model"
-  "github.com/danalex97/Speer/metrics"
-  
+  "github.com/danalex97/Speer/logs"
+
   "time"
   "fmt"
 )
@@ -61,14 +61,14 @@ func (b *DHTSimulationBuilder) WithParallelSimulation() *DHTSimulationBuilder {
   return b
 }
 
-func (b *DHTSimulationBuilder) WithMetrics() *DHTSimulationBuilder {
+func (b *DHTSimulationBuilder) WithLogs(logsFile string) *DHTSimulationBuilder {
   globalObserver := events.NewGlobalEventObserver()
   b.sim.underlaySimulation.RegisterObserver(globalObserver)
 
   netMap := overlay.GetBootstrap(b.sim.underlaySimulation).(*overlay.NetworkMap)
-  metrics := metrics.NewMetrics(globalObserver, netMap)
+  logger := logs.NewEventMonitor(globalObserver, netMap, logsFile)
 
-  go metrics.Run()
+  go logger.GatherEvents()
 
   return b
 }

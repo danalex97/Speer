@@ -34,6 +34,9 @@ func NewSimulationFromTemplate(config *Config, template interfaces.TorrentNode) 
   if config.Nodes == 0 {
     panic("Number of nodes was not provided or is 0.")
   }
+  if config.LogFile != "" {
+      builder = builder.WithLogs("log.json")
+  }
 
   capBuilder := builder.
     WithDefaultQueryGenerator().
