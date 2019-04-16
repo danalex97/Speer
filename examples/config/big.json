@@ -4,6 +4,8 @@
 
   "nodes" : 100,
 
+  "logFile" : "./log.json",
+
   "transitDomains"    : 10,
   "transitDomainSize" : 20,
   "stubDomains"       : 20,

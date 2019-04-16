@@ -39,6 +39,7 @@ func JSONConfig(path string) *Config {
   conf.Latency  = false
   conf.Parallel = false
   conf.Lang = "go"
+  conf.LogFile = ""
 
   if err := json.Unmarshal(raw, &conf); err != nil {
     panic(err)
