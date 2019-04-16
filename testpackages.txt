@@ -1,6 +1,6 @@
 ./structs
 ./events
-./metrics
+./logs
 ./model
 ./overlay
 ./underlay
