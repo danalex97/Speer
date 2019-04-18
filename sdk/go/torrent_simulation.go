@@ -1,16 +1,16 @@
 package sdk
 
-import (
-  . "github.com/danalex97/Speer/capacity"
-  "github.com/danalex97/Speer/events"
-  "github.com/danalex97/Speer/overlay"
-  "github.com/danalex97/Speer/interfaces"
-)
+// import (
+//   . "github.com/danalex97/Speer/capacity"
+//   "github.com/danalex97/Speer/events"
+//   "github.com/danalex97/Speer/overlay"
+//   "github.com/danalex97/Speer/interfaces"
+// )
 
 type TorrentSimulation struct {
   *DHTSimulation
 
-  scheduler  Scheduler
+  // scheduler  Scheduler
   toRegister []*registerEntry
 
   latency    bool
@@ -29,7 +29,7 @@ type registerEntry struct {
 func NewTorrentSimulation(s *DHTSimulation) *TorrentSimulation {
   return &TorrentSimulation{
     DHTSimulation : s,
-    scheduler     :  nil,
+    // scheduler     :  nil,
     toRegister    : []*registerEntry{},
     latency       : false,
   }
@@ -51,20 +51,20 @@ func (b *TorrentSimulationBuilder) WithLatency() *TorrentSimulationBuilder {
 }
 
 func (b *TorrentSimulationBuilder) WithTransferInterval(interval int) *TorrentSimulationBuilder {
-  b.sim.scheduler = NewScheduler(interval)
+  // b.sim.scheduler = NewScheduler(interval)
 
   // Schedule the first interval
-  b.sim.underlaySimulation.Push(events.NewEvent(0, nil, b.sim.scheduler))
+  // b.sim.underlaySimulation.Push(events.NewEvent(0, nil, b.sim.scheduler))
 
   return b
 }
 
 func (b *TorrentSimulationBuilder) WithCapacityNodes(nodes int, upload int, download int) *TorrentSimulationBuilder {
-  b.sim.toRegister = append(b.sim.toRegister, &registerEntry{
-    nodes : nodes,
-    up    : upload,
-    down  : download,
-  })
+  // b.sim.toRegister = append(b.sim.toRegister, &registerEntry{
+  //   nodes : nodes,
+  //   up    : upload,
+  //   down  : download,
+  // })
 
   return b
 }
@@ -74,35 +74,35 @@ func (b *TorrentSimulationBuilder) Build() *TorrentSimulation {
 }
 
 // updateEngine is called when the TorrentNode is initialized.
-func (s *TorrentSimulation) updateEngine(node interfaces.UnreliableNode) Engine {
-  if len(s.toRegister) == 0 {
-    return nil
-  }
-
-  idx      := 0
-  register := s.toRegister[idx]
-
-  register.nodes -= 1
-  if register.nodes == 0 {
-    s.toRegister = s.toRegister[idx + 1:]
-  }
-
-  newEngine := NewTransferEngine(
-    register.up,
-    register.down,
-    node.Id(),
-  )
-  if s.latency {
-    newEngine = NewTransferLatencyEngine(
-      newEngine.(*TransferEngine),
-      node.(overlay.UnreliableNode),
-    )
-  }
-
-  // Set connection callback
-  newEngine.SetConnectCallback(func (l interfaces.Link) {
-    s.scheduler.RegisterLink(l)
-  })
-
-  return newEngine
-}
+// func (s *TorrentSimulation) updateEngine(node interfaces.UnreliableNode) Engine {
+//   if len(s.toRegister) == 0 {
+//     return nil
+//   }
+//
+//   idx      := 0
+//   register := s.toRegister[idx]
+//
+//   register.nodes -= 1
+//   if register.nodes == 0 {
+//     s.toRegister = s.toRegister[idx + 1:]
+//   }
+//
+//   newEngine := NewTransferEngine(
+//     register.up,
+//     register.down,
+//     node.Id(),
+//   )
+//   if s.latency {
+//     newEngine = NewTransferLatencyEngine(
+//       newEngine.(*TransferEngine),
+//       node.(overlay.UnreliableNode),
+//     )
+//   }
+//
+//   // Set connection callback
+//   newEngine.SetConnectCallback(func (l interfaces.Link) {
+//     s.scheduler.RegisterLink(l)
+//   })
+//
+//   return newEngine
+// }

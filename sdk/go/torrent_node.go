@@ -2,7 +2,7 @@ package sdk
 
 import (
   "github.com/danalex97/Speer/interfaces"
-  "github.com/danalex97/Speer/capacity"
+  // "github.com/danalex97/Speer/capacity"
   "github.com/danalex97/Speer/structs"
 )
 
@@ -16,7 +16,7 @@ type AutowiredTorrentNode struct {
   node     interfaces.UnreliableNode
   template interfaces.TorrentNode
 
-  engine   capacity.Engine
+  // engine   capacity.Engine
   time     func() int
 }
 
@@ -47,7 +47,8 @@ func (n *AutowiredTorrentNode) UnreliableNode() interfaces.UnreliableNode {
 
 // Part of TorrentNodeUtil interface.
 func (n *AutowiredTorrentNode) Transport() interfaces.Transport {
-  return n.engine
+  // return n.engine
+  return nil
 }
 
 // Part of TorrentNodeUtil interface.
@@ -72,7 +73,7 @@ func NewAutowiredTorrentNode(node interfaces.UnreliableNode, simulation interfac
   s := simulation.(*TorrentSimulation)
 
   n.node     = node
-  n.engine   = s.updateEngine(node)
+  // n.engine   = s.updateEngine(node)
   n.time     = s.Time
   n.template = s.template.(interfaces.TorrentNodeConstructor).New(n)
 
