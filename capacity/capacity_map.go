@@ -1,7 +1,6 @@
-package overlay
+package capacity
 
 import (
-	. "github.com/danalex97/Speer/capacity"
 	"github.com/danalex97/Speer/interfaces"
 	"github.com/danalex97/Speer/underlay"
 	"github.com/danalex97/Speer/events"

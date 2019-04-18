@@ -4,6 +4,7 @@ import (
 	"github.com/danalex97/Speer/interfaces"
 
 	"github.com/danalex97/Speer/overlay"
+	"github.com/danalex97/Speer/capacity"
 	"github.com/danalex97/Speer/underlay"
 	"github.com/danalex97/Speer/events"
 
@@ -20,7 +21,7 @@ type Simulation struct {
 	underlaySimulation *underlay.NetworkSimulation
 
 	latencyMap overlay.LatencyMap
-	capacityMap overlay.CapacityMap
+	capacityMap capacity.CapacityMap
 	nodes int
 	cnode int
 
@@ -129,7 +130,7 @@ func (b *SimulationBuilder) WithFixedNodes(
 func (b *SimulationBuilder) WithCapacityScheduler(
 	interval int,
 ) *SimulationBuilder {
-	b.capacityMap = overlay.NewScheduledCapacityMap(interval)
+	b.capacityMap = capacity.NewScheduledCapacityMap(interval)
 	return b
 }
 
@@ -160,7 +161,7 @@ func (b *SimulationBuilder) WithCapacityNodes(
 		)
 
 		// register capacity
-		capacityConnector := overlay.NewCapacityConnector(
+		capacityConnector := capacity.NewCapacityConnector(
 			upload,
 			download,
 			b.capacityMap,
@@ -168,7 +169,7 @@ func (b *SimulationBuilder) WithCapacityNodes(
 		b.capacityMap.AddConnector(id, capacityConnector)
 
 		// register autowired nodes
-		newNode := NewAutowiredNode(b.template, overlay.NewSimulatedNode(
+		newNode := NewAutowiredNode(b.template, NewSimulatedNode(
 			latencyConnector,
 			capacityConnector,
 			b.latencyMap,

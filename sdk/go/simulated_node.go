@@ -1,7 +1,8 @@
-package overlay
+package sdk
 
 import (
 	"github.com/danalex97/Speer/interfaces"
+	"github.com/danalex97/Speer/overlay"
 )
 
 type NodeUtil interface {
@@ -17,14 +18,14 @@ type SimulatedNode struct {
 	*Connector
 
 	time func() int
-	bootstrap Bootstrap
+	bootstrap overlay.Bootstrap
 	id string
 }
 
 func NewSimulatedNode(
 	controlTransport interfaces.ControlTransport,
 	dataTransport interfaces.DataTransport,
-	bootstrap Bootstrap,
+	bootstrap overlay.Bootstrap,
 	id string,
 	time func() int,
 ) NodeUtil {
