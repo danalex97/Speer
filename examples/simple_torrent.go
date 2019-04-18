@@ -1,11 +1,11 @@
 package examples
 
 import (
-	"fmt"
 	. "github.com/danalex97/Speer/interfaces"
 	"github.com/danalex97/Speer/structs"
 	"runtime"
 	"sync"
+	"fmt"
 )
 
 type SimpleTorrent struct {
@@ -77,7 +77,12 @@ func (s *SimpleTorrent) New(util NodeUtil) Node {
 	node := new(SimpleTorrent)
 
 	node.id = util.Id()
-	node.ids = []string{node.id, util.Join()}
+	node.ids = []string{node.id}
+	join := util.Join()
+	if join != "" {
+		node.ids = append(node.ids, join)
+	}
+
 	node.transport = util.Transport()
 	node.links = map[string]Link{}
 
@@ -97,7 +102,7 @@ func (s *SimpleTorrent) updateIds(ids []string) {
 	s.ids = []string{}
 	for id, _ := range allIds {
 		s.ids = append(s.ids, id)
-
+		
 		if id == s.id {
 			continue
 		}
@@ -105,8 +110,6 @@ func (s *SimpleTorrent) updateIds(ids []string) {
 		// register link if not registered
 		if _, ok := s.links[id]; !ok {
 			s.links[id] = s.transport.Connect(id)
-			fmt.Println("Before")
-			fmt.Println(s.links[id])
 
 			// if the link is new, we broadcast our list again
 			if !s.transport.ControlPing(id) {

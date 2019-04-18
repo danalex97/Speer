@@ -83,8 +83,5 @@ func main() {
 	simulation.Run()
 
 	time.Sleep(time.Second * time.Duration(*secs))
-	fmt.Println("Done")
 	simulation.Stop()
-
-	os.Exit(0)
 }
