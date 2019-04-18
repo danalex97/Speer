@@ -20,6 +20,8 @@ type ISimulation interface {
 type Simulation struct {
 	underlaySimulation *underlay.NetworkSimulation
 
+	logger *logs.EventMonitor
+
 	latencyMap overlay.LatencyMap
 	capacityMap capacity.CapacityMap
 	nodes int
@@ -186,9 +188,8 @@ func (b *SimulationBuilder) WithLogs(logsFile string) *SimulationBuilder {
 	globalObserver := events.NewGlobalEventObserver()
 	b.underlaySimulation.RegisterObserver(globalObserver)
 
-	logger := logs.NewEventMonitor(globalObserver, b.latencyMap, logsFile)
-
-	go logger.GatherEvents()
+	b.logger = logs.NewEventMonitor(globalObserver, b.latencyMap, logsFile)
+	go b.logger.GatherEvents()
 
 	return b
 }
@@ -211,6 +212,12 @@ func (s *Simulation) Run() {
 
 	go s.underlaySimulation.Run()
 	for _, node := range s.userNodes {
+		if s.logger != nil {
+			s.logger.Log(logs.JoinEntry{
+				Time : s.Time(),
+				Node : node.Id(),
+			})
+		}
 		go node.OnJoin()
 	}
 }

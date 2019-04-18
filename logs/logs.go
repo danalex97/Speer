@@ -17,9 +17,9 @@ const eventQueueCapacity = 1000000
 const maxEvents = 100
 
 type EventMonitor struct {
-	newEvents chan interface{}
-
+	loggedEvents chan interface{}
 	incomingEvents <-chan interface{}
+
 	netmap         overlay.LatencyMap
 	outFile        string
 }
@@ -30,12 +30,16 @@ func NewEventMonitor(
 	outFile string,
 ) *EventMonitor {
 	return &EventMonitor{
-		newEvents: make(chan interface{}, eventQueueCapacity),
-
+		loggedEvents: make(chan interface{}, eventQueueCapacity),
 		incomingEvents: o.Recv(),
+
 		netmap:         netmap,
 		outFile:        outFile,
 	}
+}
+
+func (em *EventMonitor) Log(event interface{}) {
+	em.loggedEvents <- event
 }
 
 func (em *EventMonitor) GatherEvents() {
@@ -50,6 +54,11 @@ func (em *EventMonitor) GatherEvents() {
 
 	for {
 		select {
+		case msg := <-em.loggedEvents:
+			son, _ := json.Marshal(msg)
+			f.WriteString(string(son))
+			f.WriteString("\n")
+
 		case msg := <-em.incomingEvents:
 			event := msg.(*Event)
 			timestamp := event.Timestamp()
@@ -77,13 +86,6 @@ func (em *EventMonitor) GatherEvents() {
 					DstUid: fmt.Sprintf("%p", (&underDst)),
 					RtrUid: fmt.Sprintf("%p", (&router)),
 				}
-			// case model.Join:
-			// 	nodeId := payload.NodeId()
-			//
-			// 	newEvent = JoinEntry{
-			// 		Time: timestamp,
-			// 		Node: nodeId,
-			// 	}
 			}
 
 			if newEvent != nil {
