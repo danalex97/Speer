@@ -24,7 +24,9 @@ type Simulation struct {
 	nodes int
 	cnode int
 
-	template   interface{}
+	userNodes map[string]SpeerNode
+
+	template interfaces.Node
 
 	progressProperties []events.Receiver
 }
@@ -33,11 +35,16 @@ type SimulationBuilder struct {
 	*Simulation
 }
 
-func NewSimulationBuilder(template interface{}) *SimulationBuilder {
+func NewSimulationBuilder(template interfaces.Node) *SimulationBuilder {
 	b := new(SimulationBuilder)
+
+	if template == nil {
+		panic("No valid template provided")
+	}
 
 	b.template = template
 	b.progressProperties = []events.Receiver{}
+	b.userNodes = map[string]SpeerNode{}
 	b.nodes = -1
 
 	return b
@@ -143,6 +150,13 @@ func (b *SimulationBuilder) WithCapacityNodes(
 		// assign ID to router
 		id := b.latencyMap.NewId()
 
+		// create latency connector
+		latencyConnector := overlay.NewUnderlayChan(
+			id,
+			b.underlaySimulation,
+			b.latencyMap,
+		)
+
 		// register capacity
 		capacityConnector := overlay.NewCapacityConnector(
 			upload,
@@ -150,6 +164,16 @@ func (b *SimulationBuilder) WithCapacityNodes(
 			b.capacityMap,
 		)
 		b.capacityMap.AddConnector(id, capacityConnector)
+
+		// register autowired nodes
+		newNode := NewAutowiredNode(b.template, overlay.NewSimulatedNode(
+			latencyConnector,
+			capacityConnector,
+			b.latencyMap,
+			id,
+			b.Time,
+		))
+		b.userNodes[id] = newNode
 	}
 	b.cnode = limit
 	return b
@@ -181,6 +205,10 @@ func (s *Simulation) Run() {
 	}
 
 	go s.underlaySimulation.Run()
+	for _, node := range s.userNodes {
+		node.New(node)
+		go node.OnJoin()
+	}
 }
 
 func (s *Simulation) Stop() {
