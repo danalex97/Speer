@@ -17,9 +17,9 @@ type Connector struct {
 type SimulatedNode struct {
 	*Connector
 
-	time func() int
+	time      func() int
 	bootstrap overlay.Bootstrap
-	id string
+	id        string
 }
 
 func NewSimulatedNode(
@@ -30,13 +30,13 @@ func NewSimulatedNode(
 	time func() int,
 ) NodeUtil {
 	return &SimulatedNode{
-		Connector : &Connector{
-			ControlTransport : controlTransport,
-			DataTransport : dataTransport,
+		Connector: &Connector{
+			ControlTransport: controlTransport,
+			DataTransport:    dataTransport,
 		},
-		time              : time,
-		bootstrap         : bootstrap,
-		id                : id,
+		time:      time,
+		bootstrap: bootstrap,
+		id:        id,
 	}
 }
 

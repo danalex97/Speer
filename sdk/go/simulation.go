@@ -3,10 +3,10 @@ package sdk
 import (
 	"github.com/danalex97/Speer/interfaces"
 
-	"github.com/danalex97/Speer/overlay"
 	"github.com/danalex97/Speer/capacity"
-	"github.com/danalex97/Speer/underlay"
 	"github.com/danalex97/Speer/events"
+	"github.com/danalex97/Speer/overlay"
+	"github.com/danalex97/Speer/underlay"
 
 	"github.com/danalex97/Speer/logs"
 
@@ -22,10 +22,10 @@ type Simulation struct {
 
 	logger *logs.EventMonitor
 
-	latencyMap overlay.LatencyMap
+	latencyMap  overlay.LatencyMap
 	capacityMap capacity.CapacityMap
-	nodes int
-	cnode int
+	nodes       int
+	cnode       int
 
 	userNodes map[string]SpeerNode
 
@@ -40,7 +40,7 @@ type SimulationBuilder struct {
 
 func NewSimulationBuilder(template interfaces.Node) *SimulationBuilder {
 	b := &SimulationBuilder{
-		Simulation : new(Simulation),
+		Simulation: new(Simulation),
 	}
 
 	if template == nil {
@@ -195,7 +195,7 @@ func (b *SimulationBuilder) WithLogs(logsFile string) *SimulationBuilder {
 }
 
 func (b *SimulationBuilder) Build() ISimulation {
-	if (b.underlaySimulation == nil) {
+	if b.underlaySimulation == nil {
 		panic("No underlay simulation provided.")
 	}
 
@@ -214,8 +214,8 @@ func (s *Simulation) Run() {
 	for _, node := range s.userNodes {
 		if s.logger != nil {
 			s.logger.Log(logs.JoinEntry{
-				Time : s.Time(),
-				Node : node.Id(),
+				Time: s.Time(),
+				Node: node.Id(),
 			})
 		}
 		go node.OnJoin()
@@ -227,5 +227,5 @@ func (s *Simulation) Stop() {
 }
 
 func (s *Simulation) Time() int {
-	return s.underlaySimulation.Time();
+	return s.underlaySimulation.Time()
 }

@@ -3,7 +3,6 @@ package logs
 import (
 	. "github.com/danalex97/Speer/events"
 
-	// "github.com/danalex97/Speer/model"
 	"github.com/danalex97/Speer/overlay"
 	"github.com/danalex97/Speer/underlay"
 
@@ -17,11 +16,11 @@ const eventQueueCapacity = 1000000
 const maxEvents = 100
 
 type EventMonitor struct {
-	loggedEvents chan interface{}
+	loggedEvents   chan interface{}
 	incomingEvents <-chan interface{}
 
-	netmap         overlay.LatencyMap
-	outFile        string
+	netmap  overlay.LatencyMap
+	outFile string
 }
 
 func NewEventMonitor(
@@ -30,11 +29,11 @@ func NewEventMonitor(
 	outFile string,
 ) *EventMonitor {
 	return &EventMonitor{
-		loggedEvents: make(chan interface{}, eventQueueCapacity),
+		loggedEvents:   make(chan interface{}, eventQueueCapacity),
 		incomingEvents: o.Recv(),
 
-		netmap:         netmap,
-		outFile:        outFile,
+		netmap:  netmap,
+		outFile: outFile,
 	}
 }
 

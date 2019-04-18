@@ -1,20 +1,20 @@
 package examples
 
 import (
+	"fmt"
 	. "github.com/danalex97/Speer/interfaces"
 	"github.com/danalex97/Speer/structs"
 	"runtime"
 	"sync"
-	"fmt"
 )
 
 type SimpleTorrent struct {
 	sync.Mutex
 
-	id         string
-	ids        []string
-	links      map[string]Link
-	transport  Transport
+	id        string
+	ids       []string
+	links     map[string]Link
+	transport Transport
 }
 
 type idBroadcast struct {
@@ -102,7 +102,7 @@ func (s *SimpleTorrent) updateIds(ids []string) {
 	s.ids = []string{}
 	for id, _ := range allIds {
 		s.ids = append(s.ids, id)
-		
+
 		if id == s.id {
 			continue
 		}

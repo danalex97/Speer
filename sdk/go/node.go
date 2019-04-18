@@ -19,7 +19,7 @@ func NewAutowiredNode(
 	util interfaces.NodeUtil,
 ) SpeerNode {
 	return &AutowiredNode{
-		Node : template.New(util),
-		NodeUtil : util,
+		Node:     template.New(util),
+		NodeUtil: util,
 	}
 }

@@ -1,9 +1,9 @@
 package capacity
 
 import (
+	"github.com/danalex97/Speer/events"
 	"github.com/danalex97/Speer/interfaces"
 	"github.com/danalex97/Speer/underlay"
-	"github.com/danalex97/Speer/events"
 
 	"sync"
 )

@@ -2,8 +2,8 @@ package overlay
 
 import (
 	. "github.com/danalex97/Speer/events"
-	"github.com/danalex97/Speer/underlay"
 	"github.com/danalex97/Speer/interfaces"
+	"github.com/danalex97/Speer/underlay"
 )
 
 // A LatencyConnector is a decorable interface which allows sending and
@@ -109,8 +109,8 @@ func (u *UnderlayChan) ControlSend(dst string, msg interface{}) {
 	u.simulation.SendPacket(packet)
 }
 
-func stripPayload(m interface {}) interface {} {
-  return m.(Packet).Payload()
+func stripPayload(m interface{}) interface{} {
+	return m.(Packet).Payload()
 }
 
 func (u *UnderlayChan) ControlRecv() <-chan interface{} {

@@ -59,7 +59,7 @@ func TestSendPacketToSelf(t *testing.T) {
 		done <- true
 	}()
 
-	time.Sleep(1 * time.Second)
+	time.Sleep(200 * time.Millisecond)
 	select {
 	case <-done:
 	default:
