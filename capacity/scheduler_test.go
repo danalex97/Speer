@@ -263,3 +263,17 @@ func TestUpdCapacityMultipleToOne(t *testing.T) {
     checkCapacity(t, s, links[1], 2.5)
   })
 }
+
+// Simple Node interface structure.
+type node struct {
+  down int
+  up   int
+}
+
+func (n *node) Up() int {
+  return n.up
+}
+
+func (n *node) Down() int {
+  return n.down
+}
