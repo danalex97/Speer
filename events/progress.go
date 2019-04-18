@@ -1,7 +1,7 @@
 package events
 
 import (
-  . "github.com/danalex97/Speer/interfaces"
+	. "github.com/danalex97/Speer/interfaces"
 )
 
 // We define a Progress as an interface by a progress function which should be
@@ -14,24 +14,24 @@ import (
 // properties. This allows the possibility of using concurrent functions without
 // degrading the correctness of the simulation.
 type ProgressProperty struct {
-  Progress
+	Progress
 
-  interval int
+	interval int
 }
 
 func NewProgressProperty(progress Progress, interval int) *ProgressProperty {
-  return &ProgressProperty{
-    Progress : progress,
-    interval : interval,
-  }
+	return &ProgressProperty{
+		Progress: progress,
+		interval: interval,
+	}
 }
 
 func (p *ProgressProperty) Receive(event *Event) *Event {
-  p.Advance()
+	p.Advance()
 
-  return NewEvent(
-    event.Timestamp() + p.interval,
-    nil,
-    p,
-  )
+	return NewEvent(
+		event.Timestamp()+p.interval,
+		nil,
+		p,
+	)
 }

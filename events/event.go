@@ -1,29 +1,29 @@
 package events
 
 type Event struct {
-  timestamp int
-  payload   interface {}
-  receiver  Receiver
+	timestamp int
+	payload   interface{}
+	receiver  Receiver
 }
 
-func NewEvent(timestamp int, payload interface {}, receiver Receiver) *Event {
-  e := new(Event)
+func NewEvent(timestamp int, payload interface{}, receiver Receiver) *Event {
+	e := new(Event)
 
-  e.timestamp = timestamp
-  e.payload   = payload
-  e.receiver  = receiver
+	e.timestamp = timestamp
+	e.payload = payload
+	e.receiver = receiver
 
-  return e
+	return e
 }
 
 func (e *Event) Timestamp() int {
-  return e.timestamp
+	return e.timestamp
 }
 
-func (e *Event) Payload() interface {} {
-  return e.payload
+func (e *Event) Payload() interface{} {
+	return e.payload
 }
 
 func (e *Event) Receiver() Receiver {
-  return e.receiver
+	return e.receiver
 }

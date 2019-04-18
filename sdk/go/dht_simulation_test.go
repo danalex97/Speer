@@ -1,99 +1,99 @@
 package sdk
 
 import (
-  "github.com/danalex97/Speer/interfaces"
+	"github.com/danalex97/Speer/interfaces"
 
-  "testing"
-  "math/rand"
-  "sync"
-  "time"
-  "fmt"
-  "runtime"
+	"fmt"
+	"math/rand"
+	"runtime"
+	"sync"
+	"testing"
+	"time"
 )
 
-var joins   int = 0
+var joins int = 0
 var queries int = 0
 
 type mockNode struct {
-  sync.Mutex
+	sync.Mutex
 
-  id           string
-  neighId      string
+	id      string
+	neighId string
 }
 
 func (s *mockNode) OnJoin() {
-  s.Lock()
-  defer s.Unlock()
+	s.Lock()
+	defer s.Unlock()
 
-  joins += 1
-  runtime.Gosched()
+	joins += 1
+	runtime.Gosched()
 }
 
 func (s *mockNode) OnQuery(query interfaces.Query) error {
-  s.Lock()
-  defer s.Unlock()
+	s.Lock()
+	defer s.Unlock()
 
-  queries += 1
-  return nil
+	queries += 1
+	return nil
 }
 
 func (s *mockNode) OnLeave() {
 }
 
 func (s *mockNode) New(util interfaces.DHTNodeUtil) interfaces.DHTNode {
-  // Constructor that assumes the UnreliableNode component is filled in
-  node := new(mockNode)
+	// Constructor that assumes the UnreliableNode component is filled in
+	node := new(mockNode)
 
-  node.id       = util.UnreliableNode().Id()
-  node.neighId  = util.UnreliableNode().Join()
+	node.id = util.UnreliableNode().Id()
+	node.neighId = util.UnreliableNode().Join()
 
-  return node
+	return node
 }
 
 func (s *mockNode) Key() string {
-  return ""
+	return ""
 }
 
 func TestGoSDKQueriesGetGenerated(t *testing.T) {
-  // WARN: The query rates offer no guarantees due to packet exanges
-  // WARN: System doesn't progress on size limit obtained.
-  rand.Seed(time.Now().UTC().UnixNano())
+	// WARN: The query rates offer no guarantees due to packet exanges
+	// WARN: System doesn't progress on size limit obtained.
+	rand.Seed(time.Now().UTC().UnixNano())
 
-  arrRate := 40.0
-  // WARN: Small query rates yield big variance, considering virtual time
-  // in terms of millisconds would help
-  queryRate := 10.0
+	arrRate := 40.0
+	// WARN: Small query rates yield big variance, considering virtual time
+	// in terms of millisconds would help
+	queryRate := 10.0
 
-  nodeTemplate := new(mockNode)
-  s := NewDHTSimulationBuilder(nodeTemplate).
-    WithPoissonProcessModel(arrRate, queryRate).
-    WithRandomUniformUnderlay(1000, 70000, 2, 10).
-    WithDefaultQueryGenerator().
-    Build()
+	nodeTemplate := new(mockNode)
+	s := NewDHTSimulationBuilder(nodeTemplate).
+		WithPoissonProcessModel(arrRate, queryRate).
+		WithRandomUniformUnderlay(1000, 70000, 2, 10).
+		WithDefaultQueryGenerator().
+		Build()
 
-  go s.Run()
+	go s.Run()
 
-  time.Sleep(time.Millisecond * 1500)
-  s.Stop()
+	time.Sleep(time.Millisecond * 1500)
+	s.Stop()
 
-  virtualTime := s.Time()
+	virtualTime := s.Time()
 
-  fmt.Println("Go SDK test: (joins: %s, queries: %s, virtualTime: %s",
-    joins, queries, virtualTime)
-  if float64(joins) < 0.9 * float64(virtualTime) / arrRate {
-    t.Fatalf("Unexpectedly small number of joins: %s; expected at %s",
-      joins, 0.9 * float64(virtualTime) * arrRate)
-  }
-  if float64(queries) < 0.9 * float64(virtualTime) / queryRate {
-    t.Fatalf("Unexpectedly small number of queries: %s; expected at %s",
-      queries,  0.9 * float64(virtualTime) * queryRate)
-  }
-  if float64(joins) > 1.1 * float64(virtualTime) / arrRate {
-    t.Fatalf("Unexpectedly big number of joins: %s; expected at %s",
-      joins, 1.1 * float64(virtualTime) * arrRate)
-  }
-  if float64(queries) > 1.1 * float64(virtualTime) / queryRate {
-    t.Fatalf("Unexpectedly big number of queries: %s; expected at %s",
-      queries,  1.1 * float64(virtualTime) * queryRate)
-  }
+	fmt.Println("Go SDK test: (joins: %s, queries: %s, virtualTime: %s",
+		joins, queries, virtualTime)
+	if float64(joins) < 0.9*float64(virtualTime)/arrRate {
+		t.Fatalf("Unexpectedly small number of joins: %s; expected at %s",
+			joins, 0.9*float64(virtualTime)*arrRate)
+	}
+	if float64(queries) < 0.9*float64(virtualTime)/queryRate {
+		t.Fatalf("Unexpectedly small number of queries: %s; expected at %s",
+			queries, 0.9*float64(virtualTime)*queryRate)
+	}
+	if float64(joins) > 1.1*float64(virtualTime)/arrRate {
+		t.Fatalf("Unexpectedly big number of joins: %s; expected at %s",
+			joins, 1.1*float64(virtualTime)*arrRate)
+	}
+	if float64(queries) > 1.1*float64(virtualTime)/queryRate {
+		t.Fatalf("Unexpectedly big number of queries: %s; expected at %s",
+			queries, 1.1*float64(virtualTime)*queryRate)
+	}
 }

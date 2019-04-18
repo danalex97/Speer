@@ -8,69 +8,69 @@ package sdk
 // )
 
 type TorrentSimulation struct {
-  *DHTSimulation
+	*DHTSimulation
 
-  // scheduler  Scheduler
-  toRegister []*registerEntry
+	// scheduler  Scheduler
+	toRegister []*registerEntry
 
-  latency    bool
+	latency bool
 }
 
 type TorrentSimulationBuilder struct {
-  sim *TorrentSimulation
+	sim *TorrentSimulation
 }
 
 type registerEntry struct {
-  nodes int
-  up    int
-  down  int
+	nodes int
+	up    int
+	down  int
 }
 
 func NewTorrentSimulation(s *DHTSimulation) *TorrentSimulation {
-  return &TorrentSimulation{
-    DHTSimulation : s,
-    // scheduler     :  nil,
-    toRegister    : []*registerEntry{},
-    latency       : false,
-  }
+	return &TorrentSimulation{
+		DHTSimulation: s,
+		// scheduler     :  nil,
+		toRegister: []*registerEntry{},
+		latency:    false,
+	}
 }
 
 func NewTorrentSimulationBuilder(b *DHTSimulationBuilder) *TorrentSimulationBuilder {
-  builder := new(TorrentSimulationBuilder)
+	builder := new(TorrentSimulationBuilder)
 
-  builder.sim = NewTorrentSimulation(b.Build())
-  builder.sim.constructor = NewAutowiredTorrentNode
-  builder.sim.simulation  = builder.sim
+	builder.sim = NewTorrentSimulation(b.Build())
+	builder.sim.constructor = NewAutowiredTorrentNode
+	builder.sim.simulation = builder.sim
 
-  return builder
+	return builder
 }
 
 func (b *TorrentSimulationBuilder) WithLatency() *TorrentSimulationBuilder {
-  b.sim.latency = true
-  return b
+	b.sim.latency = true
+	return b
 }
 
 func (b *TorrentSimulationBuilder) WithTransferInterval(interval int) *TorrentSimulationBuilder {
-  // b.sim.scheduler = NewScheduler(interval)
+	// b.sim.scheduler = NewScheduler(interval)
 
-  // Schedule the first interval
-  // b.sim.underlaySimulation.Push(events.NewEvent(0, nil, b.sim.scheduler))
+	// Schedule the first interval
+	// b.sim.underlaySimulation.Push(events.NewEvent(0, nil, b.sim.scheduler))
 
-  return b
+	return b
 }
 
 func (b *TorrentSimulationBuilder) WithCapacityNodes(nodes int, upload int, download int) *TorrentSimulationBuilder {
-  // b.sim.toRegister = append(b.sim.toRegister, &registerEntry{
-  //   nodes : nodes,
-  //   up    : upload,
-  //   down  : download,
-  // })
+	// b.sim.toRegister = append(b.sim.toRegister, &registerEntry{
+	//   nodes : nodes,
+	//   up    : upload,
+	//   down  : download,
+	// })
 
-  return b
+	return b
 }
 
 func (b *TorrentSimulationBuilder) Build() *TorrentSimulation {
-  return b.sim
+	return b.sim
 }
 
 // updateEngine is called when the TorrentNode is initialized.

@@ -1,256 +1,257 @@
 package sdk
 
 import (
-  "github.com/danalex97/Speer/interfaces"
-  "github.com/danalex97/Speer/events"
-  "github.com/danalex97/Speer/underlay"
-  "github.com/danalex97/Speer/overlay"
-  "github.com/danalex97/Speer/model"
-  "github.com/danalex97/Speer/logs"
+	"github.com/danalex97/Speer/events"
+	"github.com/danalex97/Speer/interfaces"
+	"github.com/danalex97/Speer/logs"
+	"github.com/danalex97/Speer/model"
+	"github.com/danalex97/Speer/overlay"
+	"github.com/danalex97/Speer/underlay"
 
-  "time"
-  "fmt"
+	"fmt"
+	"time"
 )
 
 type DHTSimulation struct {
-  underlaySimulation *underlay.NetworkSimulation
-  timeModel          model.TimeModel
-  queryGenerator     model.DHTQueryGenerator
-  template           interface {}
-  simulation         interface {}
-  constructor        func(interfaces.UnreliableNode, interface {}) DHTNode
+	underlaySimulation *underlay.NetworkSimulation
+	timeModel          model.TimeModel
+	queryGenerator     model.DHTQueryGenerator
+	template           interface{}
+	simulation         interface{}
+	constructor        func(interfaces.UnreliableNode, interface{}) DHTNode
 
-  el                 *eventLooper
-  ql                 *queryLooper
-  nodeMap            map[string]DHTNode
-  nodeLimit          int
-  nodes              int
+	el        *eventLooper
+	ql        *queryLooper
+	nodeMap   map[string]DHTNode
+	nodeLimit int
+	nodes     int
 
-  progressProperties []events.Receiver
+	progressProperties []events.Receiver
 }
 
 type DHTSimulationBuilder struct {
-  sim *DHTSimulation
+	sim *DHTSimulation
 }
 
 const maxNodeLimit int = 10000000
 
-func NewDHTSimulationBuilder(template interface {}) *DHTSimulationBuilder {
-  builder := new(DHTSimulationBuilder)
-  builder.sim = new(DHTSimulation)
-  builder.sim.template = template
+func NewDHTSimulationBuilder(template interface{}) *DHTSimulationBuilder {
+	builder := new(DHTSimulationBuilder)
+	builder.sim = new(DHTSimulation)
+	builder.sim.template = template
 
-  builder.sim.el   = new(eventLooper)
-  builder.sim.ql   = new(queryLooper)
-  builder.sim.nodeMap = make(map[string]DHTNode)
+	builder.sim.el = new(eventLooper)
+	builder.sim.ql = new(queryLooper)
+	builder.sim.nodeMap = make(map[string]DHTNode)
 
-  builder.sim.constructor = NewAutowiredDHTNode
-  builder.sim.simulation  = builder.sim
+	builder.sim.constructor = NewAutowiredDHTNode
+	builder.sim.simulation = builder.sim
 
-  builder.sim.progressProperties = []events.Receiver{}
+	builder.sim.progressProperties = []events.Receiver{}
 
-  return builder
+	return builder
 }
 
 func (b *DHTSimulationBuilder) WithParallelSimulation() *DHTSimulationBuilder {
-  if b.sim.underlaySimulation == nil {
-    panic("Underlay simulation component has to be appended first.")
-  }
+	if b.sim.underlaySimulation == nil {
+		panic("Underlay simulation component has to be appended first.")
+	}
 
-  b.sim.underlaySimulation.SetParallel(true)
-  return b
+	b.sim.underlaySimulation.SetParallel(true)
+	return b
 }
 
 func (b *DHTSimulationBuilder) WithLogs(logsFile string) *DHTSimulationBuilder {
-  globalObserver := events.NewGlobalEventObserver()
-  b.sim.underlaySimulation.RegisterObserver(globalObserver)
+	globalObserver := events.NewGlobalEventObserver()
+	b.sim.underlaySimulation.RegisterObserver(globalObserver)
 
-  netMap := overlay.GetBootstrap(b.sim.underlaySimulation).(*overlay.NetworkMap)
-  logger := logs.NewEventMonitor(globalObserver, netMap, logsFile)
+	netMap := overlay.GetBootstrap(b.sim.underlaySimulation).(*overlay.NetworkMap)
+	logger := logs.NewEventMonitor(globalObserver, netMap, logsFile)
 
-  go logger.GatherEvents()
+	go logger.GatherEvents()
 
-  return b
+	return b
 }
 
 func (b *DHTSimulationBuilder) WithPoissonProcessModel(
-    arrivalRate float64,
-    queryRate float64) *DHTSimulationBuilder {
-  b.sim.timeModel = model.NewPoissonProcessModel(arrivalRate, queryRate)
-  return b
+	arrivalRate float64,
+	queryRate float64) *DHTSimulationBuilder {
+	b.sim.timeModel = model.NewPoissonProcessModel(arrivalRate, queryRate)
+	return b
 }
 
-func (b *DHTSimulationBuilder) WithDefaultQueryGenerator(
-    ) *DHTSimulationBuilder {
-  if b.sim.underlaySimulation == nil {
-    panic("Underlay simulation component has to be appended first.")
-  }
+func (b *DHTSimulationBuilder) WithDefaultQueryGenerator() *DHTSimulationBuilder {
+	if b.sim.underlaySimulation == nil {
+		panic("Underlay simulation component has to be appended first.")
+	}
 
-  bootstrap := overlay.GetBootstrap(b.sim.underlaySimulation)
-  b.sim.queryGenerator = model.NewDHTLedger(bootstrap)
+	bootstrap := overlay.GetBootstrap(b.sim.underlaySimulation)
+	b.sim.queryGenerator = model.NewDHTLedger(bootstrap)
 
-  b.sim.nodeLimit = maxNodeLimit
-  b.sim.nodes = 0
+	b.sim.nodeLimit = maxNodeLimit
+	b.sim.nodes = 0
 
-  return b
+	return b
 }
 
 func (b *DHTSimulationBuilder) WithLimitedNodes(
-  nodeLimit int) *DHTSimulationBuilder {
-  if b.sim.queryGenerator == nil {
-    panic("Query generator component has to be appended first.")
-  }
+	nodeLimit int) *DHTSimulationBuilder {
+	if b.sim.queryGenerator == nil {
+		panic("Query generator component has to be appended first.")
+	}
 
-  b.sim.nodeLimit = nodeLimit
+	b.sim.nodeLimit = nodeLimit
 
-  return b
+	return b
 }
 
 func (b *DHTSimulationBuilder) WithRandomUniformUnderlay(
-    nodes int,
-    edges int,
-    minLatency int,
-    maxLatency int) *DHTSimulationBuilder {
-  network := underlay.NewRandomUniformNetwork(nodes, edges, minLatency, maxLatency)
-  s := underlay.NewNetworkSimulation(events.NewLazySimulation(), network)
+	nodes int,
+	edges int,
+	minLatency int,
+	maxLatency int) *DHTSimulationBuilder {
+	network := underlay.NewRandomUniformNetwork(nodes, edges, minLatency, maxLatency)
+	s := underlay.NewNetworkSimulation(events.NewLazySimulation(), network)
 
-  b.sim.underlaySimulation = s
+	b.sim.underlaySimulation = s
 
-  return b;
+	return b
 }
 
 func (b *DHTSimulationBuilder) WithProgress(
-    progress interfaces.Progress, interval int) *DHTSimulationBuilder {
-  property := events.NewProgressProperty(progress, interval)
-  b.sim.progressProperties = append(b.sim.progressProperties, property)
+	progress interfaces.Progress, interval int) *DHTSimulationBuilder {
+	property := events.NewProgressProperty(progress, interval)
+	b.sim.progressProperties = append(b.sim.progressProperties, property)
 
-  return b
+	return b
 }
 
 func (b *DHTSimulationBuilder) WithInternetworkUnderlay(
-    transitDomains int,
-    transitDomainSize int,
-    stubDomains int,
-    stubDomainSize int) *DHTSimulationBuilder {
-  network := underlay.NewInternetwork(transitDomains, transitDomainSize, stubDomains, stubDomainSize)
-  s := underlay.NewNetworkSimulation(events.NewLazySimulation(), network)
+	transitDomains int,
+	transitDomainSize int,
+	stubDomains int,
+	stubDomainSize int) *DHTSimulationBuilder {
+	network := underlay.NewInternetwork(transitDomains, transitDomainSize, stubDomains, stubDomainSize)
+	s := underlay.NewNetworkSimulation(events.NewLazySimulation(), network)
 
-  fmt.Printf("Internetwork built with %d nodes.\n", len(network.Routers))
-  b.sim.underlaySimulation = s
+	fmt.Printf("Internetwork built with %d nodes.\n", len(network.Routers))
+	b.sim.underlaySimulation = s
 
-  return b;
+	return b
 }
 
 func (b *DHTSimulationBuilder) Build() *DHTSimulation {
-  if b.sim.underlaySimulation == nil {
-    panic("Underlay simulation component has to be appended to build")
-  }
-  if b.sim.timeModel == nil {
-    panic("Time model component has to be appended to build")
-  }
-  if b.sim.queryGenerator == nil {
-    panic("Query generator component has to be appended to build")
-  }
-  if b.sim.template == nil {
-    panic("Template component has to be appended to build")
-  }
+	if b.sim.underlaySimulation == nil {
+		panic("Underlay simulation component has to be appended to build")
+	}
+	if b.sim.timeModel == nil {
+		panic("Time model component has to be appended to build")
+	}
+	if b.sim.queryGenerator == nil {
+		panic("Query generator component has to be appended to build")
+	}
+	if b.sim.template == nil {
+		panic("Template component has to be appended to build")
+	}
 
-  sim := b.sim;
-  b.sim = nil;
+	sim := b.sim
+	b.sim = nil
 
-  return sim;
+	return sim
 }
 
-type eventLooper struct {}
+type eventLooper struct{}
+
 func (gen *eventLooper) Receive(e *events.Event) *events.Event {
-  e.Payload().(*DHTSimulation).generateEvents()
-  return nil
+	e.Payload().(*DHTSimulation).generateEvents()
+	return nil
 }
 
-type queryLooper struct {}
+type queryLooper struct{}
+
 func (gen *queryLooper) Receive(e *events.Event) *events.Event {
-  e.Payload().(*DHTSimulation).generateQueries()
-  return nil
+	e.Payload().(*DHTSimulation).generateQueries()
+	return nil
 }
 
 func (s *DHTSimulation) generateEvents() {
-  // this should be modified when we model leaves
-  if s.nodes > s.nodeLimit {
-    // this stops the event generation loop
-    fmt.Println("Node generation was stopped.")
-    return
-  }
+	// this should be modified when we model leaves
+	if s.nodes > s.nodeLimit {
+		// this stops the event generation loop
+		fmt.Println("Node generation was stopped.")
+		return
+	}
 
-  // for the moment we will only model joins
-  overlayNode := overlay.NewUnreliableSimulatedNode(s.underlaySimulation)
-  newNode := s.constructor(overlayNode, s.simulation)
+	// for the moment we will only model joins
+	overlayNode := overlay.NewUnreliableSimulatedNode(s.underlaySimulation)
+	newNode := s.constructor(overlayNode, s.simulation)
 
-  // id selection should probabily be moved to SDK (?)
-  // now the overlay sits somewhere between the transport and netowrk layer
-  id      := newNode.UnreliableNode().Id()
-  s.nodeMap[id] = newNode
-  newNode.OnJoin()
+	// id selection should probabily be moved to SDK (?)
+	// now the overlay sits somewhere between the transport and netowrk layer
+	id := newNode.UnreliableNode().Id()
+	s.nodeMap[id] = newNode
+	newNode.OnJoin()
 
-  // update node count
-  s.nodes += 1
+	// update node count
+	s.nodes += 1
 
-  // generate the next event to be handled
-  time := s.underlaySimulation.Time() + int(s.timeModel.NextArrival())
-  event := events.NewEvent(time, s, s.el)
+	// generate the next event to be handled
+	time := s.underlaySimulation.Time() + int(s.timeModel.NextArrival())
+	event := events.NewEvent(time, s, s.el)
 
-  // the log event is used only by the metrics module
-  logEvent := events.NewEvent(time, *model.NewJoin(id), nil)
+	// the log event is used only by the metrics module
+	logEvent := events.NewEvent(time, *model.NewJoin(id), nil)
 
-  s.underlaySimulation.Push(event)
-  s.underlaySimulation.Push(logEvent)
+	s.underlaySimulation.Push(event)
+	s.underlaySimulation.Push(logEvent)
 }
 
 func (s *DHTSimulation) generateQueries() {
-  // generate queries
-  query := s.queryGenerator.Next()
-  // deliver queries to nodes as well
+	// generate queries
+	query := s.queryGenerator.Next()
+	// deliver queries to nodes as well
 
-  // the template node is not in the map, so we need to avoid it if possible
-  // TODO: need to fix this bug, as the bootstrap may break!
-  if node, ok := s.nodeMap[query.Node()]; ok {
-    go node.OnQuery(query)
-  }
+	// the template node is not in the map, so we need to avoid it if possible
+	// TODO: need to fix this bug, as the bootstrap may break!
+	if node, ok := s.nodeMap[query.Node()]; ok {
+		go node.OnQuery(query)
+	}
 
-  // generate the next event to be handled
-  time := s.underlaySimulation.Time() + int(s.timeModel.NextQuery())
-  event := events.NewEvent(time, s, s.ql)
+	// generate the next event to be handled
+	time := s.underlaySimulation.Time() + int(s.timeModel.NextQuery())
+	event := events.NewEvent(time, s, s.ql)
 
-  // the log event is used only by the metrics module
-  logEvent := events.NewEvent(time, query, nil)
+	// the log event is used only by the metrics module
+	logEvent := events.NewEvent(time, query, nil)
 
-  s.underlaySimulation.Push(event)
-  s.underlaySimulation.Push(logEvent)
+	s.underlaySimulation.Push(event)
+	s.underlaySimulation.Push(logEvent)
 }
 
 func (s *DHTSimulation) Time() int {
-  return s.underlaySimulation.Time()
+	return s.underlaySimulation.Time()
 }
 
 func (s *DHTSimulation) Run() {
-  time.Sleep(time.Second * 1)
+	time.Sleep(time.Second * 1)
 
-  s.generateEvents()
-  s.generateQueries()
+	s.generateEvents()
+	s.generateQueries()
 
-  // Run progress properties
-  for _, progress := range s.progressProperties {
-    event := events.NewEvent(0, nil, progress)
-    s.underlaySimulation.Push(event)
-  }
+	// Run progress properties
+	for _, progress := range s.progressProperties {
+		event := events.NewEvent(0, nil, progress)
+		s.underlaySimulation.Push(event)
+	}
 
-  go s.underlaySimulation.Run()
+	go s.underlaySimulation.Run()
 }
 
 func (s *DHTSimulation) Stop() {
-  s.underlaySimulation.Stop()
+	s.underlaySimulation.Stop()
 }
 
 // Entry point for torrent simulation
 func (t *DHTSimulationBuilder) WithCapacities() *TorrentSimulationBuilder {
-  return NewTorrentSimulationBuilder(t)
+	return NewTorrentSimulationBuilder(t)
 }

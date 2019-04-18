@@ -1,26 +1,26 @@
 package overlay
 
 import (
-  "github.com/danalex97/Speer/underlay"
-  "github.com/danalex97/Speer/interfaces"
-  "github.com/danalex97/Speer/events"
+	"github.com/danalex97/Speer/events"
+	"github.com/danalex97/Speer/interfaces"
+	"github.com/danalex97/Speer/underlay"
 )
 
 type UnreliableNode interface {
-  events.Decorable
+	events.Decorable
 
-  interfaces.UnreliableNode
+	interfaces.UnreliableNode
 }
 
 // An UnreliableSimulatedNode uses a Bridge along with a Bootstrap to allow
 // interaction with the simulator by providing an utility to the user.
 type UnreliableSimulatedNode struct {
-  events.Decorable
+	events.Decorable
 
-  simulation *underlay.NetworkSimulation
-  bridge     Bridge
-  bootstrap  Bootstrap
-  id         string
+	simulation *underlay.NetworkSimulation
+	bridge     Bridge
+	bootstrap  Bootstrap
+	id         string
 }
 
 var activeSet = make(map[*underlay.NetworkSimulation]OverlayMap)
@@ -29,55 +29,55 @@ var activeSet = make(map[*underlay.NetworkSimulation]OverlayMap)
 // need to refer to the same bootstrap, so we use a global map to associate
 // a NetworkSimulation with a Bootstrap.
 func GetBootstrap(simulation *underlay.NetworkSimulation) Bootstrap {
-  netMap := NewNetworkMap(simulation.Network())
-  if mp, ok := activeSet[simulation]; ok {
-    netMap = mp
-  } else {
-    activeSet[simulation] = netMap
-  }
+	netMap := NewNetworkMap(simulation.Network())
+	if mp, ok := activeSet[simulation]; ok {
+		netMap = mp
+	} else {
+		activeSet[simulation] = netMap
+	}
 
-  return netMap
+	return netMap
 }
 
 func NewUnreliableSimulatedNode(simulation *underlay.NetworkSimulation) UnreliableNode {
-  node := new(UnreliableSimulatedNode)
+	node := new(UnreliableSimulatedNode)
 
-  var netMap OverlayMap
-  if mp, ok := activeSet[simulation]; ok {
-    netMap = mp
-  } else {
-    netMap = NewNetworkMap(simulation.Network())
-    activeSet[simulation] = netMap
-  }
+	var netMap OverlayMap
+	if mp, ok := activeSet[simulation]; ok {
+		netMap = mp
+	} else {
+		netMap = NewNetworkMap(simulation.Network())
+		activeSet[simulation] = netMap
+	}
 
-  node.id         = netMap.NewId()
-  node.bridge     = NewUnderlayChan(node.id, simulation, netMap)
-  node.bootstrap  = netMap
-  node.simulation = simulation
+	node.id = netMap.NewId()
+	node.bridge = NewUnderlayChan(node.id, simulation, netMap)
+	node.bootstrap = netMap
+	node.simulation = simulation
 
-  // The actual decorable is at bridge level.
-  // To allow direct interfacing, we create a tunnnel.
-  node.Decorable = events.NewTunnel(node.bridge)
+	// The actual decorable is at bridge level.
+	// To allow direct interfacing, we create a tunnnel.
+	node.Decorable = events.NewTunnel(node.bridge)
 
-  return node
+	return node
 }
 
 func (n *UnreliableSimulatedNode) Id() string {
-  return n.id
+	return n.id
 }
 
-func (n *UnreliableSimulatedNode) Send(msg interface {}) {
-  n.bridge.Send(msg)
+func (n *UnreliableSimulatedNode) Send(msg interface{}) {
+	n.bridge.Send(msg)
 }
 
 func (n *UnreliableSimulatedNode) Recv() <-chan interface{} {
-  return n.bridge.Recv()
+	return n.bridge.Recv()
 }
 
 func (n *UnreliableSimulatedNode) Join() string {
-  return n.bootstrap.Join(n.id)
+	return n.bootstrap.Join(n.id)
 }
 
 func (n *UnreliableSimulatedNode) Simulation() *underlay.NetworkSimulation {
-  return n.simulation
+	return n.simulation
 }

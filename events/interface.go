@@ -1,9 +1,9 @@
 package events
 
 type Receiver interface {
-  Receive(*Event) *Event
+	Receive(*Event) *Event
 }
 
 type Producer interface {
-  Produce() *Event
+	Produce() *Event
 }

@@ -1,23 +1,23 @@
 package underlay
 
 import (
-  "math"
-  "math/rand"
-  "strconv"
+	"math"
+	"math/rand"
+	"strconv"
 )
 
 type Network struct {
-  Routers []Router
-  stubRouters []Router
-  subdomains int
+	Routers     []Router
+	stubRouters []Router
+	subdomains  int
 }
 
 func (n *Network) RandomRouter() Router {
-  if n.stubRouters == nil {
-    return n.Routers[rand.Intn(len(n.Routers))]
-  } else {
-    return n.stubRouters[rand.Intn(len(n.stubRouters))]
-  }
+	if n.stubRouters == nil {
+		return n.Routers[rand.Intn(len(n.Routers))]
+	} else {
+		return n.stubRouters[rand.Intn(len(n.stubRouters))]
+	}
 }
 
 // Constants used in the stub-generation algorithm:
@@ -41,21 +41,21 @@ func (n *Network) RandomRouter() Router {
 //
 //  The constant values are currently arbirary, but they can be chosen to respect
 //  the invariants in the paper.
-const Wtt  int = 100
+const Wtt int = 100
 const Wttd int = 2
 
-const Ntd     int = 2
-const minNt   int = 5
+const Ntd int = 2
+const minNt int = 5
 const edgeNtf int = 2
 
 const minLatency int = 2
 const maxLatency int = 10
 
-const Wts  int = 100
+const Wts int = 100
 const Wtsd int = 2
 
-const Nsd     int = 2
-const minNs   int = 5
+const Nsd int = 2
+const minNs int = 5
 const edgeNsf int = 2
 
 const mhsp int = 50
@@ -77,286 +77,286 @@ const mhsp int = 50
 //  3. Add stubs
 //  4. Generate multi-homed stubs
 func NewInternetwork(T, Nt, S, Ns int) *Network {
-  tdg := generateTransitDomainGraph(T, Wtt, Wttd)
-  backbone := generateTransitDomains(tdg, Nt)
-  network := addStubs(backbone, S, Ns)
-  return addMhs(network, S)
+	tdg := generateTransitDomainGraph(T, Wtt, Wttd)
+	backbone := generateTransitDomains(tdg, Nt)
+	network := addStubs(backbone, S, Ns)
+	return addMhs(network, S)
 }
 
 // 1. Generate transit domain graph
 func generateTransitDomainGraph(T, Wtt, Wttd int) *Network {
-  degree := int(math.Log2(float64(T))) + 1
-  edges  := degree * T
+	degree := int(math.Log2(float64(T))) + 1
+	edges := degree * T
 
-  mn := Wtt - Wttd
-  mx := Wtt + Wttd
+	mn := Wtt - Wttd
+	mx := Wtt + Wttd
 
-  if mn < 0 {
-    mn = 0
-  }
+	if mn < 0 {
+		mn = 0
+	}
 
-  return NewRandomUniformNetwork(T, edges, mn, mx)
+	return NewRandomUniformNetwork(T, edges, mn, mx)
 }
 
 // 2. Generate graph from transit domain
 func generateTransitDomains(tdg *Network, Nt int) *Network {
-  // Generate the map from node in transit domain graph to
-  // graph corresponding to each transit domain
-  tdMap := make(map[Router]*Network)
+	// Generate the map from node in transit domain graph to
+	// graph corresponding to each transit domain
+	tdMap := make(map[Router]*Network)
 
-  for _, r := range tdg.Routers {
-    tdMap[r] = newRandomNetwork(Nt, minNt, Ntd, edgeNtf, minLatency, maxLatency)
-  }
+	for _, r := range tdg.Routers {
+		tdMap[r] = newRandomNetwork(Nt, minNt, Ntd, edgeNtf, minLatency, maxLatency)
+	}
 
-  // Generate the new (combined) graph from the two subdomains
-  network := new(Network)
-  newRouter := make(map[Router]Router)
+	// Generate the new (combined) graph from the two subdomains
+	network := new(Network)
+	newRouter := make(map[Router]Router)
 
-  network.subdomains = 0
-  for _, nodeNet := range tdMap {
-    network.subdomains++
-    copyNetwork(newRouter, network, nodeNet)
-  }
+	network.subdomains = 0
+	for _, nodeNet := range tdMap {
+		network.subdomains++
+		copyNetwork(newRouter, network, nodeNet)
+	}
 
-  // Add the inter-transit edges
-  present := make(map[struct {x, y Router}]bool)
-  for _, node := range tdg.Routers {
-    for _, conn := range node.Connections() {
-      n1 := tdMap[node].RandomRouter()
-      n2 := tdMap[conn.Router()].RandomRouter()
-      l  := conn.Latency()
+	// Add the inter-transit edges
+	present := make(map[struct{ x, y Router }]bool)
+	for _, node := range tdg.Routers {
+		for _, conn := range node.Connections() {
+			n1 := tdMap[node].RandomRouter()
+			n2 := tdMap[conn.Router()].RandomRouter()
+			l := conn.Latency()
 
-      // We need this as we want to add bidirectional edges
-      if !present[struct {x, y Router}{n1, n2}] {
-        newRouter[n1].Connect(NewStaticConnection(l, newRouter[n2]))
-        newRouter[n2].Connect(NewStaticConnection(l, newRouter[n1]))
-      }
+			// We need this as we want to add bidirectional edges
+			if !present[struct{ x, y Router }{n1, n2}] {
+				newRouter[n1].Connect(NewStaticConnection(l, newRouter[n2]))
+				newRouter[n2].Connect(NewStaticConnection(l, newRouter[n1]))
+			}
 
-      present[struct {x, y Router}{n1, n2}] = true
-      present[struct {x, y Router}{n2, n1}] = true
-    }
-  }
+			present[struct{ x, y Router }{n1, n2}] = true
+			present[struct{ x, y Router }{n2, n1}] = true
+		}
+	}
 
-  return network
+	return network
 }
 
 // 3. Add stubs
 func addStubs(backbone *Network, S, Ns int) *Network {
-  // copy backbone
-  network := cloneNetwork(backbone)
+	// copy backbone
+	network := cloneNetwork(backbone)
 
-  newRouter := make(map[Router]Router)
-  for i := 0; i < S; i++ {
-    // generate stub
-    stub := newRandomNetwork(Ns, minNs, Nsd, edgeNsf, minLatency, maxLatency)
+	newRouter := make(map[Router]Router)
+	for i := 0; i < S; i++ {
+		// generate stub
+		stub := newRandomNetwork(Ns, minNs, Nsd, edgeNsf, minLatency, maxLatency)
 
-    // copy stub on network
-    network.subdomains++
-    copyNetwork(newRouter, network, stub)
+		// copy stub on network
+		network.subdomains++
+		copyNetwork(newRouter, network, stub)
 
-    // attach stub to network
-    attachBack := backbone.RandomRouter()
-    attachStub := newRouter[stub.RandomRouter()]
+		// attach stub to network
+		attachBack := backbone.RandomRouter()
+		attachStub := newRouter[stub.RandomRouter()]
 
-    addTsEdge(attachBack, attachStub)
-  }
+		addTsEdge(attachBack, attachStub)
+	}
 
-  // make list of stub nodes
-  stubRouters := []Router{}
-  for _, router := range newRouter {
-    stubRouters = append(stubRouters, router)
-  }
-  network.stubRouters = stubRouters
+	// make list of stub nodes
+	stubRouters := []Router{}
+	for _, router := range newRouter {
+		stubRouters = append(stubRouters, router)
+	}
+	network.stubRouters = stubRouters
 
-  return network
+	return network
 }
 
 // 4. Add multi-homed stubs
 func addMhs(network *Network, stubs int) *Network {
-  mhs := mhsp * stubs / 100
-  stubNodes := network.stubRouters
+	mhs := mhsp * stubs / 100
+	stubNodes := network.stubRouters
 
-  stubSet := make(map[Router]bool)
-  for _, node := range stubNodes {
-    stubSet[node] = true
-  }
-  backNodes := []Router{}
-  for _, node := range network.Routers {
-    if _, ok := stubSet[node]; !ok {
-      backNodes = append(backNodes, node)
-    }
-  }
+	stubSet := make(map[Router]bool)
+	for _, node := range stubNodes {
+		stubSet[node] = true
+	}
+	backNodes := []Router{}
+	for _, node := range network.Routers {
+		if _, ok := stubSet[node]; !ok {
+			backNodes = append(backNodes, node)
+		}
+	}
 
-  // Add mhs random edges from a stub node to a backbone node
-  for i := 0; i < mhs; i++ {
-    stubNode := stubNodes[rand.Intn(len(stubNodes))]
-    backNode := backNodes[rand.Intn(len(backNodes))]
+	// Add mhs random edges from a stub node to a backbone node
+	for i := 0; i < mhs; i++ {
+		stubNode := stubNodes[rand.Intn(len(stubNodes))]
+		backNode := backNodes[rand.Intn(len(backNodes))]
 
-    addTsEdge(backNode, stubNode)
-  }
+		addTsEdge(backNode, stubNode)
+	}
 
-  return network
+	return network
 }
 
 /* Helper functions */
 func newRandomNetwork(nodes, minNodes, nodesDelta, edgeFactor, minLatency, maxLatency int) *Network {
-  nodes = nodes - nodesDelta + rand.Intn(2 * nodesDelta + 1)
-  if nodes < minNodes {
-    nodes = minNodes
-  }
+	nodes = nodes - nodesDelta + rand.Intn(2*nodesDelta+1)
+	if nodes < minNodes {
+		nodes = minNodes
+	}
 
-  degree := int(math.Log2(float64(nodes))) + 1
-  degree  = degree + rand.Intn(degree * (edgeFactor - 1))
-  edges  := degree * nodes
+	degree := int(math.Log2(float64(nodes))) + 1
+	degree = degree + rand.Intn(degree*(edgeFactor-1))
+	edges := degree * nodes
 
-  return NewRandomUniformNetwork(nodes, edges, minLatency, maxLatency)
+	return NewRandomUniformNetwork(nodes, edges, minLatency, maxLatency)
 }
 
 // Adds toCopy connex component to network and updates the mapping newRouter
 func copyNetwork(newRouter map[Router]Router, network *Network, toCopy *Network) {
-  // make map from the node networks to the new combined network
-  for _, node := range toCopy.Routers {
-    newRouter[node] = NewShortestPathRouter(strconv.Itoa(network.subdomains - 1))
-    network.Routers = append(network.Routers, newRouter[node])
-  }
+	// make map from the node networks to the new combined network
+	for _, node := range toCopy.Routers {
+		newRouter[node] = NewShortestPathRouter(strconv.Itoa(network.subdomains - 1))
+		network.Routers = append(network.Routers, newRouter[node])
+	}
 
-  // add the edges
-  for _, node := range toCopy.Routers {
-    for _, conn := range node.Connections() {
-      n1 := newRouter[node]
-      n2 := newRouter[conn.Router()]
-      l  := conn.Latency()
+	// add the edges
+	for _, node := range toCopy.Routers {
+		for _, conn := range node.Connections() {
+			n1 := newRouter[node]
+			n2 := newRouter[conn.Router()]
+			l := conn.Latency()
 
-      n1.Connect(NewStaticConnection(l, n2))
-    }
-  }
+			n1.Connect(NewStaticConnection(l, n2))
+		}
+	}
 }
 
 func addTsEdge(attachBack, attachStub Router) {
-  minLatency := Wts - Wtsd
-  maxLatency := Wts + Wtsd
-  latency := rand.Intn(maxLatency - minLatency) + minLatency
+	minLatency := Wts - Wtsd
+	maxLatency := Wts + Wtsd
+	latency := rand.Intn(maxLatency-minLatency) + minLatency
 
-  attachStub.Connect(NewStaticConnection(latency, attachBack))
-  attachBack.Connect(NewStaticConnection(latency, attachStub))
+	attachStub.Connect(NewStaticConnection(latency, attachBack))
+	attachBack.Connect(NewStaticConnection(latency, attachStub))
 }
 
 func cloneNetwork(toCopy *Network) *Network {
-  network := new(Network)
-  for _, node := range toCopy.Routers {
-    network.Routers = append(network.Routers, node)
-  }
-  for _, node := range toCopy.stubRouters {
-    network.stubRouters = append(network.stubRouters, node)
-  }
-  network.subdomains = toCopy.subdomains
+	network := new(Network)
+	for _, node := range toCopy.Routers {
+		network.Routers = append(network.Routers, node)
+	}
+	for _, node := range toCopy.stubRouters {
+		network.stubRouters = append(network.stubRouters, node)
+	}
+	network.subdomains = toCopy.subdomains
 
-  return network
+	return network
 }
 
 const smallNetNodes int = 20
 
-func insertEdge(present map[struct {x, y int}]bool, network *Network, i1, i2, minL, maxL int) bool {
-  if i1 == i2 {
-    return false
-  }
+func insertEdge(present map[struct{ x, y int }]bool, network *Network, i1, i2, minL, maxL int) bool {
+	if i1 == i2 {
+		return false
+	}
 
-  if present[struct {x, y int}{i1, i2}] || present[struct {x, y int}{i2, i1}] {
-    return false
-  } else {
-    present[struct {x, y int}{i1, i2}] = true
-    present[struct {x, y int}{i2, i1}] = true
-  }
+	if present[struct{ x, y int }{i1, i2}] || present[struct{ x, y int }{i2, i1}] {
+		return false
+	} else {
+		present[struct{ x, y int }{i1, i2}] = true
+		present[struct{ x, y int }{i2, i1}] = true
+	}
 
-  latency := rand.Intn(maxL - minL) + minL
-  network.Routers[i1].Connect(NewStaticConnection(latency, network.Routers[i2]))
-  network.Routers[i2].Connect(NewStaticConnection(latency, network.Routers[i1]))
+	latency := rand.Intn(maxL-minL) + minL
+	network.Routers[i1].Connect(NewStaticConnection(latency, network.Routers[i2]))
+	network.Routers[i2].Connect(NewStaticConnection(latency, network.Routers[i1]))
 
-  return true
+	return true
 }
 
 func smallRandomNetwork(nodes, edges, minLatency, maxLatency int) *Network {
-  network := new(Network)
-  present := make(map[struct {x, y int}]bool)
+	network := new(Network)
+	present := make(map[struct{ x, y int }]bool)
 
-  network.Routers = []Router{}
-  for i := 0; i < nodes; i++ {
-    network.Routers = append(network.Routers, NewShortestPathRouter(""))
-  }
+	network.Routers = []Router{}
+	for i := 0; i < nodes; i++ {
+		network.Routers = append(network.Routers, NewShortestPathRouter(""))
+	}
 
-  // build tree
-  for i := 1; i < nodes; i++ {
-    i1 := rand.Intn(i)
-    i2 := i
+	// build tree
+	for i := 1; i < nodes; i++ {
+		i1 := rand.Intn(i)
+		i2 := i
 
-    insertEdge(present, network, i1, i2, minLatency, maxLatency)
-  }
+		insertEdge(present, network, i1, i2, minLatency, maxLatency)
+	}
 
-  // add rest of edges
-  for i := 0; i < edges; i++ {
-    i1 := rand.Intn(nodes)
-    i2 := rand.Intn(nodes)
+	// add rest of edges
+	for i := 0; i < edges; i++ {
+		i1 := rand.Intn(nodes)
+		i2 := rand.Intn(nodes)
 
-    // since we have only a few nodes, we might not add all the edges
-    insertEdge(present, network, i1, i2, minLatency, maxLatency)
-  }
+		// since we have only a few nodes, we might not add all the edges
+		insertEdge(present, network, i1, i2, minLatency, maxLatency)
+	}
 
-  return network
+	return network
 }
 
 /* Generates a connected graph.
-  Reference: http://economics.mit.edu/files/4622
+Reference: http://economics.mit.edu/files/4622
 */
 func NewRandomUniformNetwork(nodes, edges, minLatency, maxLatency int) *Network {
-  if math.Log2(float64(nodes)) * float64(nodes) / 2 > float64(edges) {
-    panic("Too few number of edges to keep the graph connected.")
-  }
+	if math.Log2(float64(nodes))*float64(nodes)/2 > float64(edges) {
+		panic("Too few number of edges to keep the graph connected.")
+	}
 
-  if (nodes < smallNetNodes) {
-    return smallRandomNetwork(nodes, edges, minLatency, maxLatency)
-  }
+	if nodes < smallNetNodes {
+		return smallRandomNetwork(nodes, edges, minLatency, maxLatency)
+	}
 
-  network := new(Network)
-  network.Routers = []Router{}
-  for i := 0; i < nodes; i++ {
-    network.Routers = append(network.Routers, NewShortestPathRouter(""))
-  }
+	network := new(Network)
+	network.Routers = []Router{}
+	for i := 0; i < nodes; i++ {
+		network.Routers = append(network.Routers, NewShortestPathRouter(""))
+	}
 
-  present := make(map[struct {x, y int}]bool)
-  for i := 0; i < edges; i++ {
-    i1 := rand.Intn(nodes)
-    i2 := rand.Intn(nodes)
+	present := make(map[struct{ x, y int }]bool)
+	for i := 0; i < edges; i++ {
+		i1 := rand.Intn(nodes)
+		i2 := rand.Intn(nodes)
 
-    if !insertEdge(present, network, i1, i2, minLatency, maxLatency) {
-      i--
-    }
-  }
+		if !insertEdge(present, network, i1, i2, minLatency, maxLatency) {
+			i--
+		}
+	}
 
-  if connected(network) {
-    return network
-  } else {
-    return NewRandomUniformNetwork(nodes, edges, minLatency, maxLatency)
-  }
+	if connected(network) {
+		return network
+	} else {
+		return NewRandomUniformNetwork(nodes, edges, minLatency, maxLatency)
+	}
 }
 
 func dfs(visited map[Router]bool, router Router) {
-  if visited[router] {
-    return
-  }
-  visited[router] = true
-  for _, conn := range router.Connections() {
-    dfs(visited, conn.Router())
-  }
+	if visited[router] {
+		return
+	}
+	visited[router] = true
+	for _, conn := range router.Connections() {
+		dfs(visited, conn.Router())
+	}
 }
 
 func connected(net *Network) bool {
-  visited := make(map[Router]bool)
-  dfs(visited, net.Routers[0])
-  ctr := 0
-  for _, v := range visited {
-    if v {
-      ctr++
-    }
-  }
-  return ctr == len(net.Routers)
+	visited := make(map[Router]bool)
+	dfs(visited, net.Routers[0])
+	ctr := 0
+	for _, v := range visited {
+		if v {
+			ctr++
+		}
+	}
+	return ctr == len(net.Routers)
 }

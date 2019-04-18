@@ -1,15 +1,15 @@
 package model
 
 type Join struct {
-  nodeId string
+	nodeId string
 }
 
 func NewJoin(nodeId string) *Join {
-  j := new(Join)
-  j.nodeId = nodeId
-  return j
+	j := new(Join)
+	j.nodeId = nodeId
+	return j
 }
 
 func (j *Join) NodeId() string {
-  return j.nodeId
+	return j.nodeId
 }
