@@ -3,6 +3,8 @@ package overlay
 import (
 	. "github.com/danalex97/Speer/capacity"
 	"github.com/danalex97/Speer/interfaces"
+	"github.com/danalex97/Speer/underlay"
+	"github.com/danalex97/Speer/events"
 
 	"sync"
 )
@@ -13,6 +15,7 @@ type CapacityMap interface {
 	Connector(id string) CapacityConnector
 
 	RegisterLink(link interfaces.Link)
+	Start(simulation *underlay.NetworkSimulation)
 }
 
 // A capacity map that uses a capacity scheduler for
@@ -54,6 +57,10 @@ func (c *ScheduledCapacityMap) Connector(id string) CapacityConnector {
 	return c.capacityMap[id]
 }
 
-func (c *ScheduledCapacityMap)RegisterLink(link interfaces.Link) {
+func (c *ScheduledCapacityMap) RegisterLink(link interfaces.Link) {
 	c.capacityScheduler.RegisterLink(link)
+}
+
+func (c *ScheduledCapacityMap) Start(sim *underlay.NetworkSimulation) {
+	sim.Push(events.NewEvent(0, nil, c.capacityScheduler))
 }

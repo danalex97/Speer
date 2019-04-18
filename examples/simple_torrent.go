@@ -23,10 +23,6 @@ type idBroadcast struct {
 
 /* Interface functions. */
 func (s *SimpleTorrent) OnJoin() {
-	if s.transport == nil {
-		return
-	}
-
 	go func() {
 		for {
 			// check links
@@ -70,8 +66,6 @@ func (s *SimpleTorrent) OnJoin() {
 				s.transport.ControlSend(id, idBroadcast{s.ids})
 			}
 		}
-
-		fmt.Println("Done", s.id)
 	}()
 }
 
@@ -111,6 +105,8 @@ func (s *SimpleTorrent) updateIds(ids []string) {
 		// register link if not registered
 		if _, ok := s.links[id]; !ok {
 			s.links[id] = s.transport.Connect(id)
+			fmt.Println("Before")
+			fmt.Println(s.links[id])
 
 			// if the link is new, we broadcast our list again
 			if !s.transport.ControlPing(id) {

@@ -36,7 +36,9 @@ type SimulationBuilder struct {
 }
 
 func NewSimulationBuilder(template interfaces.Node) *SimulationBuilder {
-	b := new(SimulationBuilder)
+	b := &SimulationBuilder{
+		Simulation : new(Simulation),
+	}
 
 	if template == nil {
 		panic("No valid template provided")
@@ -204,9 +206,10 @@ func (s *Simulation) Run() {
 		s.underlaySimulation.Push(event)
 	}
 
+	s.capacityMap.Start(s.underlaySimulation)
+
 	go s.underlaySimulation.Run()
 	for _, node := range s.userNodes {
-		node.New(node)
 		go node.OnJoin()
 	}
 }
