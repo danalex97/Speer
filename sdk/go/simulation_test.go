@@ -6,6 +6,10 @@ import (
 	"runtime"
 	"sync"
 	"time"
+	"os"
+	"io/ioutil"
+	"strings"
+
 	"testing"
 )
 
@@ -89,6 +93,12 @@ func TestSimulationBuilderAndTransports(t *testing.T) {
 }
 
 func TestSimulationOnFlatToplogy(t *testing.T) {
+	file := "log.txt"
+
+	defer func() {
+		os.Remove(file)
+	}()
+
 	joins = 0
 	messages = 0
 
@@ -100,11 +110,19 @@ func TestSimulationOnFlatToplogy(t *testing.T) {
 		WithCapacityNodes(10, 1, 1).
 		WithCapacityNodes(20, 1, 1).
 		WithCapacityNodes(50, 1, 1).
+		WithLogs(file).
 		Build()
 
 	go sim.Run()
-	time.Sleep(100 * time.Millisecond)
+	time.Sleep(200 * time.Millisecond)
 	sim.Stop()
+
+	log, _ := ioutil.ReadFile(file)
+	vals := string(log[:])
+
+	if len(strings.Split(vals, "\n")) < 300 {
+		t.Fatalf("Log suprisingly short")
+	}
 
 	assertEqual(t, joins, 80)
 	assertEqual(t, messages, 79)
