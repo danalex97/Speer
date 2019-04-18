@@ -12,13 +12,13 @@ type UnreliableNode interface {
 	interfaces.UnreliableNode
 }
 
-// An UnreliableSimulatedNode uses a Bridge along with a Bootstrap to allow
+// An UnreliableSimulatedNode uses a LatencyConnector along with a Bootstrap to allow
 // interaction with the simulator by providing an utility to the user.
 type UnreliableSimulatedNode struct {
 	events.Decorable
 
 	simulation *underlay.NetworkSimulation
-	bridge     Bridge
+	bridge     LatencyConnector
 	bootstrap  Bootstrap
 	id         string
 }
