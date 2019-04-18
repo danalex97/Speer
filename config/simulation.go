@@ -11,13 +11,15 @@ import (
 	"os/exec"
 )
 
-func NewSimulationFromTemplate(config *Config, template interfaces.TorrentNode) interfaces.ISimulation {
+func NewSimulationFromTemplate(
+	config *Config,
+	template interfaces.Node,
+) interfaces.ISimulation {
 	if config.TransitDomains == 0 || config.TransitDomainSize == 0 {
 		panic("Transit domain number or transit domain size not provided or zero.")
 	}
 
-	builder := sdk.NewDHTSimulationBuilder(template).
-		WithPoissonProcessModel(2, 2).
+	builder := sdk.NewSimulationBuilder(template).
 		WithInternetworkUnderlay(
 			int(config.TransitDomains),
 			int(config.TransitDomainSize),
@@ -38,26 +40,23 @@ func NewSimulationFromTemplate(config *Config, template interfaces.TorrentNode) 
 		builder = builder.WithLogs("log.json")
 	}
 
-	capBuilder := builder.
-		WithDefaultQueryGenerator().
-		WithLimitedNodes(int(config.Nodes) + 1).
-		//====================================
-		WithCapacities().
-		WithTransferInterval(
-			int(config.TransferInterval))
+	builder = builder.
+		WithFixedNodes(int(config.Nodes)).
+		WithCapacityScheduler(int(config.TransferInterval))
 
-	if config.Latency {
-		capBuilder = capBuilder.WithLatency()
-	}
+	// [TODO] allow running without latency
+	// if config.Latency {
+	// 	builder = builder.WithLatency()
+	// }
 
 	for _, tuple := range config.CapacityNodes {
-		capBuilder = capBuilder.WithCapacityNodes(
+		builder = builder.WithCapacityNodes(
 			int(tuple.Number),
 			int(tuple.Upload),
 			int(tuple.Download))
 	}
 
-	return capBuilder.Build()
+	return builder.Build()
 }
 
 func NewSimulation(config *Config) interfaces.ISimulation {

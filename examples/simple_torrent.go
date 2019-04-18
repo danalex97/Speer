@@ -15,7 +15,6 @@ type SimpleTorrent struct {
 	ids        []string
 	links      map[string]Link
 	transport  Transport
-	unreliable UnreliableNode
 }
 
 type idBroadcast struct {
@@ -79,7 +78,7 @@ func (s *SimpleTorrent) OnJoin() {
 func (s *SimpleTorrent) OnLeave() {
 }
 
-func (s *SimpleTorrent) New(util TorrentNodeUtil) TorrentNode {
+func (s *SimpleTorrent) New(util NodeUtil) Node {
 	// Constructor that assumes the UnreliableNode component is filled in
 	node := new(SimpleTorrent)
 
