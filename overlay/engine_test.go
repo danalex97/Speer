@@ -1,4 +1,4 @@
-package capacity
+package overlay
 
 import (
   . "github.com/danalex97/Speer/interfaces"

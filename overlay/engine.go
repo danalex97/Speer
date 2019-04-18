@@ -1,7 +1,8 @@
-package capacity
+package overlay
 
 import (
-  . "github.com/danalex97/Speer/interfaces"
+  . "github.com/danalex97/Speer/capacity"
+  "github.com/danalex97/Speer/interfaces"
   "sync"
   "fmt"
 )
@@ -9,10 +10,10 @@ import (
 // The Engine is a Transport decorated with methods which allow the integration
 // of the capacity engine in the SDK.
 type Engine interface {
-  Transport
+  interfaces.Transport
 
   // seam used to register the links in the SDK
-  SetConnectCallback(func (Link))
+  SetConnectCallback(func (interfaces.Link))
 }
 
 // Global variables
@@ -36,14 +37,14 @@ func (n *node) Down() int {
   return n.down
 }
 
-// A TransferEngine is a Transport which allows direct transfer of control
+// A TransferEngine is a interfaces.Transport which allows direct transfer of control
 // messages and uses links simulated using the Scheduler.
 type TransferEngine struct {
   node
 
   recv             chan interface {}
   id               string
-  connectCallback  func (Link)
+  connectCallback  func (interfaces.Link)
 }
 
 func NewTransferEngine(up, down int, id string) Engine {
@@ -57,7 +58,7 @@ func NewTransferEngine(up, down int, id string) Engine {
     },
     make(chan interface {}, controlMessageCapacity),
     id,
-    func (Link) {},
+    func (interfaces.Link) {},
   }
 
   engineMap[engine.id] = engine
@@ -65,7 +66,7 @@ func NewTransferEngine(up, down int, id string) Engine {
   return engine
 }
 
-func (e *TransferEngine) Connect(id string) Link {
+func (e *TransferEngine) Connect(id string) interfaces.Link {
   mapLock.RLock()
   defer mapLock.RUnlock()
 
@@ -101,6 +102,6 @@ func (e *TransferEngine) Id() string {
   return e.id
 }
 
-func (e *TransferEngine) SetConnectCallback(callback func (Link)) {
+func (e *TransferEngine) SetConnectCallback(callback func (interfaces.Link)) {
   e.connectCallback = callback
 }

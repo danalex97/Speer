@@ -3,7 +3,6 @@ package overlay
 import (
   . "github.com/danalex97/Speer/events"
   "github.com/danalex97/Speer/underlay"
-  // "github.com/danalex97/Speer/capacity"
 )
 
 // A Bridge is a decorable interface which allows sending and receiving packets.
