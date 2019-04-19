@@ -1,0 +1,24 @@
+{
+    "lang" : "go",
+    "entry" : "github.com/danalex97/Speer/examples/data_link/DataLinkExample",
+
+    "nodes" : 2,
+
+    "logFile" : "./log.json",
+
+    "transitDomains"    : 5,
+    "transitDomainSize" : 5,
+    "stubDomains"       : 5,
+    "stubDomainSize"    : 5,
+
+    "transferInterval"  : 10,
+    "capacityNodes" : [{
+        "number"   : 1,
+        "upload"   : 5,
+        "download" : 5
+    }, {
+		"number"   : 1,
+		"upload"   : 5,
+		"download" : 5
+	}]
+}
