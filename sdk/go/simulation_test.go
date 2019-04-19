@@ -3,12 +3,12 @@ package sdk
 import (
 	"github.com/danalex97/Speer/interfaces"
 
+	"io/ioutil"
+	"os"
 	"runtime"
+	"strings"
 	"sync"
 	"time"
-	"os"
-	"io/ioutil"
-	"strings"
 
 	"testing"
 )

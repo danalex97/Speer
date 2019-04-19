@@ -17,9 +17,9 @@ import (
 
 var cpuprofile = flag.String("cpuprofile", "", "Write cpu profile to `file`.")
 var memprofile = flag.String("memprofile", "", "Write memory profile to `file`.")
-var configPath = flag.String("config", "./examples/config/big.json", "Path to configuration file.")
+var configPath = flag.String("config", "./examples/config/broadcast.json", "Path to configuration file.")
 
-var secs = flag.Int("time", 10, "The time to run the simulation.")
+var secs = flag.Int("time", 1, "The time to run the simulation.")
 
 func makeCPUProfile() func() {
 	if *cpuprofile != "" {

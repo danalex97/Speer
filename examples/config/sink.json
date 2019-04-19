@@ -1,0 +1,20 @@
+{
+    "lang" : "go",
+    "entry" : "github.com/danalex97/Speer/examples/sink/SinkExample",
+
+    "nodes" : 10,
+
+    "logFile" : "./log.json",
+
+    "transitDomains"    : 5,
+    "transitDomainSize" : 5,
+    "stubDomains"       : 5,
+    "stubDomainSize"    : 5,
+
+    "transferInterval"  : 10,
+    "capacityNodes" : [{
+        "number"   : 10,
+        "upload"   : 5,
+        "download" : 5
+    }]
+}

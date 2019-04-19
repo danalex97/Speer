@@ -74,9 +74,12 @@ func NewSimulation(config *Config) interfaces.ISimulation {
 		src := fmt.Sprintf("%s/main.go", pwd)
 
 		// run again main
-		args := os.Args[1:]
+		args := []string{}
 		args = append(args, "run")
 		args = append(args, src)
+		for _, arg := range os.Args[1:] {
+			args = append(args, arg)
+		}
 		cmd := exec.Command("go", args...)
 
 		cmd.Stdin = os.Stdin
