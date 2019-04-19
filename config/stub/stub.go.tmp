@@ -3,6 +3,6 @@ package stub
 import script %s
 import "github.com/danalex97/Speer/interfaces"
 
-func NewNode() interfaces.TorrentNode {
-  return &script.%s{}
+func NewNode() interfaces.Node {
+  return new(script.%s)
 }

@@ -1,0 +1,20 @@
+{
+    "lang" : "go",
+    "entry" : "github.com/danalex97/Speer/examples/broadcast/BroadcastExample",
+
+    "nodes" : 5,
+
+    "logFile" : "./log.json",
+
+    "transitDomains"    : 5,
+    "transitDomainSize" : 5,
+    "stubDomains"       : 5,
+    "stubDomainSize"    : 5,
+
+    "transferInterval"  : 10,
+    "capacityNodes" : [{
+        "number"   : 5,
+        "upload"   : 5,
+        "download" : 5
+    }]
+}

@@ -1,99 +1,101 @@
 package config
 
 import (
-  "github.com/danalex97/Speer/config/stub"
+	"github.com/danalex97/Speer/config/stub"
 
-  "github.com/danalex97/Speer/interfaces"
-  "github.com/danalex97/Speer/sdk/go"
+	"github.com/danalex97/Speer/interfaces"
+	"github.com/danalex97/Speer/sdk/go"
 
-  "fmt"
-  "os"
-  "os/exec"
+	"fmt"
+	"os"
+	"os/exec"
 )
 
-func NewSimulationFromTemplate(config *Config, template interfaces.TorrentNode) interfaces.ISimulation {
-  if config.TransitDomains == 0 || config.TransitDomainSize == 0 {
-    panic("Transit domain number or transit domain size not provided or zero.")
-  }
+func NewSimulationFromTemplate(
+	config *Config,
+	template interfaces.Node,
+) interfaces.ISimulation {
+	if config.TransitDomains == 0 || config.TransitDomainSize == 0 {
+		panic("Transit domain number or transit domain size not provided or zero.")
+	}
 
-  builder := sdk.NewDHTSimulationBuilder(template).
-    WithPoissonProcessModel(2, 2).
-    WithInternetworkUnderlay(
-      int(config.TransitDomains),
-      int(config.TransitDomainSize),
-      int(config.StubDomains),
-      int(config.StubDomainSize))
+	builder := sdk.NewSimulationBuilder(template).
+		WithInternetworkUnderlay(
+			int(config.TransitDomains),
+			int(config.TransitDomainSize),
+			int(config.StubDomains),
+			int(config.StubDomainSize))
 
-  if config.Parallel {
-    builder = builder.WithParallelSimulation()
-  }
+	if config.Parallel {
+		builder = builder.WithParallelSimulation()
+	}
 
-  if config.TransferInterval == 0 {
-    panic("No transfer interval provided or transfer interval zero.")
-  }
-  if config.Nodes == 0 {
-    panic("Number of nodes was not provided or is 0.")
-  }
-  if config.LogFile != "" {
-      builder = builder.WithLogs("log.json")
-  }
+	if config.TransferInterval == 0 {
+		panic("No transfer interval provided or transfer interval zero.")
+	}
+	if config.Nodes == 0 {
+		panic("Number of nodes was not provided or is 0.")
+	}
+	if config.LogFile != "" {
+		builder = builder.WithLogs("log.json")
+	}
 
-  capBuilder := builder.
-    WithDefaultQueryGenerator().
-    WithLimitedNodes(int(config.Nodes) + 1).
-    //====================================
-    WithCapacities().
-    WithTransferInterval(
-      int(config.TransferInterval))
+	builder = builder.
+		WithFixedNodes(int(config.Nodes)).
+		WithCapacityScheduler(int(config.TransferInterval))
 
-  if config.Latency {
-    capBuilder = capBuilder.WithLatency()
-  }
+	// [TODO] allow running without latency
+	// if config.Latency {
+	// 	builder = builder.WithLatency()
+	// }
 
-  for _, tuple := range config.CapacityNodes {
-    capBuilder = capBuilder.WithCapacityNodes(
-      int(tuple.Number),
-      int(tuple.Upload),
-      int(tuple.Download))
-  }
+	for _, tuple := range config.CapacityNodes {
+		builder = builder.WithCapacityNodes(
+			int(tuple.Number),
+			int(tuple.Upload),
+			int(tuple.Download))
+	}
 
-  return capBuilder.Build()
+	return builder.Build()
 }
 
 func NewSimulation(config *Config) interfaces.ISimulation {
-  defer func() {
-    if err := recover(); err != nil {
-      RemoveTemplate()
-      panic(err)
-    }
-  }()
+	defer func() {
+		if err := recover(); err != nil {
+			RemoveTemplate()
+			panic(err)
+		}
+	}()
 
-  if !TemplateExists() {
-    CreateTemplate(config)
+	if !TemplateExists() {
+		CreateTemplate(config)
 
-    pwd, _ := os.Getwd()
-    src := fmt.Sprintf("%s/main.go", pwd)
+		pwd, _ := os.Getwd()
+		src := fmt.Sprintf("%s/main.go", pwd)
 
-    // run again main
-    args := os.Args[1:]
-    args = append(args, "run")
-    args = append(args, src)
-    cmd := exec.Command("go", args...)
+		// run again main
+		args := []string{}
+		args = append(args, "run")
+		args = append(args, src)
+		for _, arg := range os.Args[1:] {
+			args = append(args, arg)
+		}
+		cmd := exec.Command("go", args...)
 
-    cmd.Stdin = os.Stdin
-    cmd.Stdout = os.Stdout
-    cmd.Stderr = os.Stderr
+		cmd.Stdin = os.Stdin
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
 
-    if err := cmd.Start(); err != nil {
-      panic(err)
-    }
-    cmd.Wait()
+		if err := cmd.Start(); err != nil {
+			panic(err)
+		}
+		cmd.Wait()
 
-    os.Exit(0)
-  }
+		os.Exit(0)
+	}
 
-  fmt.Println("Template:", config.Entry)
+	fmt.Println("Template:", config.Entry)
 
-  defer RemoveTemplate()
-  return NewSimulationFromTemplate(config, stub.NewNode())
+	defer RemoveTemplate()
+	return NewSimulationFromTemplate(config, stub.NewNode())
 }

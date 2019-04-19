@@ -1,7 +1,5 @@
 ./structs
 ./events
-./logs
-./model
 ./overlay
 ./underlay
 ./sdk/go

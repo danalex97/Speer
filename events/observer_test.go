@@ -1,7 +1,7 @@
 package events
 
 import (
-  "testing"
+	"testing"
 )
 
 func assertEqual(t *testing.T, a interface{}, b interface{}) {
@@ -14,68 +14,68 @@ type mockReceiver struct {
 }
 
 func (m *mockReceiver) Receive(e *Event) *Event {
-  return nil
+	return nil
 }
 
 func TestEventsAreDeliveredToRightObserver(t *testing.T) {
-  r1  := new(mockReceiver)
-  r2  := new(mockReceiver)
+	r1 := new(mockReceiver)
+	r2 := new(mockReceiver)
 
-  o := NewEventObserver(r1)
+	o := NewEventObserver(r1)
 
-  e1 := NewEvent(1, nil, r1)
-  e2 := NewEvent(0, nil, r2)
+	e1 := NewEvent(1, nil, r1)
+	e2 := NewEvent(0, nil, r2)
 
-  go func() {
-    o.EnqueEvent(e1)
-    o.EnqueEvent(e2)
-  }()
+	go func() {
+		o.EnqueEvent(e1)
+		o.EnqueEvent(e2)
+	}()
 
-  go func() {
-    assertEqual(t, (<-o.Recv()).(*Event), e1)
-  }()
+	go func() {
+		assertEqual(t, (<-o.Recv()).(*Event), e1)
+	}()
 }
 
 func TestEnquedEventsAreDeliveredInOrder(t *testing.T) {
-  r  := new(mockReceiver)
-  o := NewEventObserver(r)
+	r := new(mockReceiver)
+	o := NewEventObserver(r)
 
-  e1 := NewEvent(0, nil, r)
-  e2 := NewEvent(1, nil, r)
-  e3 := NewEvent(2, nil, r)
+	e1 := NewEvent(0, nil, r)
+	e2 := NewEvent(1, nil, r)
+	e3 := NewEvent(2, nil, r)
 
-  go func() {
-    o.EnqueEvent(e1)
-    o.EnqueEvent(e2)
-    o.EnqueEvent(e3)
-  }()
+	go func() {
+		o.EnqueEvent(e1)
+		o.EnqueEvent(e2)
+		o.EnqueEvent(e3)
+	}()
 
-  go func() {
-    assertEqual(t, (<-o.Recv()).(*Event), e1)
-    assertEqual(t, (<-o.Recv()).(*Event), e2)
-    assertEqual(t, (<-o.Recv()).(*Event), e3)
-  }()
+	go func() {
+		assertEqual(t, (<-o.Recv()).(*Event), e1)
+		assertEqual(t, (<-o.Recv()).(*Event), e2)
+		assertEqual(t, (<-o.Recv()).(*Event), e3)
+	}()
 }
 
 func TestAllEventsAreDeliveredToGlobalObserver(t *testing.T) {
-  r1  := new(mockReceiver)
-  r2  := new(mockReceiver)
-  r3  := new(mockReceiver)
-  o := NewGlobalEventObserver()
+	r1 := new(mockReceiver)
+	r2 := new(mockReceiver)
+	r3 := new(mockReceiver)
+	o := NewGlobalEventObserver()
 
-  e1 := NewEvent(0, nil, r1)
-  e2 := NewEvent(1, nil, r2)
-  e3 := NewEvent(2, nil, r3)
+	e1 := NewEvent(0, nil, r1)
+	e2 := NewEvent(1, nil, r2)
+	e3 := NewEvent(2, nil, r3)
 
-  go func() {
-    o.EnqueEvent(e1)
-    o.EnqueEvent(e2)
-    o.EnqueEvent(e3)
-  }()
+	go func() {
+		o.EnqueEvent(e1)
+		o.EnqueEvent(e2)
+		o.EnqueEvent(e3)
+	}()
 
-  go func() {
-    assertEqual(t, (<-o.Recv()).(*Event), e1)
-    assertEqual(t, (<-o.Recv()).(*Event), e2)
-    assertEqual(t, (<-o.Recv()).(*Event), e3)
-  }()
+	go func() {
+		assertEqual(t, (<-o.Recv()).(*Event), e1)
+		assertEqual(t, (<-o.Recv()).(*Event), e2)
+		assertEqual(t, (<-o.Recv()).(*Event), e3)
+	}()
 }
