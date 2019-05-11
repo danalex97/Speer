@@ -65,7 +65,7 @@ Some examples on how to use the **TorrentNodeUtil** can be found in the **Exampl
 
 Speer allows running a simulation directly from a JSON configuration that provides simulation parameters and a **[path-to-implementation-package]/[name-of-structure-to-simulate]**. The simplest way to run a simulation is to run:
 ```
-go run main.go -config=[configuration-path]
+go run speer.go -config=[configuration-path]
 ```
 
 The configuration has to provide the path to your source code that implements the `TorrentNode` and `TorrentNodeConstructor` interfaces. For an example, check `examples/config/big.json`.
@@ -190,17 +190,17 @@ For more examples on how to write the code for a node, check the **examples fold
 
 ### Running examples
 
-The see the options provided by `main.go` run:
+The see the options provided by `speer.go` run:
 ```
-go run main.go -h
+go run speer.go -h
 ```
 
 To run the *TorrentNode* example from the examples folder:
 ```
-go run main.go -config=./examples/config/big.json
+go run speer.go -config=./examples/config/big.json
 ```
 
 The *DHTNode* interface will be deprecated, but one can run it by checking out to version 1.0 and running:
 ```
-go run main.go
+go run speer.go
 ```

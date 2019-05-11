@@ -6,15 +6,10 @@
 
     "logFile" : "./log.json",
 
-    "transitDomains"    : 5,
-    "transitDomainSize" : 5,
-    "stubDomains"       : 5,
-    "stubDomainSize"    : 5,
-
-    "transferInterval"  : 10,
-    "capacityNodes" : [{
-        "number"   : 10,
-        "upload"   : 5,
-        "download" : 5
-    }]
+    "network" : {
+        "transitDomains"    : 5,
+        "transitDomainSize" : 5,
+        "stubDomains"       : 5,
+        "stubDomainSize"    : 5
+    }
 }

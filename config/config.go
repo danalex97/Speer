@@ -6,6 +6,14 @@ type NodeConf struct {
 	Download uint `json:"download"`
 }
 
+type NetworkConf struct {
+	// network level topology parameters
+	TransitDomains    uint `json:"transitDomains"`
+	TransitDomainSize uint `json:"transitDomainSize"`
+	StubDomains       uint `json:"stubDomains"`
+	StubDomainSize    uint `json:"stubDomainSize"`
+}
+
 type Config struct {
 	// the language of the entry point and the path of the entry point: file
 	// which will be used as main class running in the simulation; entry point
@@ -19,11 +27,7 @@ type Config struct {
 	// number of peers in the system
 	Nodes uint `json:"nodes"`
 
-	// network level topology parameters
-	TransitDomains    uint `json:"transitDomains"`
-	TransitDomainSize uint `json:"transitDomainSize"`
-	StubDomains       uint `json:"stubDomains"`
-	StubDomainSize    uint `json:"stubDomainSize"`
+	Network *NetworkConf `json:"network"` 
 
 	// interval of virtual time units at which the capacity scheduler runs
 	TransferInterval uint `json:"transferInterval"`

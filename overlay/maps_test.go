@@ -34,7 +34,7 @@ func testNetworkMap2(domains, nodes int) LatencyMap {
 }
 
 func TestNetworkMapNewIdReturnsDifferentRouter(t *testing.T) {
-	netmaps := []LatencyMap{testNetworkMap(10), testNetworkMap2(2, 5)}
+	netmaps := []Bootstrap{testNetworkMap(10), testNetworkMap2(2, 5), NewChanMap()}
 	for _, netmap := range netmaps {
 		ids := []string{}
 		for i := 0; i < 10; i++ {
@@ -49,7 +49,7 @@ func TestNetworkMapNewIdReturnsDifferentRouter(t *testing.T) {
 }
 
 func TestNetworkMapJoinReturnsDifferentRouter(t *testing.T) {
-	netmaps := []LatencyMap{testNetworkMap(10), testNetworkMap2(2, 5)}
+	netmaps := []Bootstrap{testNetworkMap(10), testNetworkMap2(2, 5),  NewChanMap()}
 	for _, netmap := range netmaps {
 		for i := 0; i < 10; i++ {
 			netmap.NewId()

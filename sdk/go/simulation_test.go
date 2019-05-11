@@ -5,8 +5,8 @@ import (
 
 	"io/ioutil"
 	"os"
-	"runtime"
 	"strings"
+	"runtime"
 	"sync"
 	"time"
 
@@ -25,12 +25,13 @@ type mockNode struct {
 }
 
 func (s *mockNode) New(util interfaces.NodeUtil) interfaces.Node {
-	return &mockNode{
+	r := &mockNode{
 		id:   util.Id(),
 		join: util.Join(),
 
 		transport: util.Transport(),
 	}
+	return r
 }
 
 func (s *mockNode) OnJoin() {
@@ -92,6 +93,42 @@ func TestSimulationBuilderAndTransports(t *testing.T) {
 	assertEqual(t, messages, 9)
 }
 
+func TestSimulationNoTopology(t *testing.T) {
+	joins = 0
+	messages = 0
+
+	sim := NewSimulationBuilder(new(mockNode)).
+		WithParallelSimulation().
+		WithFixedNodes(10).
+		WithCapacityScheduler(1).
+		WithCapacityNodes(10, 1, 1).
+		Build()
+
+	go sim.Run()
+	time.Sleep(100 * time.Millisecond)
+	sim.Stop()
+
+	assertEqual(t, joins, 10)
+	assertEqual(t, messages, 9)
+}
+
+func TestSimulationNoCapacities(t *testing.T) {
+	joins = 0
+	messages = 0
+
+	sim := NewSimulationBuilder(new(mockNode)).
+		WithParallelSimulation().
+		WithFixedNodes(10).
+		Build()
+
+	go sim.Run()
+	time.Sleep(100 * time.Millisecond)
+	sim.Stop()
+
+	assertEqual(t, joins, 10)
+	assertEqual(t, messages, 9)
+}
+
 func TestSimulationOnFlatToplogy(t *testing.T) {
 	file := "log.txt"
 
@@ -114,13 +151,13 @@ func TestSimulationOnFlatToplogy(t *testing.T) {
 		Build()
 
 	go sim.Run()
-	time.Sleep(200 * time.Millisecond)
+	time.Sleep(500 * time.Millisecond)
 	sim.Stop()
 
 	log, _ := ioutil.ReadFile(file)
 	vals := string(log[:])
 
-	if len(strings.Split(vals, "\n")) < 300 {
+	if len(strings.Split(vals, "\n")) < 200 {
 		t.Fatalf("Log suprisingly short")
 	}
 

@@ -8,21 +8,17 @@ import (
 	"sync"
 )
 
-type NodeAssigner interface {
-	NewId() string
-}
-
 // A bootstraping mechanism which provides a contact node for a newly arrived
 // node. It is also used to expose new ids for nodes via the function NewId.
 type Bootstrap interface {
 	Join(id string) string
+	NewId() string
 }
 
 // The LatencyMap provides a bootstraping mechanism along with an ID allocation
 // mechanism and ID - router translation functions.
 type LatencyMap interface {
 	Bootstrap
-	NodeAssigner
 
 	Router(id string) underlay.Router // ID -> underlay.Router
 	Id(router underlay.Router) string // underlay.Router -> ID
