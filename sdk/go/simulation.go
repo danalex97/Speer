@@ -22,6 +22,7 @@ type Simulation struct {
 
 	logger *logs.EventMonitor
 
+	directMap overlay.DirectMap
 	latencyMap  overlay.LatencyMap
 	capacityMap capacity.CapacityMap
 	nodes       int
@@ -94,19 +95,26 @@ func (b *SimulationBuilder) WithRandomUniformUnderlay(
 	minLatency int,
 	maxLatency int,
 ) *SimulationBuilder {
-	network := underlay.NewRandomUniformNetwork(
-		nodes,
-		edges,
-		minLatency,
-		maxLatency,
-	)
-	s := underlay.NewNetworkSimulation(
+	b.underlaySimulation = underlay.NewNetworkSimulation(
 		events.NewLazySimulation(),
-		network,
+		underlay.NewRandomUniformNetwork(
+		   nodes,
+		   edges,
+		   minLatency,
+		   maxLatency,
+	   ),
 	)
-
-	b.underlaySimulation = s
 	b.latencyMap = overlay.NewNetworkMap(b.underlaySimulation.Network())
+
+	return b
+}
+
+func (b *SimulationBuilder) WithNoUnderlay() *SimulationBuilder {
+	b.underlaySimulation = underlay.NewNetworkSimulation(
+		events.NewLazySimulation(),
+		nil,
+	)
+	b.directMap = overlay.NewChanMap()
 
 	return b
 }
@@ -152,15 +160,23 @@ func (b *SimulationBuilder) WithCapacityNodes(
 		limit = b.nodes
 	}
 	for i := b.cnode; i < limit; i++ {
-		// assign ID to router
-		id := b.latencyMap.NewId()
+		var id string
+		var controlConnector interfaces.ControlTransport
 
-		// create latency connector
-		latencyConnector := overlay.NewUnderlayChan(
-			id,
-			b.underlaySimulation,
-			b.latencyMap,
-		)
+		if b.latencyMap != nil {
+			// assign ID to node
+			id = b.latencyMap.NewId()
+
+			// create latency connector
+			controlConnector = overlay.NewUnderlayChan(
+				id,
+				b.underlaySimulation,
+				b.latencyMap,
+			)
+		} else {
+			// assign ID to node & create direct channel
+			controlConnector, id = overlay.NewDirectChan(b.directMap)
+		}
 
 		// register capacity
 		capacityConnector := capacity.NewCapacityConnector(
@@ -172,7 +188,7 @@ func (b *SimulationBuilder) WithCapacityNodes(
 
 		// register autowired nodes
 		newNode := NewAutowiredNode(b.template, NewSimulatedNode(
-			latencyConnector,
+			controlConnector,
 			capacityConnector,
 			b.latencyMap,
 			id,
