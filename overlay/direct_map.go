@@ -6,22 +6,29 @@ import (
 	"sync"
 )
 
-type DirectMap struct {
+type DirectMap interface {
+	Bootstrap
+	NodeAssigner
+
+	Chan(id string) DirectConnector
+}
+
+type ChanMap struct {
 	*sync.RWMutex
 
-	chanMap map[string]*DirectChan
+	chanMap map[string]DirectConnector
 	chanCtr int
 }
 
-func NewDirectMap() *DirectMap {
-	return &DirectMap{
+func NewChanMap() DirectMap {
+	return &ChanMap{
 		RWMutex: new(sync.RWMutex),
-		chanMap: make(map[string]*DirectChan),
+		chanMap: make(map[string]DirectConnector),
 		chanCtr: 0,
 	}
 }
 
-func (mp *DirectMap) NewId() string {
+func (mp *ChanMap) NewId() string {
 	mp.Lock()
 	defer mp.Unlock()
 
@@ -31,7 +38,7 @@ func (mp *DirectMap) NewId() string {
 	return id
 }
 
-func (mp *DirectMap) Join(id string) string {
+func (mp *ChanMap) Join(id string) string {
 	i := rand.Intn(len(mp.chanMap))
 	for k := range mp.chanMap {
 		if i == 0 {
@@ -47,7 +54,7 @@ func (mp *DirectMap) Join(id string) string {
 	return ""
 }
 
-func (mp *DirectMap) Chan(id string) *DirectChan {
+func (mp *ChanMap) Chan(id string) DirectConnector {
 	mp.RLock()
 	defer mp.RUnlock()
 
@@ -56,11 +63,4 @@ func (mp *DirectMap) Chan(id string) *DirectChan {
 	} else {
 		return nil
 	}
-}
-
-func (mp *DirectMap) RegisterChan(id string, channel *DirectChan) {
-	mp.Lock()
-	defer mp.Unlock()
-
-	mp.chanMap[id] = channel
 }

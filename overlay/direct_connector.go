@@ -8,6 +8,8 @@ const controlMessageCapacity int = 1000000
 
 type DirectConnector interface {
 	interfaces.ControlTransport
+
+	Chan() chan interface{}
 }
 
 // An DirectChan implements a DirectConnector by using channels directly.
@@ -15,12 +17,12 @@ type DirectChan struct {
 	id string
 	recv chan interface {}
 
-	networkMap LatencyMap
+	networkMap DirectMap
 }
 
 func NewDirectChan(
 	id string,
-	networkMap LatencyMap,
+	networkMap DirectMap,
 ) DirectConnector {
 	return &DirectChan{
 		id: id,
@@ -31,12 +33,20 @@ func NewDirectChan(
 }
 
 func (d *DirectChan) ControlSend(dst string, msg interface{}) {
+	directChan := d.networkMap.Chan(dst)
+	if directChan != nil {
+		directChan.Chan() <- msg
+	}
 }
 
 func (d *DirectChan) ControlRecv() <-chan interface{} {
 	return d.recv
 }
 
-func (u *DirectChan) ControlPing(id string) bool {
-	return true
+func (d *DirectChan) ControlPing(id string) bool {
+	return d.networkMap.Chan(id) != nil
+}
+
+func (d *DirectChan) Chan() chan interface{} {
+	return d.recv
 }
