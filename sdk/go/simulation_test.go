@@ -151,13 +151,13 @@ func TestSimulationOnFlatToplogy(t *testing.T) {
 		Build()
 
 	go sim.Run()
-	time.Sleep(200 * time.Millisecond)
+	time.Sleep(500 * time.Millisecond)
 	sim.Stop()
 
 	log, _ := ioutil.ReadFile(file)
 	vals := string(log[:])
 
-	if len(strings.Split(vals, "\n")) < 300 {
+	if len(strings.Split(vals, "\n")) < 200 {
 		t.Fatalf("Log suprisingly short")
 	}
 
