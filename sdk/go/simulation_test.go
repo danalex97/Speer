@@ -98,11 +98,27 @@ func TestSimulationNoTopology(t *testing.T) {
 	messages = 0
 
 	sim := NewSimulationBuilder(new(mockNode)).
-		WithNoUnderlay().
 		WithParallelSimulation().
 		WithFixedNodes(10).
 		WithCapacityScheduler(1).
 		WithCapacityNodes(10, 1, 1).
+		Build()
+
+	go sim.Run()
+	time.Sleep(100 * time.Millisecond)
+	sim.Stop()
+
+	assertEqual(t, joins, 10)
+	assertEqual(t, messages, 9)
+}
+
+func TestSimulationNoCapacities(t *testing.T) {
+	joins = 0
+	messages = 0
+
+	sim := NewSimulationBuilder(new(mockNode)).
+		WithParallelSimulation().
+		WithFixedNodes(10).
 		Build()
 
 	go sim.Run()

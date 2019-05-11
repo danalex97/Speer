@@ -53,6 +53,13 @@ func NewSimulationBuilder(template interfaces.Node) *SimulationBuilder {
 	b.userNodes = map[string]SpeerNode{}
 	b.nodes = -1
 
+	// By default we consider there is no latency module present
+	b.underlaySimulation = underlay.NewNetworkSimulation(
+		events.NewLazySimulation(),
+		nil,
+	)
+	b.directMap = overlay.NewChanMap()
+
 	return b
 }
 
@@ -85,6 +92,7 @@ func (b *SimulationBuilder) WithInternetworkUnderlay(
 	fmt.Printf("Internetwork built with %d nodes.\n", len(network.Routers))
 	b.underlaySimulation = simulation
 	b.latencyMap = overlay.NewNetworkMap(b.underlaySimulation.Network())
+	b.directMap = nil
 
 	return b
 }
@@ -105,16 +113,7 @@ func (b *SimulationBuilder) WithRandomUniformUnderlay(
 	   ),
 	)
 	b.latencyMap = overlay.NewNetworkMap(b.underlaySimulation.Network())
-
-	return b
-}
-
-func (b *SimulationBuilder) WithNoUnderlay() *SimulationBuilder {
-	b.underlaySimulation = underlay.NewNetworkSimulation(
-		events.NewLazySimulation(),
-		nil,
-	)
-	b.directMap = overlay.NewChanMap()
+	b.directMap = nil
 
 	return b
 }
@@ -144,6 +143,31 @@ func (b *SimulationBuilder) WithCapacityScheduler(
 	return b
 }
 
+func (b *SimulationBuilder) addNewNode() (
+	id string,
+	controlConnector interfaces.ControlTransport,
+	bootstrap overlay.Bootstrap,
+) {
+	if b.latencyMap != nil {
+		// assign ID to node
+		id = b.latencyMap.NewId()
+
+		// create latency connector
+		controlConnector = overlay.NewUnderlayChan(
+			id,
+			b.underlaySimulation,
+			b.latencyMap,
+		)
+
+		bootstrap = b.latencyMap
+	} else {
+		// assign ID to node & create direct channel
+		controlConnector, id = overlay.NewDirectChan(b.directMap)
+		bootstrap = b.directMap
+	}
+	return id, controlConnector, bootstrap
+}
+
 func (b *SimulationBuilder) WithCapacityNodes(
 	nodes int,
 	upload int,
@@ -160,27 +184,7 @@ func (b *SimulationBuilder) WithCapacityNodes(
 		limit = b.nodes
 	}
 	for i := b.cnode; i < limit; i++ {
-		var id string
-		var controlConnector interfaces.ControlTransport
-		var bootstrap overlay.Bootstrap
-
-		if b.latencyMap != nil {
-			// assign ID to node
-			id = b.latencyMap.NewId()
-
-			// create latency connector
-			controlConnector = overlay.NewUnderlayChan(
-				id,
-				b.underlaySimulation,
-				b.latencyMap,
-			)
-
-			bootstrap = b.latencyMap
-		} else {
-			// assign ID to node & create direct channel
-			controlConnector, id = overlay.NewDirectChan(b.directMap)
-			bootstrap = b.directMap
-		}
+		id, controlConnector, bootstrap := b.addNewNode()
 
 		// register capacity
 		capacityConnector := capacity.NewCapacityConnector(
@@ -215,8 +219,26 @@ func (b *SimulationBuilder) WithLogs(logsFile string) *SimulationBuilder {
 }
 
 func (b *SimulationBuilder) Build() ISimulation {
+	if b.nodes == -1 {
+		panic("Node number not specified.")
+	}
 	if b.underlaySimulation == nil {
 		panic("No underlay simulation provided.")
+	}
+
+	if b.capacityMap == nil {
+		for i := 0; i < b.nodes; i++ {
+			id, controlConnector, bootstrap := b.addNewNode()
+
+			newNode := NewAutowiredNode(b.template, NewSimulatedNode(
+				controlConnector,
+				nil,
+				bootstrap,
+				id,
+				b.Time,
+			))
+			b.userNodes[id] = newNode
+		}
 	}
 
 	return b.Simulation
@@ -228,7 +250,9 @@ func (s *Simulation) Run() {
 		s.underlaySimulation.Push(event)
 	}
 
-	s.capacityMap.Start(s.underlaySimulation)
+	if s.capacityMap != nil {
+		s.capacityMap.Start(s.underlaySimulation)
+	}
 
 	go s.underlaySimulation.Run()
 	for _, node := range s.userNodes {
