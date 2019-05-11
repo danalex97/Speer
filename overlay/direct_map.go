@@ -8,7 +8,6 @@ import (
 
 type DirectMap interface {
 	Bootstrap
-	NodeAssigner
 
 	Chan(id string) DirectConnector
 }
@@ -17,14 +16,12 @@ type ChanMap struct {
 	*sync.RWMutex
 
 	chanMap map[string]DirectConnector
-	chanCtr int
 }
 
 func NewChanMap() DirectMap {
 	return &ChanMap{
 		RWMutex: new(sync.RWMutex),
 		chanMap: make(map[string]DirectConnector),
-		chanCtr: 0,
 	}
 }
 
@@ -32,8 +29,8 @@ func (mp *ChanMap) NewId() string {
 	mp.Lock()
 	defer mp.Unlock()
 
-	id := strconv.Itoa(mp.chanCtr)
-	mp.chanCtr += 1
+	id := strconv.Itoa(len(mp.chanMap))
+	mp.chanMap[id] = newDirectChan(id, mp)
 
 	return id
 }

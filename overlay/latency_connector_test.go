@@ -47,7 +47,7 @@ func TestLatencyConnectorPacketDelivery(t *testing.T) {
 	clearUnderChan(bridge1)
 }
 
-func TestSendPacketToSelf(t *testing.T) {
+func TestLatencyConnectorSendPacketToSelf(t *testing.T) {
 	done := make(chan bool, 1)
 
 	go func() {

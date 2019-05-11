@@ -20,7 +20,8 @@ type DirectChan struct {
 	networkMap DirectMap
 }
 
-func NewDirectChan(
+// Private constructor used when allocating a NewId for the DirectMap.
+func newDirectChan(
 	id string,
 	networkMap DirectMap,
 ) DirectConnector {
@@ -30,6 +31,13 @@ func NewDirectChan(
 
 		networkMap: networkMap,
 	}
+}
+
+func NewDirectChan(
+	networkMap DirectMap,
+) (DirectConnector, string) {
+	id := networkMap.NewId()
+	return networkMap.Chan(id), id
 }
 
 func (d *DirectChan) ControlSend(dst string, msg interface{}) {

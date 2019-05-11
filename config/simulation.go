@@ -71,7 +71,7 @@ func NewSimulation(config *Config) interfaces.ISimulation {
 		CreateTemplate(config)
 
 		pwd, _ := os.Getwd()
-		src := fmt.Sprintf("%s/main.go", pwd)
+		src := fmt.Sprintf("%s/speer.go", pwd)
 
 		// run again main
 		args := []string{}
