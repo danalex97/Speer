@@ -80,8 +80,6 @@ func (u *UnderlayChan) ReceiveEvent(m interface{}) interface{} {
 	if overPacket.Dest() != u.id {
 		return nil
 	}
-	// fmt.Printf("Packet delivered: {%s, %s}\n", overPacket.Src(), overPacket.Dest())
-
 	return u.Proxy(overPacket)
 }
 
