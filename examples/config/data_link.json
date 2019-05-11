@@ -6,11 +6,6 @@
 
     "logFile" : "./log.json",
 
-    "transitDomains"    : 5,
-    "transitDomainSize" : 5,
-    "stubDomains"       : 5,
-    "stubDomainSize"    : 5,
-
     "transferInterval"  : 10,
     "capacityNodes" : [{
         "number"   : 1,

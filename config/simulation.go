@@ -15,24 +15,24 @@ func NewSimulationFromTemplate(
 	config *Config,
 	template interfaces.Node,
 ) interfaces.ISimulation {
-	if config.TransitDomains == 0 || config.TransitDomainSize == 0 {
-		panic("Transit domain number or transit domain size not provided or zero.")
-	}
+	builder := sdk.NewSimulationBuilder(template)
 
-	builder := sdk.NewSimulationBuilder(template).
-		WithInternetworkUnderlay(
-			int(config.TransitDomains),
-			int(config.TransitDomainSize),
-			int(config.StubDomains),
-			int(config.StubDomainSize))
+	if config.Network != nil {
+		network := config.Network
+		if network.TransitDomains == 0 || network.TransitDomainSize == 0 {
+			panic("Transit domain number or transit domain size not provided or zero.")
+		}
+		builder = builder.WithInternetworkUnderlay(
+			int(network.TransitDomains),
+			int(network.TransitDomainSize),
+			int(network.StubDomains),
+			int(network.StubDomainSize))
+	}
 
 	if config.Parallel {
 		builder = builder.WithParallelSimulation()
 	}
 
-	if config.TransferInterval == 0 {
-		panic("No transfer interval provided or transfer interval zero.")
-	}
 	if config.Nodes == 0 {
 		panic("Number of nodes was not provided or is 0.")
 	}
@@ -41,13 +41,14 @@ func NewSimulationFromTemplate(
 	}
 
 	builder = builder.
-		WithFixedNodes(int(config.Nodes)).
-		WithCapacityScheduler(int(config.TransferInterval))
+		WithFixedNodes(int(config.Nodes))
 
-	// [TODO] allow running without latency
-	// if config.Latency {
-	// 	builder = builder.WithLatency()
-	// }
+	if config.CapacityNodes != nil && config.TransferInterval == 0 {
+		panic("No transfer interval provided or transfer interval zero.")
+	} else if config.CapacityNodes != nil {
+		builder = builder.
+			WithCapacityScheduler(int(config.TransferInterval))
+	}
 
 	for _, tuple := range config.CapacityNodes {
 		builder = builder.WithCapacityNodes(
