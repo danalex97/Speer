@@ -5,8 +5,8 @@ import (
 
 	"io/ioutil"
 	"os"
-	"runtime"
 	"strings"
+	"runtime"
 	"sync"
 	"time"
 
@@ -25,12 +25,13 @@ type mockNode struct {
 }
 
 func (s *mockNode) New(util interfaces.NodeUtil) interfaces.Node {
-	return &mockNode{
+	r := &mockNode{
 		id:   util.Id(),
 		join: util.Join(),
 
 		transport: util.Transport(),
 	}
+	return r
 }
 
 func (s *mockNode) OnJoin() {
@@ -78,6 +79,26 @@ func TestSimulationBuilderAndTransports(t *testing.T) {
 
 	sim := NewSimulationBuilder(new(mockNode)).
 		WithInternetworkUnderlay(5, 5, 5, 5).
+		WithParallelSimulation().
+		WithFixedNodes(10).
+		WithCapacityScheduler(1).
+		WithCapacityNodes(10, 1, 1).
+		Build()
+
+	go sim.Run()
+	time.Sleep(100 * time.Millisecond)
+	sim.Stop()
+
+	assertEqual(t, joins, 10)
+	assertEqual(t, messages, 9)
+}
+
+func TestSimulationNoTopology(t *testing.T) {
+	joins = 0
+	messages = 0
+
+	sim := NewSimulationBuilder(new(mockNode)).
+		WithNoUnderlay().
 		WithParallelSimulation().
 		WithFixedNodes(10).
 		WithCapacityScheduler(1).

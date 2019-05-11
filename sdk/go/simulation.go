@@ -162,6 +162,7 @@ func (b *SimulationBuilder) WithCapacityNodes(
 	for i := b.cnode; i < limit; i++ {
 		var id string
 		var controlConnector interfaces.ControlTransport
+		var bootstrap overlay.Bootstrap
 
 		if b.latencyMap != nil {
 			// assign ID to node
@@ -173,9 +174,12 @@ func (b *SimulationBuilder) WithCapacityNodes(
 				b.underlaySimulation,
 				b.latencyMap,
 			)
+
+			bootstrap = b.latencyMap
 		} else {
 			// assign ID to node & create direct channel
 			controlConnector, id = overlay.NewDirectChan(b.directMap)
+			bootstrap = b.directMap
 		}
 
 		// register capacity
@@ -190,7 +194,7 @@ func (b *SimulationBuilder) WithCapacityNodes(
 		newNode := NewAutowiredNode(b.template, NewSimulatedNode(
 			controlConnector,
 			capacityConnector,
-			b.latencyMap,
+			bootstrap,
 			id,
 			b.Time,
 		))
