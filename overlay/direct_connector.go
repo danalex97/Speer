@@ -23,10 +23,10 @@ func NewDirectChan(
 	networkMap LatencyMap,
 ) DirectConnector {
 	return &DirectChan{
-		id : id,
-		recv : make(chan interface {}, controlMessageCapacity),
+		id: id,
+		recv: make(chan interface {}, controlMessageCapacity),
 
-		networkMap : networkMap,
+		networkMap: networkMap,
 	}
 }
 
