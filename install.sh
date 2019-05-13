@@ -5,11 +5,11 @@ then
       exit 1
 fi
 
-mkdir -p $GOPATH/src/danalex97
+mkdir -p $GOPATH/src/github.com/danalex97
 
-pushd $GOPATH/src >> /usr/null
+pushd $GOPATH/src/github.com/danalex97 > /dev/null
+
 if [ -z "$(ls -A Speer)" ]; then
-    rm -rf Speer
     git clone https://github.com/danalex97/Speer.git
 else
     pushd Speer >> /usr/null
@@ -17,12 +17,12 @@ else
     popd >> /usr/null
 fi
 
-pushd Speer >> /usr/null
+pushd Speer > /dev/null
 
 chmod +x speer.sh
 sudo cp speer.sh /usr/bin/speer
 echo "Speer installed successfully."
 
-popd >> /usr/null
+popd > /dev/null
 
-popd >> /usr/null
+popd > /dev/null
