@@ -2,11 +2,6 @@
 
 ### Examples
 
-The see the options provided by `speer.go` run:
-```
-go run speer.go -h
-```
-
 We provide the following examples:
 ```
 go run speer.go -config=examples/config/sink.json
