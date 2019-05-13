@@ -5,11 +5,12 @@ then
       exit 1
 fi
 
-mkdir -p $GOPATH/src/github.com/danalex97
+mkdir -p $GOPATH/src/github.com/danalex97/Speer
 
 pushd $GOPATH/src/github.com/danalex97 > /dev/null
 
 if [ -z "$(ls -A Speer)" ]; then
+    rm -rf Speer
     git clone https://github.com/danalex97/Speer.git
 else
     pushd Speer >> /usr/null
