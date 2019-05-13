@@ -4,14 +4,14 @@
 [![GoDoc](https://godoc.org/github.com/danalex97/Speer?status.png)](https://godoc.org/github.com/danalex97/Speer)
 
 
-A network discrete event **S**imulator for **peer**-to-peer network modeling. **Speer is made for students, researchers and hobbyists.** It's goal is to allow
+A discrete event **S**imulator for **peer**-to-peer network modeling. **Speer is made for students, researchers and hobbyists.** It's goal is to allow
 them to easily implement, simulate and study peer to peer networks.
 
 It combines event-driven simulations with cycle-based concepts and allows parallelization by taking advantage of Go’s concurrency features.
 
 ## Quickstart
 
-After getting **Golang >= 1.6** and setting **$GOPTH**, install Speer via:
+After getting **Golang >= 1.6** and setting **$GOPATH**, install Speer via:
 ```
 curl https://raw.githubusercontent.com/danalex97/Speer/master/install.sh --output speer_install.sh
 chmod +x speer_install.sh
