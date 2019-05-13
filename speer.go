@@ -15,9 +15,11 @@ import (
 	"time"
 )
 
+var speer = os.Getenv("GOPATH") + "/src/github.com/danalex97/Speer/"
+
 var cpuprofile = flag.String("cpuprofile", "", "Write cpu profile to `file`.")
 var memprofile = flag.String("memprofile", "", "Write memory profile to `file`.")
-var configPath = flag.String("config", "./examples/config/broadcast.json", "Path to configuration file.")
+var configPath = flag.String("config", speer + "examples/config/broadcast.json", "Path to configuration file.")
 
 var secs = flag.Int("time", 1, "The time to run the simulation.")
 
