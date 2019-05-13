@@ -2,6 +2,11 @@
 
 ### Examples
 
+Before running the examples, move to the installation directory of Speer:
+```
+cd $GOPATH/src/github.com/danalex97/Speer
+```
+
 We provide the following examples:
 ```
 go run speer.go -config=examples/config/sink.json

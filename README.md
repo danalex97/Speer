@@ -11,26 +11,28 @@ It combines event-driven simulations with cycle-based concepts and allows parall
 
 ## Quickstart
 
-After getting **Golang >= 1.6**, install Speer via:
+After getting **Golang >= 1.6** and setting **$GOPTH**, install Speer via:
 ```
-go get github.com/danalex97/Speer
+curl https://raw.githubusercontent.com/danalex97/Speer/master/install.sh --output speer_install.sh
+chmod +x speer_install.sh
+./speer_install.sh
+rm speer_install.sh
 ```
 
-From the installation folder of Speer, you can run a simulation from a JSON configuration as follows:
+Now, you can run a simulation from a JSON configuration as follows:
 ```
-go run speer.go -config=[path_to_configuration]
+speer -config=[path_to_configuration]
 ```
 
 The see the options provided by `speer.go` run:
 ```
-go run speer.go -h
+speer -h
 ```
 
-You can run the default example `examples/broadcast.go` via the command:
+You can run the default example in `examples/broadcast.go` via the command:
 ```
-go run speer.go
+speer
 ```
-
 
 ## Table of contents
 

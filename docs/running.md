@@ -4,7 +4,7 @@
 
 Speer allows running a simulation directly from a JSON configuration that provides simulation parameters and a **[path-to-implementation-package]/[name-of-structure-to-simulate]**. The simplest way to run a simulation is to run:
 ```
-go run speer.go -config=[configuration-path]
+speer -config=[configuration-path]
 ```
 
 The configuration has to provide the path to your source code that implements the `Node` interface. For an example, check `examples/config/broadcast.json`.

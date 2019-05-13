@@ -13,7 +13,7 @@ go get -d $SPEER
 pushd $GOPATH/src/$SPEER >> /usr/null
 
 chmod +x speer.sh
-cp speer.sh /usr/bin/speer
+sudo cp speer.sh /usr/bin/speer
 echo "Speer installed successfully."
 
 popd >> /usr/null
