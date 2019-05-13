@@ -13,9 +13,9 @@ if [ -z "$(ls -A Speer)" ]; then
     rm -rf Speer
     git clone https://github.com/danalex97/Speer.git
 else
-    pushd Speer > /usr/null
+    pushd Speer > /dev/null
     git pull
-    popd > /usr/null
+    popd > /dev/null
 fi
 
 pushd Speer > /dev/null
