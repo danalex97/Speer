@@ -9,6 +9,31 @@ them to easily implement, simulate and study peer to peer networks.
 
 It combines event-driven simulations with cycle-based concepts and allows parallelization by taking advantage of Go’s concurrency features.
 
+## Quickstart
+
+After getting **Golang >= 1.6** and setting **$GOPTH**, install Speer via:
+```
+curl https://raw.githubusercontent.com/danalex97/Speer/master/install.sh --output speer_install.sh
+chmod +x speer_install.sh
+./speer_install.sh
+rm speer_install.sh
+```
+
+Now, you can run a simulation from a JSON configuration as follows:
+```
+speer -config=[path_to_configuration]
+```
+
+The see the options provided by `speer.go` run:
+```
+speer -h
+```
+
+You can run the default example in `examples/broadcast.go` via the command:
+```
+speer
+```
+
 ## Table of contents
 
 - [Motivation & FAQ](docs/motivation.md)
@@ -17,15 +42,10 @@ It combines event-driven simulations with cycle-based concepts and allows parall
   - [Latency](docs/latency.md)
   - [Capacity](docs/capacity.md)
   - [Optimizations](docs/optimizations.md)
-- [User guide](docs/usage.md)
-
-## Install
-```
-go get github.com/danalex97/Speer
-```
-
-Requirements:
- - **Golang >= 1.6**
+- User guide
+  - [Interfaces](docs/interfaces.md)
+  - [Examples](docs/examples.md)
+  - [Running a simulation](docs/running.md)
 
 ## How to contribute
 
