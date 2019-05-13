@@ -86,7 +86,7 @@ func TestSimulationBuilderAndTransports(t *testing.T) {
 		Build()
 
 	go sim.Run()
-	time.Sleep(100 * time.Millisecond)
+	time.Sleep(500 * time.Millisecond)
 	sim.Stop()
 
 	assertEqual(t, joins, 10)
@@ -105,7 +105,7 @@ func TestSimulationNoTopology(t *testing.T) {
 		Build()
 
 	go sim.Run()
-	time.Sleep(100 * time.Millisecond)
+	time.Sleep(500 * time.Millisecond)
 	sim.Stop()
 
 	assertEqual(t, joins, 10)
@@ -122,7 +122,7 @@ func TestSimulationNoCapacities(t *testing.T) {
 		Build()
 
 	go sim.Run()
-	time.Sleep(100 * time.Millisecond)
+	time.Sleep(500 * time.Millisecond)
 	sim.Stop()
 
 	assertEqual(t, joins, 10)

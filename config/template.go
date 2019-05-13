@@ -9,12 +9,14 @@ import (
 	"path"
 )
 
-const (
-	stubFile   = "config/stub/stub.go.tmp"
-	stubScript = "config/stub/stub.go"
+var speer = os.Getenv("GOPATH") + "/src/github.com/danalex97/Speer/"
 
-	defaultFile   = "config/stub/default.go.tmp"
-	defaultScript = "config/stub/default.go"
+var (
+	stubFile   = speer + "config/stub/stub.go.tmp"
+	stubScript = speer + "config/stub/stub.go"
+
+	defaultFile   = speer + "config/stub/default.go.tmp"
+	defaultScript = speer + "config/stub/default.go"
 )
 
 func TemplateExists() bool {
