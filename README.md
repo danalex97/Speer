@@ -13,10 +13,7 @@ It combines event-driven simulations with cycle-based concepts and allows parall
 
 After getting **Golang >= 1.6** and setting **$GOPATH**, install Speer via:
 ```
-curl https://raw.githubusercontent.com/danalex97/Speer/master/install.sh --output speer_install.sh
-chmod +x speer_install.sh
-./speer_install.sh
-rm speer_install.sh
+curl https://raw.githubusercontent.com/danalex97/Speer/master/install.sh | bash
 ```
 
 Now, you can run a simulation from a JSON configuration as follows:
