@@ -3,29 +3,29 @@ package examples
 import (
 	. "github.com/danalex97/Speer/interfaces"
 
-	"runtime"
 	"fmt"
+	"runtime"
 )
 
 type BroadcastExample struct {
 	Transport
 
-	id string
+	id     string
 	parent string
 
 	members []string
-	time func() int
+	time    func() int
 }
 
 func (s *BroadcastExample) New(util NodeUtil) Node {
 	return &BroadcastExample{
-		Transport : util.Transport(),
+		Transport: util.Transport(),
 
-		id : util.Id(),
-		parent : util.Join(),
+		id:     util.Id(),
+		parent: util.Join(),
 
-		members : []string{util.Id()},
-		time    : util.Time(),
+		members: []string{util.Id()},
+		time:    util.Time(),
 	}
 }
 
@@ -63,7 +63,7 @@ func (s *BroadcastExample) handleRecv(m interface{}) {
 			// if the root receives a new node, broadcast the message
 			s.members = append(s.members, msg.id)
 			s.broadcast(NewMember{
-				id : msg.id,
+				id: msg.id,
 			})
 		}
 	case NewMember:
@@ -71,9 +71,9 @@ func (s *BroadcastExample) handleRecv(m interface{}) {
 			if msg.id != s.id {
 				s.members = append(s.members, msg.id)
 				s.broadcast(SomeBroadcast{
-					ts   : s.time(),
-					list : s.members,
-					from : s.id,
+					ts:   s.time(),
+					list: s.members,
+					from: s.id,
 				})
 			}
 		}
@@ -85,14 +85,14 @@ func (s *BroadcastExample) handleRecv(m interface{}) {
 func (s *BroadcastExample) OnJoin() {
 	if !s.root() {
 		s.ControlSend(s.parent, Join{
-			id : s.id,
+			id: s.id,
 		})
 	}
 
 	for {
 		select {
 		case m, _ := <-s.ControlRecv():
-			s.handleRecv(m);
+			s.handleRecv(m)
 
 		default:
 			runtime.Gosched()

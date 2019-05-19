@@ -2,24 +2,24 @@ package examples
 
 import (
 	. "github.com/danalex97/Speer/interfaces"
-	
-	"runtime"
+
 	"fmt"
+	"runtime"
 )
 
 type SinkExample struct {
 	Transport
 
-	id string
+	id     string
 	parent string
 }
 
 func (s *SinkExample) New(util NodeUtil) Node {
 	return &SinkExample{
-		Transport : util.Transport(),
+		Transport: util.Transport(),
 
-		id : util.Id(),
-		parent : util.Join(),
+		id:     util.Id(),
+		parent: util.Join(),
 	}
 }
 
@@ -46,7 +46,7 @@ func (s *SinkExample) OnJoin() {
 	for {
 		select {
 		case m, _ := <-s.ControlRecv():
-			s.handleRecv(m);
+			s.handleRecv(m)
 
 		default:
 			runtime.Gosched()

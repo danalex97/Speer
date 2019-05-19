@@ -27,7 +27,7 @@ type Config struct {
 	// number of peers in the system
 	Nodes uint `json:"nodes"`
 
-	Network *NetworkConf `json:"network"` 
+	Network *NetworkConf `json:"network"`
 
 	// interval of virtual time units at which the capacity scheduler runs
 	TransferInterval uint `json:"transferInterval"`

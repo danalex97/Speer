@@ -5,8 +5,8 @@ import (
 
 	"io/ioutil"
 	"os"
-	"strings"
 	"runtime"
+	"strings"
 	"sync"
 	"time"
 

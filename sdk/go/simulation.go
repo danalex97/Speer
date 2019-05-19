@@ -22,7 +22,7 @@ type Simulation struct {
 
 	logger *logs.EventMonitor
 
-	directMap overlay.DirectMap
+	directMap   overlay.DirectMap
 	latencyMap  overlay.LatencyMap
 	capacityMap capacity.CapacityMap
 	nodes       int
@@ -106,11 +106,11 @@ func (b *SimulationBuilder) WithRandomUniformUnderlay(
 	b.underlaySimulation = underlay.NewNetworkSimulation(
 		events.NewLazySimulation(),
 		underlay.NewRandomUniformNetwork(
-		   nodes,
-		   edges,
-		   minLatency,
-		   maxLatency,
-	   ),
+			nodes,
+			edges,
+			minLatency,
+			maxLatency,
+		),
 	)
 	b.latencyMap = overlay.NewNetworkMap(b.underlaySimulation.Network())
 	b.directMap = nil

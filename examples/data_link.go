@@ -1,7 +1,7 @@
 package examples
 
 import (
-	.   "github.com/danalex97/Speer/interfaces"
+	. "github.com/danalex97/Speer/interfaces"
 	str "github.com/danalex97/Speer/structs"
 
 	"fmt"
@@ -18,12 +18,12 @@ type DataLinkExample struct {
 
 func (s *DataLinkExample) New(util NodeUtil) Node {
 	return &DataLinkExample{
-		Transport : util.Transport(),
+		Transport: util.Transport(),
 
-		node1 : util.Id(),
-		node2 : util.Join(),
+		node1: util.Id(),
+		node2: util.Join(),
 
-		time : util.Time(),
+		time: util.Time(),
 	}
 }
 

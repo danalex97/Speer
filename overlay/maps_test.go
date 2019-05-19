@@ -49,7 +49,7 @@ func TestNetworkMapNewIdReturnsDifferentRouter(t *testing.T) {
 }
 
 func TestNetworkMapJoinReturnsDifferentRouter(t *testing.T) {
-	netmaps := []Bootstrap{testNetworkMap(10), testNetworkMap2(2, 5),  NewChanMap()}
+	netmaps := []Bootstrap{testNetworkMap(10), testNetworkMap2(2, 5), NewChanMap()}
 	for _, netmap := range netmaps {
 		for i := 0; i < 10; i++ {
 			netmap.NewId()
