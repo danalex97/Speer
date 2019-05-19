@@ -15,11 +15,15 @@ import (
 
 var joins int = 0
 var messages int = 0
+var ctr int = 0
 var mutex sync.Mutex = sync.Mutex{}
 
 type mockNode struct {
 	id   string
 	join string
+
+	callback interfaces.Callback
+	routine  interfaces.Routine
 
 	transport interfaces.Transport
 }
@@ -29,8 +33,22 @@ func (s *mockNode) New(util interfaces.NodeUtil) interfaces.Node {
 		id:   util.Id(),
 		join: util.Join(),
 
+		callback: nil,
+		routine: nil,
+
 		transport: util.Transport(),
 	}
+	r.callback = util.Callback(5, func() {
+		mutex.Lock()
+		ctr += 1
+		mutex.Unlock()
+	})
+	r.routine  = util.Routine(5, func() {
+		mutex.Lock()
+		ctr += 1
+		mutex.Unlock()
+		r.routine.Stop()
+	})
 	return r
 }
 
@@ -76,6 +94,7 @@ func assertEqual(t *testing.T, a interface{}, b interface{}) {
 func TestSimulationBuilderAndTransports(t *testing.T) {
 	joins = 0
 	messages = 0
+	ctr = 0
 
 	sim := NewSimulationBuilder(new(mockNode)).
 		WithInternetworkUnderlay(5, 5, 5, 5).
@@ -89,6 +108,7 @@ func TestSimulationBuilderAndTransports(t *testing.T) {
 	time.Sleep(500 * time.Millisecond)
 	sim.Stop()
 
+	assertEqual(t, ctr, 20)
 	assertEqual(t, joins, 10)
 	assertEqual(t, messages, 9)
 }
@@ -96,6 +116,7 @@ func TestSimulationBuilderAndTransports(t *testing.T) {
 func TestSimulationNoTopology(t *testing.T) {
 	joins = 0
 	messages = 0
+	ctr = 0
 
 	sim := NewSimulationBuilder(new(mockNode)).
 		WithParallelSimulation().
@@ -108,6 +129,7 @@ func TestSimulationNoTopology(t *testing.T) {
 	time.Sleep(500 * time.Millisecond)
 	sim.Stop()
 
+	assertEqual(t, ctr, 20)
 	assertEqual(t, joins, 10)
 	assertEqual(t, messages, 9)
 }
@@ -115,6 +137,7 @@ func TestSimulationNoTopology(t *testing.T) {
 func TestSimulationNoCapacities(t *testing.T) {
 	joins = 0
 	messages = 0
+	ctr = 0
 
 	sim := NewSimulationBuilder(new(mockNode)).
 		WithParallelSimulation().
@@ -125,6 +148,7 @@ func TestSimulationNoCapacities(t *testing.T) {
 	time.Sleep(500 * time.Millisecond)
 	sim.Stop()
 
+	assertEqual(t, ctr, 20)
 	assertEqual(t, joins, 10)
 	assertEqual(t, messages, 9)
 }
@@ -138,6 +162,7 @@ func TestSimulationOnFlatToplogy(t *testing.T) {
 
 	joins = 0
 	messages = 0
+	ctr = 0
 
 	sim := NewSimulationBuilder(new(mockNode)).
 		WithRandomUniformUnderlay(200, 1000, 5, 10).
@@ -161,6 +186,7 @@ func TestSimulationOnFlatToplogy(t *testing.T) {
 		t.Fatalf("Log suprisingly short")
 	}
 
+	assertEqual(t, ctr, 160)
 	assertEqual(t, joins, 80)
 	assertEqual(t, messages, 79)
 }
