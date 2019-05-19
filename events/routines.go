@@ -21,13 +21,14 @@ type (
 	}
 
 	callback struct {
+		routine func()
 	}
 )
 
-func NewRoutine(interval int, callback func()) RoutineReceiver {
+func NewRoutine(interval int, exec func()) RoutineReceiver {
 	return &routine{
 		interval: interval,
-		routine:  callback,
+		routine:  exec,
 	}
 }
 
@@ -48,10 +49,13 @@ func (r *routine) Receive(event *Event) *Event {
 	)
 }
 
-func NewCallback() CallbackReceiver {
-	return &callback{}
+func NewCallback(exec func ()) CallbackReceiver {
+	return &callback{
+		routine: exec,
+	}
 }
 
-func (r *callback) Receive(event *Event) *Event {
+func (c *callback) Receive(event *Event) *Event {
+	c.routine()
 	return nil
 }

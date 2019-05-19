@@ -1,8 +1,8 @@
 package interfaces
 
 type RoutineCapabilities interface {
-	// Routine(interval int, routine func()) Routine
-	// Callback(interval int, routine func()) Callback
+	Routine(interval int, routine func()) Routine
+	Callback(timeout int, routine func()) Callback
 }
 
 // Wrapers for routines that run at fixed intervals. The inital call of the

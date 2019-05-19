@@ -2,6 +2,8 @@ package interfaces
 
 // The Util interface is provided to a node.
 type NodeUtil interface {
+	RoutineCapabilities
+	
 	Transport() Transport
 
 	Id() string

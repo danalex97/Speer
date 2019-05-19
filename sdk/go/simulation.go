@@ -198,6 +198,7 @@ func (b *SimulationBuilder) WithCapacityNodes(
 		newNode := NewAutowiredNode(b.template, NewSimulatedNode(
 			controlConnector,
 			capacityConnector,
+			b.underlaySimulation.Simulation,
 			bootstrap,
 			id,
 			b.Time,
@@ -233,6 +234,7 @@ func (b *SimulationBuilder) Build() ISimulation {
 			newNode := NewAutowiredNode(b.template, NewSimulatedNode(
 				controlConnector,
 				nil,
+				b.underlaySimulation.Simulation,
 				bootstrap,
 				id,
 				b.Time,

@@ -3,6 +3,7 @@ package sdk
 import (
 	"github.com/danalex97/Speer/interfaces"
 	"github.com/danalex97/Speer/overlay"
+	"github.com/danalex97/Speer/events"
 )
 
 type NodeUtil interface {
@@ -17,6 +18,8 @@ type Connector struct {
 type SimulatedNode struct {
 	*Connector
 
+	simulation *events.Simulation
+
 	time      func() int
 	bootstrap overlay.Bootstrap
 	id        string
@@ -25,6 +28,7 @@ type SimulatedNode struct {
 func NewSimulatedNode(
 	controlTransport interfaces.ControlTransport,
 	dataTransport interfaces.DataTransport,
+	simulation *events.Simulation,
 	bootstrap overlay.Bootstrap,
 	id string,
 	time func() int,
@@ -34,9 +38,10 @@ func NewSimulatedNode(
 			ControlTransport: controlTransport,
 			DataTransport:    dataTransport,
 		},
-		time:      time,
-		bootstrap: bootstrap,
-		id:        id,
+		simulation: simulation,
+		time:       time,
+		bootstrap:  bootstrap,
+		id:         id,
 	}
 }
 
@@ -54,4 +59,24 @@ func (n *SimulatedNode) Time() func() int {
 
 func (n *SimulatedNode) Transport() interfaces.Transport {
 	return n.Connector
+}
+
+func (n *SimulatedNode) Routine(interval int, routine func()) interfaces.Routine {
+	routineReceiver := events.NewRoutine(interval, routine)
+	n.simulation.Push(events.NewEvent(
+		n.simulation.Time(),
+		nil,
+		routineReceiver,
+	))
+	return routineReceiver
+}
+
+func (n *SimulatedNode) Callback(timeout int, routine func()) interfaces.Callback {
+	callbackReceiver := events.NewCallback(routine)
+	n.simulation.Push(events.NewEvent(
+		n.simulation.Time() + timeout,
+		nil,
+		callbackReceiver,
+	))
+	return callbackReceiver
 }
