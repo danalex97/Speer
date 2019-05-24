@@ -129,7 +129,7 @@ func (s *Simulation) Handle() {
 
 		// The event gets dispached to observers
 		for _, observer := range s.observers {
-			observer.EnqueEvent(event)
+			observer.Receive(event)
 		}
 
 		s.timeMutex.Lock()
@@ -200,7 +200,7 @@ func (s *Simulation) HandleParallel() {
 	// The event gets dispached to observers.
 	for _, event := range events {
 		for _, observer := range s.observers {
-			observer.EnqueEvent(event)
+			observer.Receive(event)
 		}
 	}
 

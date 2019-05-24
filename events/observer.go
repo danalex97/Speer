@@ -4,16 +4,28 @@ import (
 	"runtime"
 )
 
-// When we pop an element during the simulation we notify all the observers
-// associated with the event’s receiver. Registering an observer has priority
-// over processing events, thus allowing the user to register observers at any
-// moment.
+// An observer is a special type of receiver that is used to monitor events
+// related to a observer. When the simulation pops an event, all registered
+// observers are notified. Registering an observer has priority over processing
+// events, thus allowing registration at any moment.
 type Observer interface {
-	Recv() <-chan interface{}
-	EnqueEvent(*Event)
+	Receiver
 }
 
-type DecorableObserver interface {
+// A passive observer keeps all the events that were received by it in a
+// a channel. Moreover, it allows proxying the receival of an event by using
+// using the Decorable interface. This means that the event can be processed
+// before being put into the Recv channel.
+type PassiveObserver interface {
+	Decorable
+	Observer
+
+	Recv() <-chan interface{}
+}
+
+// An active observer is an observer which allows for a proxy. It's intent for
+// usage is allowing for calling a Proxy at a higher level.
+type ActiveObserver interface {
 	Decorable
 	Observer
 }
@@ -21,15 +33,17 @@ type DecorableObserver interface {
 const maxGlobalObserverQueue int = 1000
 const maxObserverQueue int = 1000
 
-type EventObserver struct {
+// A passive event observer is a PassiveObserver that calls a proxy function
+// before delivering a message to the Recv channel.
+type PassiveEventObserver struct {
 	*Decorator
 
 	receiver Receiver
 	observer chan interface{}
 }
 
-func NewEventObserver(receiver Receiver) *EventObserver {
-	return &EventObserver{
+func NewPassiveEventObserver(receiver Receiver) *PassiveEventObserver {
+	return &PassiveEventObserver{
 		Decorator: NewDecorator(),
 
 		observer: make(chan interface{}, maxObserverQueue),
@@ -37,11 +51,11 @@ func NewEventObserver(receiver Receiver) *EventObserver {
 	}
 }
 
-func (o *EventObserver) Recv() <-chan interface{} {
+func (o *PassiveEventObserver) Recv() <-chan interface{} {
 	return o.observer
 }
 
-func (o *EventObserver) EnqueEvent(e *Event) {
+func (o *PassiveEventObserver) Receive(e *Event) *Event {
 	if e.Receiver() == o.receiver {
 		// Call the proxy on the received message before delivering it.
 		// The Proxy can be set by upper layers via SetProxy(Proxy).
@@ -51,29 +65,31 @@ func (o *EventObserver) EnqueEvent(e *Event) {
 			o.observer <- deliver
 		}
 	}
+	return nil
 }
 
-type globalObserver struct {
+type GlobalEventObserver struct {
 	observer chan interface{}
 }
 
-func NewGlobalEventObserver() Observer {
-	return &globalObserver{
+func NewGlobalEventObserver() *GlobalEventObserver {
+	return &GlobalEventObserver{
 		observer: make(chan interface{}, maxObserverQueue),
 	}
 }
 
-func (o *globalObserver) Recv() <-chan interface{} {
+func (o *GlobalEventObserver) Recv() <-chan interface{} {
 	return o.observer
 }
 
-func (o *globalObserver) EnqueEvent(e *Event) {
+func (o *GlobalEventObserver) Receive(e *Event) *Event {
 	select {
 	case o.observer <- e:
 	default:
 		// If we can't register the observer, let someone else to run
 		// to break the livelock.
 		runtime.Gosched()
-		o.EnqueEvent(e)
+		o.Receive(e)
 	}
+	return nil
 }

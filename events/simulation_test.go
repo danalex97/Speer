@@ -57,7 +57,7 @@ func testObserversGetNotified(t *testing.T, parallel bool, special bool) {
 	r1 := new(mockReceiver)
 	r2 := new(mockReceiver)
 
-	o := NewEventObserver(r1)
+	o := NewPassiveEventObserver(r1)
 	s := NewLazySimulation()
 	setParallel(t, s, parallel, special)
 
@@ -121,7 +121,7 @@ func testReceiversPushNewEvents(t *testing.T, parallel bool, special bool) {
 	setParallel(t, s, parallel, special)
 
 	r := new(oneTimePushReceiver)
-	o := NewEventObserver(r)
+	o := NewPassiveEventObserver(r)
 
 	go s.Run()
 	s.RegisterObserver(o)
@@ -162,8 +162,8 @@ func TestParallelProcessing(t *testing.T) {
 
 	r := new(oneTimePushReceiver)
 	r2 := new(oneTimePushReceiver)
-	o := NewEventObserver(r)
-	o2 := NewEventObserver(r2)
+	o := NewPassiveEventObserver(r)
+	o2 := NewPassiveEventObserver(r2)
 
 	go s.Run()
 	s.RegisterObserver(o)
