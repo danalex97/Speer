@@ -209,9 +209,10 @@ func (b *SimulationBuilder) WithCapacityNodes(
 
 		// set the observers for the autowired nodes
 		if latencyObserver != nil {
-			latencyObserver.SetProxy(nil)
+			latencyObserver.SetProxy(events.NewProxy(newNode.OnNotify))
 		}
-		capacityObserver.SetProxy(nil)
+		capacityObserver.SetProxy(events.NewProxy(newNode.OnNotify))
+		b.underlaySimulation.RegisterObserver(capacityObserver)
 
 		b.userNodes[id] = newNode
 	}
@@ -229,6 +230,13 @@ func (b *SimulationBuilder) WithLogs(logsFile string) *SimulationBuilder {
 	return b
 }
 
+type looper struct {
+	time func() int
+}
+func (l *looper) Receive(e *events.Event) *events.Event {
+	return events.NewEvent(l.time() + 1, nil, l)
+}
+
 func (b *SimulationBuilder) Build() ISimulation {
 	if b.nodes == -1 {
 		panic("Node number not specified.")
@@ -237,6 +245,7 @@ func (b *SimulationBuilder) Build() ISimulation {
 		panic("No underlay simulation provided.")
 	}
 
+	looper := &looper{time: b.underlaySimulation.Time}
 	if b.capacityMap == nil {
 		for i := 0; i < b.nodes; i++ {
 			id, controlConnector, bootstrap, latencyObserver := b.addNewNode()
@@ -253,9 +262,19 @@ func (b *SimulationBuilder) Build() ISimulation {
 
 			// set the observers for the autowired nodes
 			if latencyObserver != nil {
-				latencyObserver.SetProxy(nil)
+				latencyObserver.SetProxy(events.NewProxy(newNode.OnNotify))
+			}
+			if b.latencyMap == nil {
+				// I have neither of the modules
+				capacityObserver := events.NewActiveEventObserver(looper)
+				capacityObserver.SetProxy(events.NewProxy(newNode.OnNotify))
+				b.underlaySimulation.RegisterObserver(capacityObserver)
 			}
 		}
+	}
+
+	if b.capacityMap == nil && b.latencyMap == nil {
+		b.underlaySimulation.Push(events.NewEvent(0, nil, looper))
 	}
 
 	return b.Simulation
@@ -279,7 +298,7 @@ func (s *Simulation) Run() {
 				Node: node.Id(),
 			})
 		}
-		go node.OnJoin()
+		node.OnJoin()
 	}
 }
 

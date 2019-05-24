@@ -5,7 +5,6 @@ import (
 
 	"io/ioutil"
 	"os"
-	"runtime"
 	"strings"
 	"sync"
 	"time"
@@ -59,26 +58,24 @@ func (s *mockNode) OnJoin() {
 	if s.join != "" {
 		s.transport.ControlSend(s.join, "hello")
 	}
+}
 
-	for {
-		select {
-		case m, ok := <-s.transport.ControlRecv():
-			if !ok {
-				continue
-			}
-
-			switch msg := m.(type) {
-			case string:
-				if msg == "hello" {
-					mutex.Lock()
-					messages += 1
-					mutex.Unlock()
-				}
-			}
-
-		default:
-			runtime.Gosched()
+func (s *mockNode) OnNotify() {
+	select {
+	case m, ok := <-s.transport.ControlRecv():
+		if !ok {
+			return
 		}
+
+		switch msg := m.(type) {
+		case string:
+			if msg == "hello" {
+				mutex.Lock()
+				messages += 1
+				mutex.Unlock()
+			}
+		}
+	default:
 	}
 }
 
@@ -104,8 +101,8 @@ func TestSimulationBuilderAndTransports(t *testing.T) {
 		WithCapacityNodes(10, 1, 1).
 		Build()
 
-	go sim.Run()
-	time.Sleep(500 * time.Millisecond)
+	sim.Run()
+	time.Sleep(200 * time.Millisecond)
 	sim.Stop()
 
 	assertEqual(t, ctr, 20)
@@ -125,8 +122,8 @@ func TestSimulationNoTopology(t *testing.T) {
 		WithCapacityNodes(10, 1, 1).
 		Build()
 
-	go sim.Run()
-	time.Sleep(500 * time.Millisecond)
+	sim.Run()
+	time.Sleep(200 * time.Millisecond)
 	sim.Stop()
 
 	assertEqual(t, ctr, 20)
@@ -144,8 +141,8 @@ func TestSimulationNoCapacities(t *testing.T) {
 		WithFixedNodes(10).
 		Build()
 
-	go sim.Run()
-	time.Sleep(500 * time.Millisecond)
+	sim.Run()
+	time.Sleep(200 * time.Millisecond)
 	sim.Stop()
 
 	assertEqual(t, ctr, 20)
@@ -175,18 +172,18 @@ func TestSimulationOnFlatToplogy(t *testing.T) {
 		WithLogs(file).
 		Build()
 
-	go sim.Run()
-	time.Sleep(500 * time.Millisecond)
+	sim.Run()
+	time.Sleep(200 * time.Millisecond)
 	sim.Stop()
 
 	log, _ := ioutil.ReadFile(file)
 	vals := string(log[:])
 
-	if len(strings.Split(vals, "\n")) < 200 {
-		t.Fatalf("Log suprisingly short")
-	}
-
 	assertEqual(t, ctr, 160)
 	assertEqual(t, joins, 80)
 	assertEqual(t, messages, 79)
+
+	if len(strings.Split(vals, "\n")) < 200 {
+		t.Fatalf("Log suprisingly short")
+	}
 }

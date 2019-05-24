@@ -39,3 +39,12 @@ func NewTunnel(d Decorable) *Tunnel {
 func (t *Tunnel) SetProxy(p Proxy) {
 	t.Decorable.SetProxy(p)
 }
+
+// Creates a Proxy from a function that doesn't return an interface.
+func NewProxy(f func()) Proxy {
+	ret := func(_ interface {}) interface {} {
+		f()
+		return nil
+	}
+	return ret
+}
