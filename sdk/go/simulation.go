@@ -147,6 +147,7 @@ func (b *SimulationBuilder) addNewNode() (
 	id string,
 	controlConnector interfaces.ControlTransport,
 	bootstrap overlay.Bootstrap,
+	observer events.ActiveObserver,
 ) {
 	if b.latencyMap != nil {
 		// assign ID to node
@@ -158,6 +159,7 @@ func (b *SimulationBuilder) addNewNode() (
 			b.underlaySimulation,
 			b.latencyMap,
 		)
+		observer = controlConnector.(overlay.LatencyConnector).Observer()
 
 		bootstrap = b.latencyMap
 	} else {
@@ -165,7 +167,7 @@ func (b *SimulationBuilder) addNewNode() (
 		controlConnector, id = overlay.NewDirectChan(b.directMap)
 		bootstrap = b.directMap
 	}
-	return id, controlConnector, bootstrap
+	return id, controlConnector, bootstrap, observer
 }
 
 func (b *SimulationBuilder) WithCapacityNodes(
@@ -184,7 +186,7 @@ func (b *SimulationBuilder) WithCapacityNodes(
 		limit = b.nodes
 	}
 	for i := b.cnode; i < limit; i++ {
-		id, controlConnector, bootstrap := b.addNewNode()
+		id, controlConnector, bootstrap, latencyObserver := b.addNewNode()
 
 		// register capacity
 		capacityConnector := capacity.NewCapacityConnector(
@@ -192,9 +194,10 @@ func (b *SimulationBuilder) WithCapacityNodes(
 			download,
 			b.capacityMap,
 		)
+		capacityObserver := events.NewActiveEventObserver(b.capacityMap.Receiver())
 		b.capacityMap.AddConnector(id, capacityConnector)
 
-		// register autowired nodes
+		// register autowired node
 		newNode := NewAutowiredNode(b.template, NewSimulatedNode(
 			controlConnector,
 			capacityConnector,
@@ -203,6 +206,13 @@ func (b *SimulationBuilder) WithCapacityNodes(
 			id,
 			b.Time,
 		))
+
+		// set the observers for the autowired nodes
+		if latencyObserver != nil {
+			latencyObserver.SetProxy(nil)
+		}
+		capacityObserver.SetProxy(nil)
+
 		b.userNodes[id] = newNode
 	}
 	b.cnode = limit
@@ -229,7 +239,7 @@ func (b *SimulationBuilder) Build() ISimulation {
 
 	if b.capacityMap == nil {
 		for i := 0; i < b.nodes; i++ {
-			id, controlConnector, bootstrap := b.addNewNode()
+			id, controlConnector, bootstrap, latencyObserver := b.addNewNode()
 
 			newNode := NewAutowiredNode(b.template, NewSimulatedNode(
 				controlConnector,
@@ -240,6 +250,11 @@ func (b *SimulationBuilder) Build() ISimulation {
 				b.Time,
 			))
 			b.userNodes[id] = newNode
+
+			// set the observers for the autowired nodes
+			if latencyObserver != nil {
+				latencyObserver.SetProxy(nil)
+			}
 		}
 	}
 
