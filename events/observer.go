@@ -30,6 +30,26 @@ type ActiveObserver interface {
 	Observer
 }
 
+// An active event observer calls the proxy on receival of an event.
+type ActiveEventObserver struct {
+	*Decorator
+	receiver Receiver
+}
+
+func NewActiveEventObserver(receiver Receiver) *ActiveEventObserver {
+	return &ActiveEventObserver{
+		Decorator: NewDecorator(),
+		receiver:  receiver,
+	}
+}
+
+func (o *ActiveEventObserver) Receive(e *Event) *Event {
+	if e.Receiver() == o.receiver {
+		o.Proxy(e)
+	}
+	return nil
+}
+
 const maxGlobalObserverQueue int = 1000
 const maxObserverQueue int = 1000
 
@@ -78,7 +98,7 @@ type GlobalEventObserver struct {
 func NewGlobalEventObserver() *GlobalEventObserver {
 	return &GlobalEventObserver{
 		Decorator: NewDecorator(),
-		observer: make(chan interface{}, maxObserverQueue),
+		observer:  make(chan interface{}, maxObserverQueue),
 	}
 }
 

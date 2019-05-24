@@ -1,9 +1,9 @@
 package sdk
 
 import (
+	"github.com/danalex97/Speer/events"
 	"github.com/danalex97/Speer/interfaces"
 	"github.com/danalex97/Speer/overlay"
-	"github.com/danalex97/Speer/events"
 )
 
 type NodeUtil interface {
@@ -74,7 +74,7 @@ func (n *SimulatedNode) Routine(interval int, routine func()) interfaces.Routine
 func (n *SimulatedNode) Callback(timeout int, routine func()) interfaces.Callback {
 	callbackReceiver := events.NewCallback(routine)
 	n.simulation.Push(events.NewEvent(
-		n.simulation.Time() + timeout,
+		n.simulation.Time()+timeout,
 		nil,
 		callbackReceiver,
 	))

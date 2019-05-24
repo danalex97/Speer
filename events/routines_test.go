@@ -11,7 +11,7 @@ func TestRoutineCallsFunctionEachTimeAndCanBeStopped(t *testing.T) {
 	for i := 1; i <= 5; i++ {
 		assertEqual(t, v, i)
 		e = r.Receive(e)
-		assertEqual(t, e.Timestamp(), i * 5);
+		assertEqual(t, e.Timestamp(), i*5)
 	}
 	assertEqual(t, v, 6)
 	r.Stop()

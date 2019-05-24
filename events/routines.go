@@ -59,7 +59,7 @@ func (r *routine) Stop() {
 	r.stopped = true
 }
 
-func NewCallback(exec func ()) CallbackReceiver {
+func NewCallback(exec func()) CallbackReceiver {
 	return &callback{
 		routine: exec,
 		stopped: false,

@@ -34,7 +34,7 @@ func (s *mockNode) New(util interfaces.NodeUtil) interfaces.Node {
 		join: util.Join(),
 
 		callback: nil,
-		routine: nil,
+		routine:  nil,
 
 		transport: util.Transport(),
 	}
@@ -43,7 +43,7 @@ func (s *mockNode) New(util interfaces.NodeUtil) interfaces.Node {
 		ctr += 1
 		mutex.Unlock()
 	})
-	r.routine  = util.Routine(5, func() {
+	r.routine = util.Routine(5, func() {
 		mutex.Lock()
 		ctr += 1
 		mutex.Unlock()
