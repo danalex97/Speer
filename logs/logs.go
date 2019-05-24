@@ -24,7 +24,7 @@ type EventMonitor struct {
 }
 
 func NewEventMonitor(
-	o Observer,
+	o PassiveObserver,
 	netmap overlay.LatencyMap,
 	outFile string,
 ) *EventMonitor {

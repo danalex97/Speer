@@ -68,12 +68,16 @@ func (o *PassiveEventObserver) Receive(e *Event) *Event {
 	return nil
 }
 
+// GlobalEventObserver is a passive observer which monitors all events. These
+// events can be used for monitoring and logging purposes.
 type GlobalEventObserver struct {
+	*Decorator
 	observer chan interface{}
 }
 
 func NewGlobalEventObserver() *GlobalEventObserver {
 	return &GlobalEventObserver{
+		Decorator: NewDecorator(),
 		observer: make(chan interface{}, maxObserverQueue),
 	}
 }
@@ -84,7 +88,7 @@ func (o *GlobalEventObserver) Recv() <-chan interface{} {
 
 func (o *GlobalEventObserver) Receive(e *Event) *Event {
 	select {
-	case o.observer <- e:
+	case o.observer <- o.Proxy(e):
 	default:
 		// If we can't register the observer, let someone else to run
 		// to break the livelock.

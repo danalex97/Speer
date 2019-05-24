@@ -29,7 +29,7 @@ type UnderlayChan struct {
 	simulation *underlay.NetworkSimulation
 	networkMap LatencyMap
 
-	observer DecorableObserver
+	observer PassiveObserver
 }
 
 func NewUnderlayChan(
@@ -47,7 +47,7 @@ func NewUnderlayChan(
 	u.Decorator = NewDecorator()
 
 	// Establish listener
-	u.observer = NewEventObserver(u.networkMap.Router(u.id))
+	u.observer = NewPassiveEventObserver(u.networkMap.Router(u.id))
 	u.observer.SetProxy(u.ReceiveEvent)
 	u.simulation.RegisterObserver(u.observer)
 
@@ -61,7 +61,7 @@ func NewUnderlayChan(
 func (u *UnderlayChan) notifyPacket(packet underlay.Packet) {
 	// We need to run this in a separate routine since enqueing can be blocking,
 	// resulting in a problem when sending a packet to self.
-	go u.observer.EnqueEvent(NewEvent(0, packet, packet.Dest()))
+	go u.observer.Receive(NewEvent(0, packet, packet.Dest()))
 }
 
 // Proxy function used to strip the contents of an underlay packet. The
