@@ -45,11 +45,12 @@ func NewUnderlayChan(
 	u.networkMap = networkMap
 
 	// Establish listener
-	u.passiveObserver = NewPassiveEventObserver(u.networkMap.Router(u.id))
+	u.eventReceiver = u.networkMap.Router(u.id)
+	u.passiveObserver = NewPassiveEventObserver(u.eventReceiver)
 	u.passiveObserver.SetProxy(u.ReceiveEvent)
 
 	// Create active observer
-	u.activeObserver = NewActiveEventObserver(u.networkMap.Router(u.id))
+	u.activeObserver = NewActiveEventObserver(u.eventReceiver)
 
 	// Register observers; Note that the active observer should be attached
 	// AFTER the passive observer so that the event delivered by the passive
@@ -71,17 +72,16 @@ func (u *UnderlayChan) Observer() ActiveObserver {
 func (u *UnderlayChan) ReceiveEvent(m interface{}) interface{} {
 	event := (m).(*Event)
 	packet := event.Payload().(underlay.Packet)
-	overPacket := u.overlayPacket(packet)
 
 	if packet.Src() == nil {
 		return nil
 	}
 
 	// We need to look only at our own packets.
-	if overPacket.Dest() != u.id {
+	if packet.Dest() != u.eventReceiver {
 		return nil
 	}
-	return stripPayload(overPacket)
+	return packet.Payload()
 }
 
 func (u *UnderlayChan) ControlSend(dst string, msg interface{}) {
@@ -106,16 +106,4 @@ func (u *UnderlayChan) ControlRecv() <-chan interface{} {
 
 func (u *UnderlayChan) ControlPing(id string) bool {
 	return true
-}
-
-func stripPayload(m interface{}) interface{} {
-	return m.(Packet).Payload()
-}
-
-func (u *UnderlayChan) overlayPacket(p underlay.Packet) Packet {
-	return NewPacket(
-		u.networkMap.Id(p.Src()),
-		u.networkMap.Id(p.Dest()),
-		p.Payload(),
-	)
 }
