@@ -9,11 +9,11 @@
     "transferInterval"  : 10,
     "capacityNodes" : [{
         "number"   : 1,
-        "upload"   : 5,
+        "upload"   : 6,
         "download" : 5
     }, {
 		"number"   : 1,
 		"upload"   : 5,
-		"download" : 5
+		"download" : 10
 	}]
 }

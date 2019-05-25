@@ -82,3 +82,9 @@ We observe that the **only order constraint** of our discrete event simulator is
 - wait for all receivers to finish their execution
 
 The pipeline proved better performance for multi-core machines. On a 2-core machine we simulated a topology of 200 nodes. When running the same simulation with the sequential queue the time taken was **237 seconds** as opposed to **188 seconds**, which is an improvement of almost **20%** for only 2 cores and a small scenario. For bigger topologies and more cores, the improvement is even larger, sometimes resulting in cutting the runtime in less then **50%**.
+
+#### Replacing nodes running in goroutines to observers
+
+We changed the interface of the node by adding the `OnNotify` method. This method will be triggered when the state of the channels related to a node changes(e.g. some data has been transferred or a control message arrived). To allow running other routines periodically, we provide the `util.Callback` and `util.Routine` interfaces.
+
+This changes allow controlling the progress a program makes by moving a node's execution directly onto the simulator, thus eliminating the need for the Go Scheduler to schedule all routines associated with a node. Therefore, this approach guarantees progress if `OnNotify` gives the execution back to the simulator.  

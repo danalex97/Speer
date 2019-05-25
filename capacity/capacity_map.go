@@ -15,6 +15,10 @@ type CapacityMap interface {
 
 	RegisterLink(link interfaces.Link)
 	Start(simulation *underlay.NetworkSimulation)
+
+	// A simulation Receiver associated with the CapacityMap. Allows
+	// registering observers that follow the map.
+	Receiver() events.Receiver
 }
 
 // A capacity map that uses a capacity scheduler for
@@ -62,4 +66,8 @@ func (c *ScheduledCapacityMap) RegisterLink(link interfaces.Link) {
 
 func (c *ScheduledCapacityMap) Start(sim *underlay.NetworkSimulation) {
 	sim.Push(events.NewEvent(0, nil, c.capacityScheduler))
+}
+
+func (c *ScheduledCapacityMap) Receiver() events.Receiver {
+	return c.capacityScheduler
 }

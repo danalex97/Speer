@@ -22,7 +22,7 @@ type Simulation struct {
 
 	logger *logs.EventMonitor
 
-	directMap overlay.DirectMap
+	directMap   overlay.DirectMap
 	latencyMap  overlay.LatencyMap
 	capacityMap capacity.CapacityMap
 	nodes       int
@@ -106,24 +106,14 @@ func (b *SimulationBuilder) WithRandomUniformUnderlay(
 	b.underlaySimulation = underlay.NewNetworkSimulation(
 		events.NewLazySimulation(),
 		underlay.NewRandomUniformNetwork(
-		   nodes,
-		   edges,
-		   minLatency,
-		   maxLatency,
-	   ),
+			nodes,
+			edges,
+			minLatency,
+			maxLatency,
+		),
 	)
 	b.latencyMap = overlay.NewNetworkMap(b.underlaySimulation.Network())
 	b.directMap = nil
-
-	return b
-}
-
-func (b *SimulationBuilder) WithProgress(
-	progress interfaces.Progress,
-	interval int,
-) *SimulationBuilder {
-	property := events.NewProgressProperty(progress, interval)
-	b.progressProperties = append(b.progressProperties, property)
 
 	return b
 }
@@ -147,6 +137,7 @@ func (b *SimulationBuilder) addNewNode() (
 	id string,
 	controlConnector interfaces.ControlTransport,
 	bootstrap overlay.Bootstrap,
+	observer events.ActiveObserver,
 ) {
 	if b.latencyMap != nil {
 		// assign ID to node
@@ -158,6 +149,7 @@ func (b *SimulationBuilder) addNewNode() (
 			b.underlaySimulation,
 			b.latencyMap,
 		)
+		observer = controlConnector.(overlay.LatencyConnector).Observer()
 
 		bootstrap = b.latencyMap
 	} else {
@@ -165,7 +157,7 @@ func (b *SimulationBuilder) addNewNode() (
 		controlConnector, id = overlay.NewDirectChan(b.directMap)
 		bootstrap = b.directMap
 	}
-	return id, controlConnector, bootstrap
+	return id, controlConnector, bootstrap, observer
 }
 
 func (b *SimulationBuilder) WithCapacityNodes(
@@ -184,7 +176,7 @@ func (b *SimulationBuilder) WithCapacityNodes(
 		limit = b.nodes
 	}
 	for i := b.cnode; i < limit; i++ {
-		id, controlConnector, bootstrap := b.addNewNode()
+		id, controlConnector, bootstrap, latencyObserver := b.addNewNode()
 
 		// register capacity
 		capacityConnector := capacity.NewCapacityConnector(
@@ -192,16 +184,26 @@ func (b *SimulationBuilder) WithCapacityNodes(
 			download,
 			b.capacityMap,
 		)
+		capacityObserver := events.NewActiveEventObserver(b.capacityMap.Receiver())
 		b.capacityMap.AddConnector(id, capacityConnector)
 
-		// register autowired nodes
+		// register autowired node
 		newNode := NewAutowiredNode(b.template, NewSimulatedNode(
 			controlConnector,
 			capacityConnector,
+			b.underlaySimulation.Simulation,
 			bootstrap,
 			id,
 			b.Time,
 		))
+
+		// set the observers for the autowired nodes
+		if latencyObserver != nil {
+			latencyObserver.SetProxy(events.NewProxy(newNode.OnNotify))
+		}
+		capacityObserver.SetProxy(events.NewProxy(newNode.OnNotify))
+		b.underlaySimulation.RegisterObserver(capacityObserver)
+
 		b.userNodes[id] = newNode
 	}
 	b.cnode = limit
@@ -218,6 +220,14 @@ func (b *SimulationBuilder) WithLogs(logsFile string) *SimulationBuilder {
 	return b
 }
 
+type looper struct {
+	time func() int
+}
+
+func (l *looper) Receive(e *events.Event) *events.Event {
+	return events.NewEvent(l.time()+1, nil, l)
+}
+
 func (b *SimulationBuilder) Build() ISimulation {
 	if b.nodes == -1 {
 		panic("Node number not specified.")
@@ -226,19 +236,36 @@ func (b *SimulationBuilder) Build() ISimulation {
 		panic("No underlay simulation provided.")
 	}
 
+	looper := &looper{time: b.underlaySimulation.Time}
 	if b.capacityMap == nil {
 		for i := 0; i < b.nodes; i++ {
-			id, controlConnector, bootstrap := b.addNewNode()
+			id, controlConnector, bootstrap, latencyObserver := b.addNewNode()
 
 			newNode := NewAutowiredNode(b.template, NewSimulatedNode(
 				controlConnector,
 				nil,
+				b.underlaySimulation.Simulation,
 				bootstrap,
 				id,
 				b.Time,
 			))
 			b.userNodes[id] = newNode
+
+			// set the observers for the autowired nodes
+			if latencyObserver != nil {
+				latencyObserver.SetProxy(events.NewProxy(newNode.OnNotify))
+			}
+			if b.latencyMap == nil {
+				// I have neither of the modules
+				capacityObserver := events.NewActiveEventObserver(looper)
+				capacityObserver.SetProxy(events.NewProxy(newNode.OnNotify))
+				b.underlaySimulation.RegisterObserver(capacityObserver)
+			}
 		}
+	}
+
+	if b.capacityMap == nil && b.latencyMap == nil {
+		b.underlaySimulation.Push(events.NewEvent(0, nil, looper))
 	}
 
 	return b.Simulation
@@ -254,7 +281,6 @@ func (s *Simulation) Run() {
 		s.capacityMap.Start(s.underlaySimulation)
 	}
 
-	go s.underlaySimulation.Run()
 	for _, node := range s.userNodes {
 		if s.logger != nil {
 			s.logger.Log(logs.JoinEntry{
@@ -262,8 +288,9 @@ func (s *Simulation) Run() {
 				Node: node.Id(),
 			})
 		}
-		go node.OnJoin()
+		node.OnJoin()
 	}
+	go s.underlaySimulation.Run()
 }
 
 func (s *Simulation) Stop() {

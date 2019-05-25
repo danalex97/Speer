@@ -54,3 +54,19 @@ Getting data from a link:
 ```go
 data := <-link.Download()
 ```
+
+Setting up a callback:
+
+```go
+util.Callback(100, func() {
+    // [...]
+})
+```
+
+Setting up a periodic routine:
+
+```go
+util.Routine(100, func() {
+    // [...]
+})
+```

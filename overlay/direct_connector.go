@@ -14,8 +14,8 @@ type DirectConnector interface {
 
 // An DirectChan implements a DirectConnector by using channels directly.
 type DirectChan struct {
-	id string
-	recv chan interface {}
+	id   string
+	recv chan interface{}
 
 	networkMap DirectMap
 }
@@ -26,8 +26,8 @@ func newDirectChan(
 	networkMap DirectMap,
 ) DirectConnector {
 	return &DirectChan{
-		id: id,
-		recv: make(chan interface {}, controlMessageCapacity),
+		id:   id,
+		recv: make(chan interface{}, controlMessageCapacity),
 
 		networkMap: networkMap,
 	}

@@ -13,6 +13,9 @@ type DataLinkExample struct {
 	node1 string
 	node2 string
 
+	up Link
+	down Link
+
 	time func() int
 }
 
@@ -29,38 +32,48 @@ func (s *DataLinkExample) New(util NodeUtil) Node {
 
 func (s *DataLinkExample) OnJoin() {
 	if s.node2 != "" {
+		// node2 will initiate both connections
 		s.ControlSend(s.node2, s.node1)
 		s.ControlSend(s.node1, s.node2)
 	}
+}
 
-	var up Link
-	var down Link
-
-	for {
-		switch msg := (<-s.ControlRecv()).(type) {
+func (s *DataLinkExample) OnNotify() {
+	select {
+	case m, _ := <-s.ControlRecv():
+		switch msg := m.(type) {
 		case string:
 			// establish uplink when I know ID of other person
-			up = s.Connect(msg)
-			s.ControlSend(msg, up)
+			s.up = s.Connect(msg)
+			s.ControlSend(msg, s.up)
 		case Link:
 			// establish downlink when I receive ACK
-			down = msg
+			s.down = msg
+		default:
+		}
+	default:
+	}
+
+	// after I connected, upload the data
+	if s.up != nil && s.down != nil {
+		fmt.Println("Node", s.node1, "capacities", s.Up(), s.Down())
+
+		// Upload some pieces of data
+		size := 100
+		for i := 1; i <= 5; i++ {
+			s.up.Upload(Data{str.RandomKey()[:3], size})
 		}
 
-		if up != nil && down != nil {
-			fmt.Println("Node", s.node1, "capacities", s.Up(), s.Down())
+		// stop the upload
+		s.up = nil;
+	}
 
-			// Upload some pieces of data
-			size := 10000
-			for i := 1; i <= 5; i++ {
-				up.Upload(Data{str.RandomKey()[:3], size})
-			}
-
-			// Download some pieces of data
-			for i := 1; i <= 5; i++ {
-				// Print the data I received at a timestamp
-				fmt.Println("Node", s.node1, ":", <-down.Download())
-			}
+	// receive the downloaded data
+	if s.down != nil {
+		select {
+		case data, _ := <-s.down.Download():
+			fmt.Println("@", s.time(), "node", s.node1, ":", data)
+		default:
 		}
 	}
 }

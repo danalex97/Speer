@@ -15,11 +15,10 @@ import (
 // process to read the time, updating the time with the time of the current
 // event is protected via a read-write lock.
 type Simulation struct {
-	newObservers chan Observer
-	observers    []Observer
-	stopped      chan interface{}
-	timeMutex    *sync.RWMutex
-	time         int
+	observers []Observer
+	stopped   chan interface{}
+	timeMutex *sync.RWMutex
+	time      int
 
 	parallel bool
 	check    func(Receiver) bool
@@ -37,12 +36,11 @@ func check(r Receiver) bool {
 
 func NewLazySimulation() (s *Simulation) {
 	s = &Simulation{
-		newObservers: make(chan Observer, maxRegisterQueue),
-		observers:    make([]Observer, 0),
-		stopped:      make(chan interface{}, 1),
-		timeMutex:    new(sync.RWMutex),
-		time:         0,
-		check:        check,
+		observers: make([]Observer, 0),
+		stopped:   make(chan interface{}, 1),
+		timeMutex: new(sync.RWMutex),
+		time:      0,
+		check:     check,
 
 		parallel:   false,
 		EventQueue: NewLazyEventQueue(),
@@ -54,23 +52,8 @@ func (s *Simulation) SetParallel(parallel bool) {
 	s.parallel = parallel
 }
 
-func (s *Simulation) RegisterProgress(property *ProgressProperty) {
-	event := NewEvent(s.Time(), nil, property)
-	s.Push(event)
-}
-
 func (s *Simulation) RegisterObserver(eventObserver Observer) {
-	select {
-	case s.newObservers <- eventObserver:
-	default:
-		// The observer queue is full, so we need to register the new observers
-		// to clean in.
-		for len(s.newObservers) > minRegisterQueue {
-			observer := <-s.newObservers
-			s.observers = append(s.observers, observer)
-		}
-		s.RegisterObserver(eventObserver)
-	}
+	s.observers = append(s.observers, eventObserver)
 }
 
 func (s *Simulation) Time() int {
@@ -101,15 +84,10 @@ func (s *Simulation) Run() {
 	}
 
 	settled := false
-
 	for {
 		select {
 		case <-s.stopped:
 			break
-		case observer := <-s.newObservers:
-			// fmt.Println("New Observer >", observer)
-
-			s.observers = append(s.observers, observer)
 		default:
 			if !settled && s.Time() < 200 {
 				// At the beginning we run the sequential simulator.
@@ -125,11 +103,9 @@ func (s *Simulation) Run() {
 // Handling events synchronously.
 func (s *Simulation) Handle() {
 	if event := s.Pop(); event != nil {
-		// fmt.Println("Event received >", event)
-
 		// The event gets dispached to observers
 		for _, observer := range s.observers {
-			observer.EnqueEvent(event)
+			observer.Receive(event)
 		}
 
 		s.timeMutex.Lock()
@@ -200,7 +176,7 @@ func (s *Simulation) HandleParallel() {
 	// The event gets dispached to observers.
 	for _, event := range events {
 		for _, observer := range s.observers {
-			observer.EnqueEvent(event)
+			observer.Receive(event)
 		}
 	}
 
@@ -256,15 +232,6 @@ func (s *Simulation) HandleParallel() {
 			}
 		}
 	default:
-		// fmt.Println("Parallel")
-		// for _, group := range groups {
-		//   fmt.Printf("Group > %p \n", group[0].Receiver())
-		//   fmt.Println("  Receiver type > ", reflect.TypeOf(group[0].Receiver()))
-		//   for _, event := range group {
-		//     fmt.Println("   Event received >", event, reflect.TypeOf(event.Payload()))
-		//   }
-		// }
-
 		done := make(chan bool)
 		routines := 0
 		for _, group := range groups {

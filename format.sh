@@ -17,7 +17,6 @@ format_dir $DIR/underlay
 format_dir $DIR/capacity
 format_dir $DIR/structs
 format_dir $DIR/sdk/go
-format_dir $DIR/model
 format_dir $DIR/logs
 format_dir $DIR/interfaces
 format_dir $DIR/examples
