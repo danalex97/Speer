@@ -3,7 +3,6 @@
     "entry" : "github.com/danalex97/Speer/examples/sink/SinkExample",
 
     "nodes" : 10,
-
     "logFile" : "./log.json",
 
     "network" : {

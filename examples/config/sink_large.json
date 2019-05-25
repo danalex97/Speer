@@ -3,7 +3,8 @@
     "entry" : "github.com/danalex97/Speer/examples/sink/SinkExample",
 
     "nodes" : 500,
-
+    "logFile" : "./log.json",
+    
     "network" : {
         "transitDomains"    : 20,
         "transitDomainSize" : 50,

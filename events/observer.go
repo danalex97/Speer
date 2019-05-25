@@ -1,9 +1,5 @@
 package events
 
-import (
-	"runtime"
-)
-
 // An observer is a special type of receiver that is used to monitor events
 // related to a observer. When the simulation pops an event, all registered
 // observers are notified. Registering an observer has priority over processing
@@ -50,7 +46,7 @@ func (o *ActiveEventObserver) Receive(e *Event) *Event {
 	return nil
 }
 
-const maxGlobalObserverQueue int = 1000
+const maxGlobalObserverQueue int = 1000000
 const maxObserverQueue int = 1000
 
 // A passive event observer is a PassiveObserver that calls a proxy function
@@ -107,13 +103,6 @@ func (o *GlobalEventObserver) Recv() <-chan interface{} {
 }
 
 func (o *GlobalEventObserver) Receive(e *Event) *Event {
-	select {
-	case o.observer <- o.Proxy(e):
-	default:
-		// If we can't register the observer, let someone else to run
-		// to break the livelock.
-		runtime.Gosched()
-		o.Receive(e)
-	}
+	o.observer <- o.Proxy(e)
 	return nil
 }
