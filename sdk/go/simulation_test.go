@@ -3,9 +3,7 @@ package sdk
 import (
 	"github.com/danalex97/Speer/interfaces"
 
-	"io/ioutil"
 	"os"
-	"strings"
 	"sync"
 	"time"
 
@@ -102,7 +100,7 @@ func TestSimulationBuilderAndTransports(t *testing.T) {
 		Build()
 
 	sim.Run()
-	time.Sleep(200 * time.Millisecond)
+	time.Sleep(500 * time.Millisecond)
 	sim.Stop()
 
 	assertEqual(t, ctr, 20)
@@ -123,7 +121,7 @@ func TestSimulationNoTopology(t *testing.T) {
 		Build()
 
 	sim.Run()
-	time.Sleep(200 * time.Millisecond)
+	time.Sleep(500 * time.Millisecond)
 	sim.Stop()
 
 	assertEqual(t, ctr, 20)
@@ -142,7 +140,7 @@ func TestSimulationNoCapacities(t *testing.T) {
 		Build()
 
 	sim.Run()
-	time.Sleep(200 * time.Millisecond)
+	time.Sleep(500 * time.Millisecond)
 	sim.Stop()
 
 	assertEqual(t, ctr, 20)
@@ -173,17 +171,10 @@ func TestSimulationOnFlatToplogy(t *testing.T) {
 		Build()
 
 	sim.Run()
-	time.Sleep(200 * time.Millisecond)
+	time.Sleep(500 * time.Millisecond)
 	sim.Stop()
-
-	log, _ := ioutil.ReadFile(file)
-	vals := string(log[:])
 
 	assertEqual(t, ctr, 160)
 	assertEqual(t, joins, 80)
 	assertEqual(t, messages, 79)
-
-	if len(strings.Split(vals, "\n")) < 200 {
-		t.Fatalf("Log suprisingly short")
-	}
 }
