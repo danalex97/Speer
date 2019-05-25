@@ -1,0 +1,14 @@
+{
+    "lang": "go",
+    "entry": "github.com/danalex97/Speer/examples/routines/RoutinesExample",
+
+    "nodes": 2,
+    "transferInterval": 10,
+
+	"network" : {
+        "transitDomains"    : 5,
+        "transitDomainSize" : 5,
+        "stubDomains"       : 5,
+        "stubDomainSize"    : 5
+    }
+}
