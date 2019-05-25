@@ -93,6 +93,8 @@ The upper layer packet will be **embedded in the underlay level payload**. The p
 Node **0xff**’s [observer](events.md) will then be notified and the
 Receiver routine will extract the decorated package from the observer. Afterwards it will strip the payload and deliver it directly to the user **Recv()** channel.
 
-#### Note:
+#### Notes:
 
-The **Send()** and **Recv()** channels have been replaces in the latest version of **Speer** for speed considerations. For more details, read the [optimization section](optimizations.md).
+- The **Send()** and **Recv()** channels have been replaces in the latest version of **Speer** for speed considerations. For more details, read the [optimization section](optimizations.md).
+
+- Encapsulating overlay packets inside the underlay level payload is not necessary anymore. We only translate the address at the ends of the transmission.

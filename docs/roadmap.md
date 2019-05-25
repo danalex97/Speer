@@ -26,7 +26,12 @@ The Roadmap below is not fixed and contributions for parts in letter stages can 
   - path for configuration file
 - setup of a front-end for visualization in a JS framework(e.g. [React](https://reactjs.org/) & [D3.js](https://d3js.org/))
 
-#### Version 1.2 [intent: September 2019]
+#### Version 1.2 [current]
+
+- progress and safety support
+- making the nodes coroutines instead of goroutines
+
+#### Version 1.3 [intent: September 2019]
 
 - basic front-end with visualization tools for:
   - hop count distribution
@@ -34,8 +39,6 @@ The Roadmap below is not fixed and contributions for parts in letter stages can 
   - throughput distribution
   - network layer topology
   - transport layer topology
-- progress and safety support
-- handshake support
 - failure support
   - node failures
   - joins and leaves
@@ -44,7 +47,8 @@ The Roadmap below is not fixed and contributions for parts in letter stages can 
   - using [BGP](https://en.wikipedia.org/wiki/Border_Gateway_Protocol) together with OSPF
   - support for dynamic latencies
 
-#### Version 1.3
+#### Version 1.4
+
 - non-preemptive Python SDK implementation:
     - possibility user supplied code in Python
     - Golang examples in Python as well

@@ -9,7 +9,11 @@ type Node interface {
 	// constructor interface
 	New(util NodeUtil) Node
 
-	// The general method that is just a runner.
+	// Function that represents what the node should do when notified.
+	OnNotify()
+
+	// Function that represent the initial action taken by a node when it
+	// joins the network.
 	OnJoin()
 
 	// A method that should be called when a node leaves the network.
@@ -31,6 +35,10 @@ func (s *Example) OnJoin() {
   //[...]
 }
 
+func (s *Example) OnNotify() {
+  //[...]
+}
+
 func (s *Example) OnLeave() {
   //[...]
 }
@@ -44,11 +52,18 @@ The `New` function is used to generate new nodes from an empty structure templat
 ```go
 // The Util interface is provided to a node.
 type NodeUtil interface {
+	RoutineCapabilities
+
 	Transport() Transport // Interface used to send data to other nodes.
 
 	Id() string // The ID of the node.
 	Join() string  // The ID of another node in the network.
 
 	Time() func() int // Function that can be used to retrieve the simulation global virtual time.
+}
+
+type RoutineCapabilities interface {
+	Routine(interval int, routine func()) Routine // allows setting up a periodic routine
+	Callback(timeout int, routine func()) Callback // allows setting up a callback
 }
 ```
