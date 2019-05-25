@@ -15,10 +15,10 @@ import (
 // process to read the time, updating the time with the time of the current
 // event is protected via a read-write lock.
 type Simulation struct {
-	observers    []Observer
-	stopped      chan interface{}
-	timeMutex    *sync.RWMutex
-	time         int
+	observers []Observer
+	stopped   chan interface{}
+	timeMutex *sync.RWMutex
+	time      int
 
 	parallel bool
 	check    func(Receiver) bool
@@ -36,11 +36,11 @@ func check(r Receiver) bool {
 
 func NewLazySimulation() (s *Simulation) {
 	s = &Simulation{
-		observers:    make([]Observer, 0),
-		stopped:      make(chan interface{}, 1),
-		timeMutex:    new(sync.RWMutex),
-		time:         0,
-		check:        check,
+		observers: make([]Observer, 0),
+		stopped:   make(chan interface{}, 1),
+		timeMutex: new(sync.RWMutex),
+		time:      0,
+		check:     check,
 
 		parallel:   false,
 		EventQueue: NewLazyEventQueue(),
@@ -89,7 +89,6 @@ func (s *Simulation) Run() {
 	}
 
 	settled := false
-
 	for {
 		select {
 		case <-s.stopped:

@@ -233,8 +233,9 @@ func (b *SimulationBuilder) WithLogs(logsFile string) *SimulationBuilder {
 type looper struct {
 	time func() int
 }
+
 func (l *looper) Receive(e *events.Event) *events.Event {
-	return events.NewEvent(l.time() + 1, nil, l)
+	return events.NewEvent(l.time()+1, nil, l)
 }
 
 func (b *SimulationBuilder) Build() ISimulation {
@@ -290,7 +291,6 @@ func (s *Simulation) Run() {
 		s.capacityMap.Start(s.underlaySimulation)
 	}
 
-	go s.underlaySimulation.Run()
 	for _, node := range s.userNodes {
 		if s.logger != nil {
 			s.logger.Log(logs.JoinEntry{
@@ -300,6 +300,7 @@ func (s *Simulation) Run() {
 		}
 		node.OnJoin()
 	}
+	go s.underlaySimulation.Run()
 }
 
 func (s *Simulation) Stop() {

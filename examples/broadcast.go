@@ -4,7 +4,6 @@ import (
 	. "github.com/danalex97/Speer/interfaces"
 
 	"fmt"
-	"runtime"
 )
 
 type BroadcastExample struct {
@@ -53,50 +52,44 @@ func (s *BroadcastExample) broadcast(m interface{}) {
 	}
 }
 
-func (s *BroadcastExample) handleRecv(m interface{}) {
-	switch msg := m.(type) {
-	case Join:
-		if !s.root() {
-			// subscribe in the list of nodes
-			s.ControlSend(s.parent, msg)
-		} else {
-			// if the root receives a new node, broadcast the message
-			s.members = append(s.members, msg.id)
-			s.broadcast(NewMember{
-				id: msg.id,
-			})
-		}
-	case NewMember:
-		if !s.root() {
-			if msg.id != s.id {
-				s.members = append(s.members, msg.id)
-				s.broadcast(SomeBroadcast{
-					ts:   s.time(),
-					list: s.members,
-					from: s.id,
-				})
-			}
-		}
-	case SomeBroadcast:
-		fmt.Println(s.id, "recv:", msg)
-	}
-}
-
 func (s *BroadcastExample) OnJoin() {
 	if !s.root() {
 		s.ControlSend(s.parent, Join{
 			id: s.id,
 		})
 	}
+}
 
-	for {
-		select {
-		case m, _ := <-s.ControlRecv():
-			s.handleRecv(m)
-
-		default:
-			runtime.Gosched()
+func (s *BroadcastExample) OnNotify() {
+	select {
+	case m, _ := <-s.ControlRecv():
+		switch msg := m.(type) {
+		case Join:
+			if !s.root() {
+				// subscribe in the list of nodes
+				s.ControlSend(s.parent, msg)
+			} else {
+				// if the root receives a new node, broadcast the message
+				s.members = append(s.members, msg.id)
+				s.broadcast(NewMember{
+					id: msg.id,
+				})
+			}
+		case NewMember:
+			if !s.root() {
+				if msg.id != s.id {
+					s.members = append(s.members, msg.id)
+					s.broadcast(SomeBroadcast{
+						ts:   s.time(),
+						list: s.members,
+						from: s.id,
+					})
+				}
+			}
+		case SomeBroadcast:
+			fmt.Println(s.id, "recv:", msg)
 		}
+	default:
 	}
 }
 

@@ -42,7 +42,7 @@ func (t *Tunnel) SetProxy(p Proxy) {
 
 // Creates a Proxy from a function that doesn't return an interface.
 func NewProxy(f func()) Proxy {
-	ret := func(_ interface {}) interface {} {
+	ret := func(_ interface{}) interface{} {
 		f()
 		return nil
 	}
