@@ -52,11 +52,6 @@ func (s *Simulation) SetParallel(parallel bool) {
 	s.parallel = parallel
 }
 
-func (s *Simulation) RegisterProgress(property *ProgressProperty) {
-	event := NewEvent(s.Time(), nil, property)
-	s.Push(event)
-}
-
 func (s *Simulation) RegisterObserver(eventObserver Observer) {
 	s.observers = append(s.observers, eventObserver)
 }

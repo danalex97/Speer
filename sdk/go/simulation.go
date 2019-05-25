@@ -118,16 +118,6 @@ func (b *SimulationBuilder) WithRandomUniformUnderlay(
 	return b
 }
 
-func (b *SimulationBuilder) WithProgress(
-	progress interfaces.Progress,
-	interval int,
-) *SimulationBuilder {
-	property := events.NewProgressProperty(progress, interval)
-	b.progressProperties = append(b.progressProperties, property)
-
-	return b
-}
-
 func (b *SimulationBuilder) WithFixedNodes(
 	nodes int,
 ) *SimulationBuilder {
