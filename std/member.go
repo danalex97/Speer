@@ -4,10 +4,6 @@ import (
 	. "github.com/danalex97/Speer/interfaces"
 )
 
-type Composable interface {
-	ComposeOnNotify(timeout int)
-}
-
 // Membership primitve. Builds full mesh of nodes, exposing the Members() function that can 
 // be called by a node. Implements the node interface. Since it reacts all the time to new 
 // joins, the simplest way to use it is to set a timeout or use prior knowledge about the 
@@ -77,23 +73,6 @@ func (s *BroadcastMembership) OnJoin() {
 		})
 	}
 
-}
-
-// Composition is done by putting a basic timeout. 
-// [TODO:] Separate in own class -- timeout composable 
-func (s *BroadcastMembership) ComposeOnNotify(timeout int) {
-	if s.ready {
-		return
-	}
-
-	if !s.timeout {
-		s.timeout = true
-		s.r.Callback(timeout, func() {
-			s.ready = true
-		})
-	}
-
-	s.OnNotify()
 }
 
 func (s *BroadcastMembership) OnNotify() {
