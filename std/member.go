@@ -4,11 +4,16 @@ import (
 	. "github.com/danalex97/Speer/interfaces"
 )
 
+type Composable interface {
+	ComposeOnNotify(timeout int)
+}
+
 // Membership primitve. Builds full mesh of nodes, exposing the Members() function that can 
 // be called by a node. Implements the node interface. Since it reacts all the time to new 
 // joins, the simplest way to use it is to set a timeout or use prior knowledge about the 
 // number of nodes in the network. 
 type Membership interface {
+	Composable
 	Node
 	
 	Members() []string
@@ -17,12 +22,16 @@ type Membership interface {
 // Membership primitive implementation using broadcasts at each new join request arriving 
 // at the root of a broadcast tree.
 type BroadcastMembership struct {
+	r RoutineCapabilities
 	t Transport // we want the transport to be private
 
 	id     string
 	parent string
 
 	members []string
+
+	ready   bool
+	timeout bool
 }
 
 func (s *BroadcastMembership) New(util NodeUtil) Node {
@@ -33,6 +42,9 @@ func (s *BroadcastMembership) New(util NodeUtil) Node {
 		parent: util.Join(),
 
 		members: []string{util.Id()},
+
+		ready: false,
+		timeout: false,
 	}
 }
 
@@ -64,6 +76,24 @@ func (s *BroadcastMembership) OnJoin() {
 			id: s.id,
 		})
 	}
+
+}
+
+// Composition is done by putting a basic timeout. 
+// [TODO:] Separate in own class -- timeout composable 
+func (s *BroadcastMembership) ComposeOnNotify(timeout int) {
+	if s.ready {
+		return
+	}
+
+	if !s.timeout {
+		s.timeout = true
+		s.r.Callback(timeout, func() {
+			s.ready = true
+		})
+	}
+
+	s.OnNotify()
 }
 
 func (s *BroadcastMembership) OnNotify() {
