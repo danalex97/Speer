@@ -110,29 +110,29 @@ func TestSchedulerFullScenario(t *testing.T) {
 	links[1].Upload(Data{"2-0-1", 50})
 	s.Schedule()
 	if len(links[0].Download()) != 0 {
-		t.Fatalf("Link 1-0 transmitted: %s", len(links[0].Download()))
+		t.Fatalf("Link 1-0 transmitted: %d", len(links[0].Download()))
 	}
 	if len(links[1].Download()) != 1 {
-		t.Fatalf("Link 2-0 not transmitted: %s", len(links[1].Download()))
+		t.Fatalf("Link 2-0 not transmitted: %d", len(links[1].Download()))
 	}
 
 	// time: 20
 	links[0].Upload(Data{"1-0-1", 100})
 	s.Schedule()
 	if len(links[0].Download()) != 1 {
-		t.Fatalf("Link 1-0 not transmitted: %s", len(links[0].Download()))
+		t.Fatalf("Link 1-0 not transmitted: %d", len(links[0].Download()))
 	}
 	if len(links[1].Download()) != 2 {
-		t.Fatalf("Link 2-0 not transmitted: %s", len(links[1].Download()))
+		t.Fatalf("Link 2-0 not transmitted: %d", len(links[1].Download()))
 	}
 
 	// time: 30
 	s.Schedule()
 	if len(links[0].Download()) != 2 {
-		t.Fatalf("Link 1-0 not transmitted: %s", len(links[0].Download()))
+		t.Fatalf("Link 1-0 not transmitted: %d", len(links[0].Download()))
 	}
 	if len(links[1].Download()) != 2 {
-		t.Fatalf("Link 2-0 not transmitted: %s", len(links[1].Download()))
+		t.Fatalf("Link 2-0 not transmitted: %d", len(links[1].Download()))
 	}
 
 	assertEqual(t, Data{"1-0-0", 100}, <-links[0].Download())
