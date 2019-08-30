@@ -18,7 +18,8 @@ type Membership interface {
 // Membership primitive implementation using broadcasts at each new join request arriving 
 // at the root of a broadcast tree.
 type BroadcastMembership struct {
-	r RoutineCapabilities
+	Composable
+
 	t Transport // we want the transport to be private
 
 	id     string
@@ -30,8 +31,8 @@ type BroadcastMembership struct {
 	timeout bool
 }
 
-func (s *BroadcastMembership) New(util NodeUtil) Node {
-	return &BroadcastMembership{
+func NewBroadcastMembership(util NodeUtil) *BroadcastMembership {
+	bm :=  &BroadcastMembership{
 		t: util.Transport(),
 
 		id:     util.Id(),
@@ -42,6 +43,14 @@ func (s *BroadcastMembership) New(util NodeUtil) Node {
 		ready: false,
 		timeout: false,
 	}
+
+	bm.Composable = NewChainComposer(bm, util)
+	return bm
+}
+
+
+func (s *BroadcastMembership) New(util NodeUtil) Node {
+	return NewBroadcastMembership(util)
 }
 
 func (s *BroadcastMembership) root() bool {
