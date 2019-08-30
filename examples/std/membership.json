@@ -1,8 +1,8 @@
 {
     "lang" : "go",
-    "entry" : "github.com/danalex97/Speer/example/std/membership/StdMembershipExample",
+    "entry" : "github.com/danalex97/Speer/examples/std/membership/StdMembershipExample",
 
-    "nodes" : 5,
+    "nodes" : 4,
 
     "logFile" : "./log.json",
 
@@ -19,4 +19,5 @@
         "upload"   : 5,
         "download" : 5
     }]
+
 }

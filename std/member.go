@@ -22,6 +22,7 @@ type BroadcastMembership struct {
 
 	t Transport // we want the transport to be private
 
+	seq    int
 	id     string
 	parent string
 
@@ -35,6 +36,7 @@ func NewBroadcastMembership(util NodeUtil) *BroadcastMembership {
 	bm :=  &BroadcastMembership{
 		t: util.Transport(),
 
+		seq:    0,
 		id:     util.Id(),
 		parent: util.Join(),
 
@@ -62,6 +64,7 @@ type join struct {
 }
 
 type newMembers struct {
+	seq int
 	members []string
 }
 
@@ -81,7 +84,6 @@ func (s *BroadcastMembership) OnJoin() {
 			id: s.id,
 		})
 	}
-
 }
 
 func (s *BroadcastMembership) OnNotify() {
@@ -95,15 +97,17 @@ func (s *BroadcastMembership) OnNotify() {
 			} else {
 				// if the root receives a new node, broadcast the message
 				s.members = append(s.members, msg.id)
+				s.seq += 1
+
 				s.broadcast(newMembers{
 					members: s.members,
+					seq: s.seq,
 				})
-				// fmt.Println("Broadcast")
 			}
 		case newMembers:
-			if !s.root() {
+			if !s.root() && msg.seq > s.seq {
 				s.members = msg.members
-				// fmt.Println(s.id, s.members)
+				s.seq = msg.seq
 			}
 		}
 	default:

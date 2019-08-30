@@ -12,6 +12,7 @@ type StdMembershipExample struct {
 	Membership
 
 	id string
+	once bool
 }
 
 func (s *StdMembershipExample) New(util NodeUtil) Node {
@@ -20,6 +21,7 @@ func (s *StdMembershipExample) New(util NodeUtil) Node {
 		Membership: NewBroadcastMembership(util),
 	
 		id: util.Id(),
+		once: false,
 	}
 }
 
@@ -34,13 +36,17 @@ func (s *StdMembershipExample) OnJoin() {
 }
 
 func (s *StdMembershipExample) OnNotify() {
-	s.Membership.ComposeOnTimeout(100)
-	s.broadcast(s.id)
+	if s.Membership.ComposeOnTimeout(10000) {
+		if !s.once {
+			s.broadcast(s.id)
+			s.once = true
+		}
 
-	select {
-	case m, _ := <-s.ControlRecv():
-		fmt.Println(s.id, "recv:", m)
-	default:
+		select {
+		case m, _ := <-s.ControlRecv():
+			fmt.Println(s.id, "recv:", m)
+		default:
+		}
 	}
 }
 

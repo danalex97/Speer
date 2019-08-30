@@ -6,8 +6,8 @@ import (
 
 
 type Composable interface {
-	ComposeOnTimeout(timeout int)
-	ComposeOnPredicate(predicate func () bool)
+	ComposeOnTimeout(timeout int) bool
+	ComposeOnPredicate(predicate func () bool) // [TODO]: think how to change interface
 }
 
 const predicateRecheck = 10
@@ -37,9 +37,9 @@ func NewChainComposer(node Node, rc RoutineCapabilities) *ChainComposer {
 	}
 }
 
-func (c *ChainComposer) ComposeOnTimeout(timeout int) {
+func (c *ChainComposer) ComposeOnTimeout(timeout int) bool {
 	if c.ready {
-		return
+		return true
 	}
 
 	if !c.fire {
@@ -50,6 +50,7 @@ func (c *ChainComposer) ComposeOnTimeout(timeout int) {
 	}
 
 	c.node.OnNotify()
+	return false
 }
 
 func (c *ChainComposer) ComposeOnPredicate(pred func() bool) {

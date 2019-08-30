@@ -5,7 +5,7 @@
     "nodes": 2,
     "transferInterval": 10,
 
-	"network" : {
+    "network" : {
         "transitDomains"    : 5,
         "transitDomainSize" : 5,
         "stubDomains"       : 5,
