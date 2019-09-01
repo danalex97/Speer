@@ -9,7 +9,6 @@ import (
 // joins, the simplest way to use it is to set a timeout or use prior knowledge about the 
 // number of nodes in the network. 
 type Membership interface {
-	Composable
 	Node
 	
 	Members() []string
@@ -18,8 +17,6 @@ type Membership interface {
 // Membership primitive implementation using broadcasts at each new join request arriving 
 // at the root of a broadcast tree.
 type BroadcastMembership struct {
-	Composable
-
 	t Transport // we want the transport to be private
 
 	seq    int
@@ -33,7 +30,7 @@ type BroadcastMembership struct {
 }
 
 func NewBroadcastMembership(util NodeUtil) *BroadcastMembership {
-	bm :=  &BroadcastMembership{
+	return &BroadcastMembership{
 		t: util.Transport(),
 
 		seq:    0,
@@ -42,12 +39,9 @@ func NewBroadcastMembership(util NodeUtil) *BroadcastMembership {
 
 		members: []string{util.Id()},
 
-		ready: false,
+		ready:   false,
 		timeout: false,
 	}
-
-	bm.Composable = NewChainComposer(bm, util)
-	return bm
 }
 
 
