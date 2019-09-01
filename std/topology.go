@@ -112,3 +112,33 @@ func (s *A2ATopology) OnNotify() {
 
 func (s *A2ATopology) OnLeave() {
 }
+
+//[TODO] Implement the topology interface.
+type MaxDelayTopology struct {
+}
+
+func NewMaxDelayTopology(maxDelay int) *MaxDelayTopology {
+	return &MaxDelayTopology{
+	}
+}
+
+//[TODO] Implement the topology interface by using Dijkstra BFS.
+type BfsTopology struct {
+}
+
+func NewBfsTopology() *BfsTopology {
+	return &BfsTopology{
+	}
+}
+
+//[TODO] Implement the topology interface by using Boruvka's.
+type MstTopology struct {
+}
+
+func NewMstTopology() *MstTopology {
+	return &MstTopology{
+	}
+}
+
+
+
