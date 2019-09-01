@@ -2,7 +2,7 @@
     "lang" : "go",
     "entry" : "github.com/danalex97/Speer/examples/broadcast/BroadcastExample",
 
-    "nodes" : 5,
+    "nodes" : 4,
 
     "logFile" : "./log.json",
 

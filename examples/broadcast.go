@@ -2,95 +2,55 @@ package examples
 
 import (
 	. "github.com/danalex97/Speer/interfaces"
+	. "github.com/danalex97/Speer/std"
 
 	"fmt"
 )
 
 type BroadcastExample struct {
+	Pipeline
 	Transport
+	Topology
 
-	id     string
-	parent string
-
-	members []string
-	time    func() int
+	id string
 }
 
 func (s *BroadcastExample) New(util NodeUtil) Node {
 	return &BroadcastExample{
+		Pipeline: NewChainPipeline(util),
 		Transport: util.Transport(),
+		Topology: NewA2ATopology(util),
 
-		id:     util.Id(),
-		parent: util.Join(),
-
-		members: []string{util.Id()},
-		time:    util.Time(),
+		id: util.Id(),
 	}
 }
 
-func (s *BroadcastExample) root() bool {
-	return s.parent == ""
-}
-
-type Join struct {
-	id string
-}
-
-type NewMember struct {
-	id string
-}
-
-type SomeBroadcast struct {
-	ts   int
-	list []string
-	from string
-}
-
 func (s *BroadcastExample) broadcast(m interface{}) {
-	for _, member := range s.members {
+	for _, member := range s.Neighbors() {
 		s.ControlSend(member, m)
 	}
 }
 
 func (s *BroadcastExample) OnJoin() {
-	if !s.root() {
-		s.ControlSend(s.parent, Join{
-			id: s.id,
+	s.Pipeline = s.Pipeline.
+		OnTimeout(s.Topology, 10000).
+		Once(func() bool {
+			s.broadcast(s.id)
+			return true
+		}).
+		Then(func() bool {
+			select {
+				case m, _ := <-s.ControlRecv():
+					fmt.Println(s.id, "recv:", m)
+				default:
+			}
+			return false
 		})
-	}
+	s.Topology.OnJoin()
 }
 
 func (s *BroadcastExample) OnNotify() {
-	select {
-	case m, _ := <-s.ControlRecv():
-		switch msg := m.(type) {
-		case Join:
-			if !s.root() {
-				// subscribe in the list of nodes
-				s.ControlSend(s.parent, msg)
-			} else {
-				// if the root receives a new node, broadcast the message
-				s.members = append(s.members, msg.id)
-				s.broadcast(NewMember{
-					id: msg.id,
-				})
-			}
-		case NewMember:
-			if !s.root() {
-				if msg.id != s.id {
-					s.members = append(s.members, msg.id)
-					s.broadcast(SomeBroadcast{
-						ts:   s.time(),
-						list: s.members,
-						from: s.id,
-					})
-				}
-			}
-		case SomeBroadcast:
-			fmt.Println(s.id, "recv:", msg)
-		}
-	default:
-	}
+	s.Pipeline.Step()
 }
 
 func (s *BroadcastExample) OnLeave() {

@@ -4,19 +4,21 @@ import (
 	. "github.com/danalex97/Speer/interfaces"
 )
 
-// Membership primitve. Builds full mesh of nodes, exposing the Members() function that can 
-// be called by a node. Implements the node interface. Since it reacts all the time to new 
-// joins, the simplest way to use it is to set a timeout or use prior knowledge about the 
-// number of nodes in the network. 
-type Membership interface {
+// Topology primitve. It exposes the local overlay topology visiable to a node. It can 
+// be used by a node to work on a subgraph of the original all-to-all overlay topology 
+// to implement some algorithms.
+type Topology interface {
 	Node
 	
-	Members() []string
+	Neighbors() []string
 }
 
-// Membership primitive implementation using broadcasts at each new join request arriving 
-// at the root of a broadcast tree.
-type BroadcastMembership struct {
+// Builds full mesh of nodes, exposing the Neighbors() function that can be called by a node.
+// Since it reacts all the time to new joins, the simplest way to use it is to set a timeout 
+// or use prior knowledge about the number of nodes in the network with a predicate. 
+// The implementation uses broadcasts at each new join request arriving at the root of a 
+// broadcast tree.
+type A2ATopology struct {
 	t Transport // we want the transport to be private
 
 	seq    int
@@ -29,8 +31,8 @@ type BroadcastMembership struct {
 	timeout bool
 }
 
-func NewBroadcastMembership(util NodeUtil) *BroadcastMembership {
-	return &BroadcastMembership{
+func NewA2ATopology(util NodeUtil) *A2ATopology {
+	return &A2ATopology{
 		t: util.Transport(),
 
 		seq:    0,
@@ -45,11 +47,11 @@ func NewBroadcastMembership(util NodeUtil) *BroadcastMembership {
 }
 
 
-func (s *BroadcastMembership) New(util NodeUtil) Node {
-	return NewBroadcastMembership(util)
+func (s *A2ATopology) New(util NodeUtil) Node {
+	return NewA2ATopology(util)
 }
 
-func (s *BroadcastMembership) root() bool {
+func (s *A2ATopology) root() bool {
 	return s.parent == ""
 }
 
@@ -62,17 +64,17 @@ type newMembers struct {
 	members []string
 }
 
-func (s *BroadcastMembership) Members() []string {
+func (s *A2ATopology) Neighbors() []string {
 	return s.members
 }
 
-func (s *BroadcastMembership) broadcast(m interface{}) {
+func (s *A2ATopology) broadcast(m interface{}) {
 	for _, member := range s.members {
 		s.t.ControlSend(member, m)
 	}
 }
 
-func (s *BroadcastMembership) OnJoin() {
+func (s *A2ATopology) OnJoin() {
 	if !s.root() {
 		s.t.ControlSend(s.parent, join{
 			id: s.id,
@@ -80,7 +82,7 @@ func (s *BroadcastMembership) OnJoin() {
 	}
 }
 
-func (s *BroadcastMembership) OnNotify() {
+func (s *A2ATopology) OnNotify() {
 	select {
 	case m, _ := <-s.t.ControlRecv():
 		switch msg := m.(type) {
@@ -108,5 +110,5 @@ func (s *BroadcastMembership) OnNotify() {
 	}
 }
 
-func (s *BroadcastMembership) OnLeave() {
+func (s *A2ATopology) OnLeave() {
 }
