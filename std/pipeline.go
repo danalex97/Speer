@@ -6,8 +6,8 @@ import (
 
 type Pipeline interface {
 	OnTimeout(node Node, timeout int) Pipeline
-	Then(callback func() bool) Pipeline
-	Once(callback func()) Pipeline
+	Then(callback func() bool) Pipeline // return true when finished
+	Once(callback func() bool) Pipeline // return true if we want to continue execution
 
 	Step()
 }
@@ -71,14 +71,15 @@ func (c *ChainPipeline) OnTimeout(node Node, timeout int) Pipeline {
 	return c
 }
 
-func (c *ChainPipeline) Once(callback func()) Pipeline {
+func (c *ChainPipeline) Once(callback func() bool) Pipeline {
 	n := emptyNode()
 	n.callback = func() bool {
-		if !n.ready {
-			callback()
-			n.ready = true
+		if n.ready {
+			return false
 		}
-		return n.ready
+
+		n.ready = true
+		return !callback()
 	}
 	
 	c.chain = append(c.chain, n)
@@ -92,9 +93,7 @@ func (c *ChainPipeline) Then(callback func() bool) Pipeline {
 			return false
 		}
 		
-		if callback() {
-			n.ready = true
-		}
+		n.ready = callback()
 		return true
 	}
 
